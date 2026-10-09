@@ -6,7 +6,7 @@
   <title>HistoryGram – Il Social Network della Storia | Prof. Memmo</title>
   
   <meta name="description" content="HistoryGram: Gioco educativo di storia per la scuola secondaria di primo grado. Revolution Influencer (Moti '800) e Riforma vs Controriforma (XVI Secolo).">
-  <meta name="theme-color" content="#833ab4">
+  <meta name="theme-color" content="#059669">
 
   <!-- Apple iOS Safari & PWA Icons (Isolate per sottodominio) -->
   <link rel="icon" type="image/png" sizes="32x32" href="favicon.png">
@@ -14,12 +14,12 @@
   <link rel="manifest" href="manifest.json">
   <meta name="apple-mobile-web-app-title" content="HistoryGram">
   <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
 
-  <!-- Google Fonts: Inter per UI + Cinzel & Newsreader per l'eleganza storica -->
+  <!-- Google Fonts: Inter per UI + Julius Sans One per Headings/Titoli + Newsreader per citazioni storiche -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700;900&family=Inter:wght@400;500;600;700;800&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,600;1,6..72,400&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700;900&family=Inter:wght@400;500;600;700;800&family=Julius+Sans+One&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,600;1,6..72,400&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
   <link rel="stylesheet" href="css/style.css">
@@ -35,7 +35,7 @@
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
   <script src="js/firebase-init.js"></script>
 </head>
-<body class="theme-dark">
+<body class="theme-light">
 
   <div id="app-root">
 
@@ -94,7 +94,7 @@
               </div>
 
               <!-- Golden Pill Action Buttons -->
-              <button class="dropdown-pill-btn" id="btn-login-hub-dropdown" style="background: linear-gradient(135deg, var(--accent-purple) 0%, #4a154b 100%); color: #fff; font-weight: 800; display: none;" onclick="HistoryGramApp.goToUnifiedLogin()">
+              <button class="dropdown-pill-btn" id="btn-login-hub-dropdown" style="background: linear-gradient(135deg, var(--accent-green) 0%, var(--accent-green-dark) 100%); color: #fff; font-weight: 800; display: none;" onclick="HistoryGramApp.goToUnifiedLogin()">
                 <i class="fa-solid fa-right-to-bracket"></i> Accedi tramite Hub
               </button>
 
