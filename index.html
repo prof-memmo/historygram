@@ -45,54 +45,93 @@
         
         <!-- Sinistra: Logo HistoryGram Header -->
         <div class="header-left">
-          <img src="assets/branding/historygram-header.png" alt="Logo HistoryGram" class="header-game-logo" id="btnLogoHome">
+          <img src="assets/branding/historygram-header.png" alt="Logo HistoryGram" class="header-game-logo" id="btnLogoHome" onclick="HistoryGramApp.showView('view-welcome')">
         </div>
 
         <!-- Centro: Logo Avatar Prof. Memmo -->
         <div class="header-center-logo">
-          <a href="https://profmemmo.it/portal.html" class="header-prof-logo-wrapper" title="Torna all'Hub Prof. Memmo">
+          <div class="header-prof-logo-wrapper" onclick="HistoryGramApp.showView('view-welcome')">
             <img src="https://prof-memmo.github.io/prof-memmo-gestione-siti/shared/assets/branding/prof-memmo/prof-memmo-avatar.png" class="header-prof-logo" alt="Prof. Memmo Logo">
-          </a>
+          </div>
         </div>
 
-        <!-- Destra: Pillola Profilo Utente & Accesso Docente SSO -->
+        <!-- Destra: Pillola Profilo Utente & Accesso Docente SSO (Standard Ecosistema) -->
         <div class="header-right">
-          <div class="room-pill" id="roomPillIndicator" title="Codice Classe Attiva">
-            <span class="room-dot"></span>
-            <span class="room-label">Classe:</span>
-            <strong id="displayClassCode">3B</strong>
-            <button class="btn-icon-subtle" id="btnSelectClass" title="Cambia Classe">✏️</button>
-          </div>
-
-          <div class="user-menu-container" id="header-user-container">
-            <div class="user-menu-trigger" id="header-user-menu-trigger" onclick="event.stopPropagation(); window.HistoryGramApp.toggleUserDropdown();">
+          <div class="user-menu-container">
+            <!-- Trigger Pill -->
+            <div class="user-menu-trigger" id="user-menu-trigger" onclick="HistoryGramApp.toggleUserDropdown(event)">
               <div class="user-avatar-circle">
-                <img id="header-user-avatar-img" src="https://prof-memmo.github.io/prof-memmo-gestione-siti/shared/assets/branding/prof-memmo/prof-memmo-avatar.png" alt="Avatar" onerror="this.src='https://prof-memmo.github.io/prof-memmo-gestione-siti/shared/assets/branding/prof-memmo/prof-memmo-avatar.png'">
+                <img id="header-user-avatar" src="https://prof-memmo.github.io/prof-memmo-gestione-siti/shared/assets/branding/prof-memmo/prof-memmo-avatar.png" alt="Avatar" onerror="this.src='https://prof-memmo.github.io/prof-memmo-gestione-siti/shared/assets/branding/prof-memmo/prof-memmo-avatar.png'">
               </div>
-              <span class="user-name-label" id="header-user-name">Docente</span>
-              <i class="fa-solid fa-chevron-down" style="font-size: 0.75rem;"></i>
+              <div class="user-trigger-text">
+                <span class="user-trigger-name" id="header-user-name">PROF. MEMMO</span>
+                <span class="user-trigger-role" id="header-user-role">DOCENTE ECOSISTEMA</span>
+              </div>
+              <span class="user-trigger-chevron"><i class="fa-solid fa-chevron-down"></i></span>
             </div>
 
-            <!-- Dropdown Menu SSO -->
-            <div class="user-dropdown-menu hidden" id="userDropdownMenu">
-              <div class="dropdown-header">
-                <strong id="dropdownUserTitle">Prof. Memmo</strong>
-                <small id="dropdownUserRole">Docente Ecosistema</small>
+            <!-- Dropdown Card Integrata -->
+            <div class="user-dropdown hidden" id="user-dropdown">
+              <div class="dropdown-user-header">
+                <div class="dropdown-user-title" id="dropdown-user-name">PROF. MEMMO</div>
+                <div class="dropdown-user-subtitle" id="dropdown-user-role-sub">DOCENTE ECOSISTEMA</div>
               </div>
-              <div class="dropdown-divider"></div>
-              <button class="dropdown-item" id="btnOpenTeacherDashboard">
-                <i class="fa-solid fa-chalkboard-user"></i> Cattedra & Approvazione
+
+              <!-- Sottofondo Music Player Widget -->
+              <div class="dropdown-music-box">
+                <div class="music-header">
+                  <span class="music-label"><i class="fa-solid fa-music"></i> SOTTOFONDO</span>
+                  <a href="https://freetouse.com/music" target="_blank" class="music-link">FREETOUSE.COM/MUSIC</a>
+                </div>
+                <div class="music-capsule">
+                  <span class="music-track-title" id="music-track-title">Aventure - Close Friends</span>
+                  <div class="music-btns">
+                    <button class="music-btn-icon" onclick="AudioEngine.prevTrack()" title="Precedente"><i class="fa-solid fa-backward-step"></i></button>
+                    <button class="music-play-btn" id="music-play-btn" onclick="AudioEngine.togglePlay()" title="Play/Pausa"><i class="fa-solid fa-play"></i></button>
+                    <button class="music-btn-icon" onclick="AudioEngine.nextTrack()" title="Successiva"><i class="fa-solid fa-forward-step"></i></button>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Golden Pill Action Buttons -->
+              <button class="dropdown-pill-btn" id="btn-login-hub-dropdown" style="background: linear-gradient(135deg, var(--accent-purple) 0%, #4a154b 100%); color: #fff; font-weight: 800; display: none;" onclick="HistoryGramApp.goToUnifiedLogin()">
+                <i class="fa-solid fa-right-to-bracket"></i> Accedi tramite Hub
               </button>
-              <button class="dropdown-item" id="btnOpenTeamsManager">
-                <i class="fa-solid fa-users-gear"></i> Gestione Squadre (Fanta)
+
+              <button class="dropdown-pill-btn" onclick="HistoryGramApp.showView('view-docente'); HistoryGramApp.toggleUserDropdown(event);">
+                <i class="fa-solid fa-chalkboard-user"></i> Cattedra Docente
               </button>
-              <a href="https://profmemmo.it/portal.html" class="dropdown-item">
-                <i class="fa-solid fa-house"></i> Hub Principale
-              </a>
-              <div class="dropdown-divider"></div>
-              <button class="dropdown-item text-danger" id="btnUserLogout">
-                <i class="fa-solid fa-arrow-right-from-bracket"></i> Esci
+
+              <button class="dropdown-pill-btn" id="btn-profile-dropdown" onclick="if(window.Modals && Modals.openProfileModal) Modals.openProfileModal();">
+                <i class="fa-solid fa-user-gear"></i> Modifica Profilo
               </button>
+
+              <button class="dropdown-pill-btn" onclick="if(window.openSharedModal) window.openSharedModal('invita'); else if(window.Modals) Modals.openLegalModal('invita');">
+                <i class="fa-solid fa-paper-plane"></i> Invita un Collega
+              </button>
+
+              <div class="dropdown-split-row">
+                <button class="dropdown-pill-btn" onclick="if(window.openSharedModal) window.openSharedModal('privacy'); else if(window.Modals) Modals.openLegalModal('privacy');">
+                  <i class="fa-solid fa-shield"></i> Privacy
+                </button>
+                <button class="dropdown-pill-btn" onclick="if(window.openSharedModal) window.openSharedModal('termini'); else if(window.Modals) Modals.openLegalModal('termini');">
+                  <i class="fa-solid fa-scroll"></i> Termini
+                </button>
+              </div>
+
+              <button class="dropdown-pill-btn" onclick="if(window.openSharedModal) window.openSharedModal('contatti'); else if(window.Modals) Modals.openLegalModal('contatti');">
+                <i class="fa-solid fa-envelope"></i> Contatti
+              </button>
+
+              <div class="dropdown-bottom-row">
+                <button class="dropdown-pill-btn btn-disattiva-musica" id="music-mute-toggle-btn" onclick="AudioEngine.toggleMute()">
+                  <i class="fa-solid fa-volume-high"></i> Disattiva Musica
+                </button>
+                <button class="dropdown-pill-btn btn-esci-red" onclick="HistoryGramApp.confirmLogout()">
+                  <i class="fa-solid fa-power-off"></i> Esci
+                </button>
+              </div>
+
             </div>
           </div>
         </div>
@@ -100,163 +139,416 @@
       </div>
     </header>
 
-    <!-- Navigazione Modalità (Ottocento vs Cinquecento) -->
-    <nav class="sub-nav-bar">
-      <div class="sub-nav-container">
-        <div class="mode-tabs" role="tablist">
-          <button class="mode-tab active" id="tabRevolution" data-mode="revolution_1800">
-            <span class="tab-emoji">🇮🇹</span>
-            <span class="tab-title">Revolution Influencer ('800)</span>
-            <span class="tab-badge">3ª Media</span>
-          </button>
-          <button class="mode-tab" id="tabReformation" data-mode="reformation_1500">
-            <span class="tab-emoji">✝️</span>
-            <span class="tab-title">Riforma vs Controriforma ('500)</span>
-            <span class="tab-badge">2ª Media</span>
-          </button>
+    <!-- ==========================================
+         MAIN CONTAINER DELLE VISTE (MULTI-VIEW SPA)
+         ========================================== -->
+    <main class="main-views-container">
+
+      <!-- ========================================
+           1. VIEW: WELCOME HOME (Stile L'Oratore)
+           ======================================== -->
+      <section id="view-welcome" class="view active">
+        <div class="welcome-hero">
+          <img src="assets/branding/historygram-logo.png" alt="HistoryGram" class="welcome-hero-logo" onerror="this.src='assets/branding/Logo Historigram base.png'">
+          <h1 class="welcome-title">HistoryGram</h1>
+          <p class="welcome-subtitle">
+            Il Social Network Didattico della Storia: trasforma la tua classe in una piazza viva con proclami, slogan virali, flame dottrinali e Like alla Libertà!
+          </p>
+
+          <div class="mode-pills-row">
+            <div class="mode-pill"><i class="fa-solid fa-flag" style="color: #38bdf8;"></i> 3ª Media: Revolution Influencer ('800)</div>
+            <div class="mode-pill"><i class="fa-solid fa-cross" style="color: #f59e0b;"></i> 2ª Media: Riforma vs Controriforma ('500)</div>
+            <div class="mode-pill"><i class="fa-solid fa-users" style="color: #a855f7;"></i> Squadre &amp; Classi (Fantaletteratura)</div>
+            <div class="mode-pill"><i class="fa-solid fa-shield-halved" style="color: #10b981;"></i> Imprimatur Docente sulla LIM</div>
+          </div>
+
+          <div class="welcome-actions-wrap">
+            <button class="btn-giant btn-primary" onclick="HistoryGramApp.startSetupFlow()">
+              <i class="fa-solid fa-play"></i> Inizia Nuova Partita
+            </button>
+            <button class="btn-giant btn-secondary" onclick="HistoryGramApp.showView('view-game')">
+              <i class="fa-solid fa-gamepad"></i> Vai al Feed LIM
+            </button>
+            <button class="btn-giant btn-secondary" onclick="HistoryGramApp.showView('view-docente')">
+              <i class="fa-solid fa-chalkboard-user"></i> Cattedra Docente
+            </button>
+          </div>
         </div>
 
-        <div class="sub-nav-actions">
-          <button class="btn-primary-action" id="btnOpenCreatePost">
-            <i class="fa-solid fa-feather-pointed"></i> Pubblica Post Squadra
-          </button>
-          <button class="btn-cattedra-action" id="btnOpenTeacherModalTop">
-            <i class="fa-solid fa-shield-halved"></i> Cattedra Docente
-            <span class="badge-pending-count hidden" id="badgePendingCount">0</span>
+        <footer class="view-footer-copyright">
+          <img src="https://prof-memmo.github.io/prof-memmo-gestione-siti/shared/assets/branding/patamu-badge.png" alt="Patamu" class="patamu-badge" height="52" style="height: 52px; object-fit: contain; flex-shrink: 0;" onerror="this.src='https://profmemmo.it/assets/patamu.png'">
+          <p class="footer-copy">
+            &copy; 2026 Guglielmo Piersanti. Tutti i contenuti e i concept didattici di HistoryGram sono protetti tramite deposito e marcatura temporale digitale su Patamu.com. Distribuiti con licenza Creative Commons Attribuzione - Non commerciale - Non opere derivate 4.0 Internazionale (CC BY-NC-ND 4.0).
+          </p>
+        </footer>
+      </section>
+
+      <!-- ========================================
+           2. VIEW: STEP 1 - SCELTA EPOCA STORICA
+           ======================================== -->
+      <section id="view-setup-mode" class="view">
+        <div class="setup-header-box">
+          <span class="setup-step-badge">Passo 1 di 2</span>
+          <h2 class="setup-title">Scegli l'Epoca Storica</h2>
+          <p class="setup-subtitle">Seleziona la modalità didattica su cui si sfideranno le squadre della classe.</p>
+        </div>
+
+        <div class="setup-choice-grid">
+          <!-- Card 1: Ottocento -->
+          <div class="setup-choice-card" onclick="HistoryGramApp.selectSetupMode('revolution_1800')">
+            <div class="setup-choice-icon">🇮🇹</div>
+            <span class="setup-choice-badge">3ª Media • Ottocento</span>
+            <h3 class="setup-choice-title">Revolution Influencer</h3>
+            <p class="setup-choice-desc">
+              I Moti Rivoluzionari del 1820-21, 1830 e 1848. 7 Fazioni Storiche (Carbonari, Mazziniani, Greci, Spagnoli, Socialisti Utopisti, Francesi, Polacchi). Ogni like vale 1 follower per la libertà!
+            </p>
+            <button class="btn-primary-action" style="pointer-events: none;">
+              Scegli Ottocento &rarr;
+            </button>
+          </div>
+
+          <!-- Card 2: Cinquecento -->
+          <div class="setup-choice-card" onclick="HistoryGramApp.selectSetupMode('reformation_1500')">
+            <div class="setup-choice-icon">✝️</div>
+            <span class="setup-choice-badge">2ª Media • Cinquecento</span>
+            <h3 class="setup-choice-title">Riforma vs Controriforma</h3>
+            <p class="setup-choice-desc">
+              La grande sfida di idee e i flame del XVI secolo tra 6 figure storiche: Lutero, Calvino, Zwingli, Loyola, Borromeo e Paolo III. Post dottrinali, dibattiti e votazione a 3 stelle!
+            </p>
+            <button class="btn-primary-action" style="pointer-events: none;">
+              Scegli Cinquecento &rarr;
+            </button>
+          </div>
+        </div>
+
+        <div style="text-align: center; margin-top: 30px;">
+          <button class="btn-secondary-action" onclick="HistoryGramApp.showView('view-welcome')">
+            <i class="fa-solid fa-arrow-left"></i> Torna alla Home
           </button>
         </div>
-      </div>
-    </nav>
+      </section>
 
-    <!-- Banner Didattico della Modalità -->
-    <section class="game-banner">
-      <div class="game-banner-container">
-        <div class="banner-text">
-          <span class="banner-subtag" id="bannerSubtag">■ Terza Media • Moti Rivoluzionari dell'Ottocento</span>
-          <h1 class="banner-heading" id="bannerHeading">Revolution Influencer – Like alla Libertà!</h1>
-          <p class="banner-description" id="bannerDescription">
-            Ogni gruppo rappresenta un team influencer dell'Ottocento. Trasforma i proclami storici in slogan e hashtag virali: 
-            ogni like vale 1 follower. Conquista il consenso pubblico e guida la rivoluzione!
+      <!-- ========================================
+           3. VIEW: STEP 2 - CLASSE & SQUADRE (Fanta)
+           ======================================== -->
+      <section id="view-setup-class" class="view">
+        <div class="setup-header-box">
+          <span class="setup-step-badge">Passo 2 di 2</span>
+          <h2 class="setup-title">Classe &amp; Spartizione Squadre</h2>
+          <p class="setup-subtitle">
+            Seleziona la classe registrata nell'Hub e ripartisci gli studenti nelle squadre storiche (Modello Fantaletteratura).
           </p>
         </div>
-        <div class="banner-status-box">
-          <div class="status-stat">
-            <span class="stat-number" id="statFollowersTotal">0</span>
-            <span class="stat-label">Follower Distribuiti</span>
+
+        <div class="glass-card" style="max-width: 900px; margin: 0 auto; padding: 25px; border-radius: 18px; border: 1px solid var(--border-color); background: var(--bg-card);">
+          <div style="display: flex; gap: 20px; flex-wrap: wrap; align-items: flex-end; margin-bottom: 25px;">
+            <div style="flex: 1; min-width: 240px;">
+              <label style="display: block; font-weight: 700; margin-bottom: 8px; color: var(--text-main);">Classe dell'Hub / Codice Stanza:</label>
+              <select id="setupSelectClass" class="form-input" onchange="HistoryGramApp.onSetupClassChange(this.value)">
+                <!-- Popolato da JS -->
+              </select>
+            </div>
+            <div>
+              <button class="btn-secondary-action" onclick="HistoryGramApp.autoDistributeTeams()" title="Assegna automaticamente in modo equo">
+                <i class="fa-solid fa-wand-magic-sparkles"></i> Distribuzione Equilibrata
+              </button>
+            </div>
           </div>
-          <div class="status-stat">
-            <span class="stat-number" id="statApprovedPostsTotal">0</span>
-            <span class="stat-label">Post Pubblicati</span>
+
+          <h3 style="font-size: 1.15rem; margin-bottom: 15px; color: var(--text-main); display: flex; align-items: center; gap: 8px;">
+            <i class="fa-solid fa-users-gear" style="color: var(--accent-purple-light);"></i> 
+            Tavolo di Assegnazione Squadre &bull; <span id="setupSelectedModeLabel" style="color: var(--accent-gold);">Moti '800</span>
+          </h3>
+
+          <div id="setupTeamsRosterGrid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 14px; margin-bottom: 30px;">
+            <!-- Popolato dinamicamente da JS -->
           </div>
-        </div>
-      </div>
-    </section>
 
-    <!-- Barra Storie & Profili Storici / Squadre -->
-    <section class="stories-bar-section">
-      <div class="stories-bar-container">
-        <div class="stories-bar-header">
-          <span>SQUADRE & PROFILI IN GIOCO</span>
-          <small>Clicca su una squadra per consultare la scheda storica e le fonti</small>
-        </div>
-        <div class="stories-list" id="storiesList">
-          <!-- Inseriti da JS -->
-        </div>
-      </div>
-    </section>
-
-    <!-- Layout Principale a Due Colonne: Feed Live + Tabellone Punti -->
-    <main class="main-content-grid">
-
-      <!-- Colonna Sinistra: Feed Live LIM -->
-      <section class="feed-column">
-        <div class="feed-controls-bar">
-          <div class="feed-live-indicator">
-            <span class="live-dot"></span>
-            <h2>Feed Storico in Diretta</h2>
-            <span class="feed-posts-count" id="feedPostsCount">(0 post)</span>
-          </div>
-          <button class="btn-refresh" id="btnRefreshFeed" title="Aggiorna Feed">
-            <i class="fa-solid fa-arrows-rotate"></i> Aggiorna
-          </button>
-        </div>
-
-        <div class="feed-stream" id="feedStream">
-          <div class="empty-feed-placeholder" id="emptyFeedState">
-            <div class="placeholder-icon">📜</div>
-            <h3>La Piazza Storica è in attesa dei vostri proclami!</h3>
-            <p>I team stanno componendo i loro post. Quando il docente concederà l'imprimatur, appariranno qui sulla LIM.</p>
-            <button class="btn-primary-action" onclick="document.getElementById('btnOpenCreatePost').click()">
-              <i class="fa-solid fa-feather-pointed"></i> Scrivi il primo post
+          <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--border-color); padding-top: 20px; flex-wrap: wrap; gap: 12px;">
+            <button class="btn-secondary-action" onclick="HistoryGramApp.showView('view-setup-mode')">
+              <i class="fa-solid fa-arrow-left"></i> Cambia Epoca
+            </button>
+            <button class="btn-giant btn-primary" onclick="HistoryGramApp.launchGameFromSetup()">
+              <i class="fa-solid fa-rocket"></i> Lancia Partita sulla LIM &rarr;
             </button>
           </div>
         </div>
       </section>
 
-      <!-- Colonna Destra: Classifica Follower & Podio -->
-      <aside class="sidebar-column">
-        <div class="leaderboard-card">
-          <div class="card-header-styled">
-            <div class="ch-left">
-              <i class="fa-solid fa-trophy" style="color: #ffd700;"></i>
-              <h3>Tabellone Follower & Like</h3>
+      <!-- ========================================
+           4. VIEW: PARTITA & LIVE FEED SULLA LIM
+           ======================================== -->
+      <section id="view-game" class="view">
+        
+        <!-- Banner Didattico della Modalità -->
+        <section class="game-banner">
+          <div class="game-banner-container">
+            <div class="banner-text">
+              <span class="banner-subtag" id="bannerSubtag">■ Terza Media • Moti Rivoluzionari dell'Ottocento</span>
+              <h1 class="banner-heading" id="bannerHeading">Revolution Influencer – Like alla Libertà!</h1>
+              <p class="banner-description" id="bannerDescription">
+                Ogni gruppo rappresenta un team influencer dell'Ottocento. Trasforma i proclami storici in slogan e hashtag virali: 
+                ogni like vale 1 follower. Conquista il consenso pubblico e guida la rivoluzione!
+              </p>
             </div>
-            <span class="badge-live">LIVE</span>
+            <div class="banner-status-box">
+              <div class="status-stat">
+                <span class="stat-number" id="statFollowersTotal">0</span>
+                <span class="stat-label">Follower Distribuiti</span>
+              </div>
+              <div class="status-stat">
+                <span class="stat-number" id="statApprovedPostsTotal">0</span>
+                <span class="stat-label">Post Pubblicati</span>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Barra Storie & Profili Storici / Squadre -->
+        <section class="stories-bar-section">
+          <div class="stories-bar-container">
+            <div class="stories-bar-header">
+              <span>SQUADRE &amp; PROFILI IN GIOCO</span>
+              <small>Clicca su una squadra per consultare la scheda storica e le fonti</small>
+            </div>
+            <div class="stories-list" id="storiesList">
+              <!-- Inseriti da JS -->
+            </div>
+          </div>
+        </section>
+
+        <!-- Layout a Due Colonne: Feed Live + Tabellone Punti -->
+        <div class="main-content-grid">
+
+          <!-- Colonna Sinistra: Feed Live LIM -->
+          <div class="feed-column">
+            <div class="feed-controls-bar">
+              <div class="feed-live-indicator">
+                <span class="live-dot"></span>
+                <h2>Feed Storico in Diretta</h2>
+                <span class="feed-posts-count" id="feedPostsCount">(0 post)</span>
+              </div>
+              <div style="display: flex; gap: 10px;">
+                <button class="btn-primary-action" id="btnOpenCreatePost">
+                  <i class="fa-solid fa-feather-pointed"></i> Pubblica Post Squadra
+                </button>
+                <button class="btn-refresh" id="btnRefreshFeed" title="Aggiorna Feed">
+                  <i class="fa-solid fa-arrows-rotate"></i> Aggiorna
+                </button>
+              </div>
+            </div>
+
+            <div class="feed-stream" id="feedStream">
+              <div class="empty-feed-placeholder" id="emptyFeedState">
+                <div class="placeholder-icon">📜</div>
+                <h3>La Piazza Storica è in attesa dei vostri proclami!</h3>
+                <p>I team stanno componendo i loro post. Quando il docente concederà l'imprimatur, appariranno qui sulla LIM.</p>
+                <button class="btn-primary-action" onclick="document.getElementById('btnOpenCreatePost').click()">
+                  <i class="fa-solid fa-feather-pointed"></i> Scrivi il primo post
+                </button>
+              </div>
+            </div>
           </div>
 
-          <p class="card-intro-text" id="leaderboardMetricInfo">
-            Ogni like ❤️ vale 1 follower. Il docente assegna follower bonus per accuratezza e citazione di fonti!
-          </p>
+          <!-- Colonna Destra: Classifica Follower & Podio -->
+          <aside class="sidebar-column">
+            <div class="leaderboard-card">
+              <div class="card-header-styled">
+                <div class="ch-left">
+                  <i class="fa-solid fa-trophy" style="color: #ffd700;"></i>
+                  <h3>Tabellone Follower &amp; Like</h3>
+                </div>
+                <span class="badge-live">LIVE</span>
+              </div>
 
-          <!-- Podio Visivo 1°, 2°, 3° -->
-          <div class="podium-wrap" id="podiumWrap"></div>
+              <p class="card-intro-text" id="leaderboardMetricInfo">
+                Ogni like ❤️ vale 1 follower. Il docente assegna follower bonus per accuratezza e citazione di fonti!
+              </p>
 
-          <!-- Tabella Squadre -->
-          <div class="table-responsive">
-            <table class="leaderboard-table">
-              <thead>
-                <tr>
-                  <th>Pos</th>
-                  <th>Squadra / Personaggio</th>
-                  <th>Post</th>
-                  <th class="text-right" id="lbMetricColumnTitle">Follower</th>
-                </tr>
-              </thead>
-              <tbody id="leaderboardTableBody"></tbody>
-            </table>
+              <!-- Podio Visivo 1°, 2°, 3° -->
+              <div class="podium-wrap" id="podiumWrap"></div>
+
+              <!-- Tabella Squadre -->
+              <div class="table-responsive">
+                <table class="leaderboard-table">
+                  <thead>
+                    <tr>
+                      <th>Pos</th>
+                      <th>Squadra / Personaggio</th>
+                      <th>Post</th>
+                      <th class="text-right" id="lbMetricColumnTitle">Follower</th>
+                    </tr>
+                  </thead>
+                  <tbody id="leaderboardTableBody"></tbody>
+                </table>
+              </div>
+
+              <!-- Box Criteri di Valutazione -->
+              <div class="evaluation-rules-box">
+                <h4><i class="fa-solid fa-lightbulb"></i> Criteri Didattici</h4>
+                <ul id="evaluationRulesList">
+                  <li><strong>Accuratezza Storica:</strong> Idee, date e territori coerenti con la scheda.</li>
+                  <li><strong>Linguaggio Social:</strong> Slogan sintetici, hashtag persuasivi.</li>
+                  <li><strong>Zero Anacronismi:</strong> Rispetta la tecnologia e i costumi dell'epoca!</li>
+                </ul>
+              </div>
+            </div>
+          </aside>
+
+        </div>
+      </section>
+
+      <!-- ========================================
+           5. VIEW: CATTEDRA DOCENTE DEDICATA
+           ======================================== -->
+      <section id="view-docente" class="view">
+        <div class="setup-header-box">
+          <span class="setup-step-badge" style="background: rgba(59, 130, 246, 0.2); border-color: #3b82f6; color: #60a5fa;">SALA DI REGIA</span>
+          <h2 class="setup-title">Cattedra Docente &amp; Imprimatur</h2>
+          <p class="setup-subtitle">Supervisiona i post delle squadre prima della proiezione sulla LIM e gestisci la classe.</p>
+        </div>
+
+        <div class="glass-card" style="max-width: 1000px; margin: 0 auto; padding: 25px; border-radius: 20px; border: 1px solid var(--border-color); background: var(--bg-card);">
+          
+          <!-- PIN Lock se non sbloccato -->
+          <div class="pin-gate-wrap" id="viewTeacherPinAuth">
+            <i class="fa-solid fa-lock pin-gate-icon" style="font-size: 3rem; color: var(--accent-purple-light); margin-bottom: 12px;"></i>
+            <h3>Accesso Riservato al Docente</h3>
+            <p>Inserisci il PIN per accedere alla Coda di Imprimatur e alla gestione delle squadre.</p>
+            <div class="pin-form-row">
+              <input type="password" id="inputViewTeacherPin" class="form-input pin-box" placeholder="PIN (es. 1848)" maxlength="6">
+              <button class="btn-primary-action" onclick="HistoryGramApp.unlockTeacherFromView()">Sblocca Cattedra</button>
+            </div>
+            <small class="pin-hint">PIN predefinito: <strong>1848</strong> (o <strong>1517</strong>)</small>
           </div>
 
-          <!-- Box Criteri di Valutazione -->
-          <div class="evaluation-rules-box">
-            <h4><i class="fa-solid fa-lightbulb"></i> Criteri Didattici</h4>
-            <ul id="evaluationRulesList">
-              <li><strong>Accuratezza Storica:</strong> Idee, date e territori coerenti con la scheda.</li>
-              <li><strong>Linguaggio Social:</strong> Slogan sintetici, hashtag persuasivi.</li>
-              <li><strong>Zero Anacronismi:</strong> Rispetta la tecnologia e i costumi dell'epoca!</li>
-            </ul>
+          <!-- Area Docente Sbloccata -->
+          <div id="viewTeacherWorkArea" class="hidden">
+            <div class="teacher-nav-tabs" style="display: flex; gap: 10px; border-bottom: 1px solid var(--border-color); padding-bottom: 12px; margin-bottom: 20px; flex-wrap: wrap;">
+              <button class="t-nav-btn active" id="btnTabQueue" onclick="HistoryGramApp.switchTeacherTab('queue')">
+                <i class="fa-solid fa-inbox"></i> Coda Imprimatur (<span id="viewTQueueCount">0</span>)
+              </button>
+              <button class="t-nav-btn" id="btnTabTeams" onclick="HistoryGramApp.switchTeacherTab('teams')">
+                <i class="fa-solid fa-users-gear"></i> Gestione Squadre (Fanta)
+              </button>
+              <button class="t-nav-btn" id="btnTabSettings" onclick="HistoryGramApp.switchTeacherTab('settings')">
+                <i class="fa-solid fa-sliders"></i> Sessione &amp; Reset
+              </button>
+            </div>
+
+            <!-- Tab 1: Coda Imprimatur -->
+            <div id="tabDocenteQueue">
+              <div class="queue-instruction" style="background: rgba(131, 58, 180, 0.1); border: 1px solid rgba(131, 58, 180, 0.3); border-radius: 12px; padding: 14px 18px; margin-bottom: 18px;">
+                <p style="margin: 0; font-size: 0.9rem; color: var(--text-secondary);">
+                  💡 Esamina i post inviati dagli studenti. Puoi concedere l'<strong>Imprimatur</strong> per proiettarli sulla LIM, assegnare <strong>+10 Follower Bonus</strong> per merito storico o rifiutarli con note.
+                </p>
+              </div>
+              <div class="queue-cards-list" id="viewTeacherQueueList"></div>
+            </div>
+
+            <!-- Tab 2: Gestione Squadre Fanta -->
+            <div id="tabDocenteTeams" class="hidden">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 10px;">
+                <h4 style="margin: 0; color: var(--text-main);"><i class="fa-solid fa-users"></i> Ripartizione Studenti nelle Squadre</h4>
+                <button class="btn-secondary-action" onclick="HistoryGramApp.autoDistributeTeams()">
+                  <i class="fa-solid fa-wand-magic-sparkles"></i> Ridistribuisci Automaticamente
+                </button>
+              </div>
+              <div id="viewTeacherTeamsGrid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 14px; margin-bottom: 20px;"></div>
+              <div style="text-align: right;">
+                <button class="btn-primary-action" onclick="HistoryGramApp.saveTeamsFromView()">
+                  <i class="fa-solid fa-floppy-disk"></i> Salva Modifiche Squadre
+                </button>
+              </div>
+            </div>
+
+            <!-- Tab 3: Impostazioni & Reset -->
+            <div id="tabDocenteSettings" class="hidden">
+              <div class="settings-grid-layout">
+                <div class="setting-card">
+                  <h4><i class="fa-solid fa-school"></i> Codice Stanza Attivo</h4>
+                  <p>Cambia o sincronizza il codice classe per la connessione degli studenti.</p>
+                  <div class="input-btn-row">
+                    <input type="text" id="viewSettingClassCode" class="form-input" value="3B">
+                    <button class="btn-refresh" onclick="HistoryGramApp.saveClassCodeFromView()">Salva</button>
+                  </div>
+                </div>
+
+                <div class="setting-card danger-zone">
+                  <h4><i class="fa-solid fa-triangle-exclamation"></i> Azzera Partita</h4>
+                  <p>Cancella tutti i post pubblicati e azzera i follower della classe corrente.</p>
+                  <button class="btn-danger-action" onclick="HistoryGramApp.resetSession()">
+                    <i class="fa-solid fa-trash-can"></i> Resetta Sessione
+                  </button>
+                </div>
+              </div>
+            </div>
+
           </div>
         </div>
-      </aside>
+      </section>
+
+      <!-- ========================================
+           6. VIEW: REGOLAMENTO DIDATTICO
+           ======================================== -->
+      <section id="view-regolamento" class="view">
+        <div class="setup-header-box">
+          <span class="setup-step-badge">DIDATTICA &amp; REGOLE</span>
+          <h2 class="setup-title">Regolamento Ufficiale di HistoryGram</h2>
+          <p class="setup-subtitle">Come condurre l'attività in classe, criteri di valutazione e meccaniche social.</p>
+        </div>
+
+        <div class="glass-card" style="max-width: 900px; margin: 0 auto; padding: 30px; border-radius: 20px; border: 1px solid var(--border-color); background: var(--bg-card); line-height: 1.7;">
+          <h3 style="color: var(--accent-purple-light);"><i class="fa-solid fa-circle-info"></i> 1. Obiettivi Didattici</h3>
+          <p>HistoryGram è progettato per sviluppare il pensiero critico, la comprensione delle fonti e la capacità di sintesi persuasiva nella scuola secondaria di primo grado. Gli studenti calano le grandi questioni del passato nei linguaggi della comunicazione contemporanea, distinguendo tra fatti storici e propaganda.</p>
+
+          <h3 style="color: var(--accent-gold); margin-top: 25px;"><i class="fa-solid fa-star"></i> 2. Meccaniche di Voto e Follower</h3>
+          <ul style="padding-left: 20px;">
+            <li><strong>1 Like = 1 Follower:</strong> Ogni studente può votare i post avversari per premiare le tesi più convincenti.</li>
+            <li><strong>Imprimatur del Docente:</strong> Nessun post appare sulla LIM prima della convalida del docente, garantendo zero contenuti inappropriati.</li>
+            <li><strong>Bonus Cattedra (+10 Follower):</strong> Il docente può premiare la citazione corretta di date, fonti o l'eccellenza dello slogan storico.</li>
+            <li><strong>Flame del XVI Secolo:</strong> Nella modalità Riforma vs Controriforma, ogni replica a un post dottrinale riceve una valutazione a 3 stelle: <em>Accuratezza</em> ⭐, <em>Creatività</em> 💡, <em>Chiarezza</em> 🗣️.</li>
+          </ul>
+
+          <h3 style="color: #38bdf8; margin-top: 25px;"><i class="fa-solid fa-ban"></i> 3. Divieto di Anacronismi</h3>
+          <p>I post devono rispettare la cultura materiale e gli orizzonti dell'epoca rappresentata. È vietato citare tecnologie o concetti posteriori alla data storica di ambientazione.</p>
+        </div>
+
+        <footer class="view-footer-copyright">
+          <img src="https://prof-memmo.github.io/prof-memmo-gestione-siti/shared/assets/branding/patamu-badge.png" alt="Patamu" class="patamu-badge" height="52" style="height: 52px; object-fit: contain; flex-shrink: 0;" onerror="this.src='https://profmemmo.it/assets/patamu.png'">
+          <p class="footer-copy">
+            &copy; 2026 Guglielmo Piersanti. Tutti i contenuti sono protetti tramite deposito e marcatura temporale digitale su Patamu.com (CC BY-NC-ND 4.0).
+          </p>
+        </footer>
+      </section>
 
     </main>
 
-    <!-- FOOTER DI COPYRIGHT PATAMU (Art. 4 - Obbligatorio a 52px esatti) -->
-    <footer class="app-footer">
-      <div class="footer-container">
-        <div class="patamu-block">
-          <img src="https://prof-memmo.github.io/prof-memmo-gestione-siti/shared/assets/branding/patamu-badge.png" alt="Tutela Patamu" class="patamu-badge" height="52" style="height: 52px; object-fit: contain; flex-shrink: 0;" onerror="this.src='https://profmemmo.it/assets/patamu.png'">
-          <div class="patamu-text">
-            <strong>Opera protetta e depositata con marcatura temporale digitale su Patamu.com.</strong>
-            <span>Tutti i diritti d'autore, loghi, concept e grafiche appartengono al Prof. Memmo. È vietata la riproduzione non autorizzata.</span>
-          </div>
-        </div>
-        <div class="footer-links">
-          <a href="https://profmemmo.it/termini.html" target="_blank">Termini di Servizio</a>
-          <a href="https://profmemmo.it/privacy.html" target="_blank">Privacy Policy</a>
-          <a href="https://profmemmo.it/portal.html">Hub Docente</a>
-        </div>
-      </div>
-    </footer>
+    <!-- ==========================================
+         BOTTOM DOCK NAVIGATION BAR (Stile L'Oratore)
+         ========================================== -->
+    <nav class="bottom-bar">
+      <a href="#" class="tab-item active" data-view="view-welcome" onclick="HistoryGramApp.showView('view-welcome'); return false;">
+        <i class="fa-solid fa-house"></i>
+        <span>Home</span>
+      </a>
+      <a href="#" class="tab-item" data-view="view-game" onclick="HistoryGramApp.showView('view-game'); return false;">
+        <i class="fa-solid fa-gamepad"></i>
+        <span>Partita (LIM)</span>
+      </a>
+      <a href="#" class="tab-item" data-view="view-docente" onclick="HistoryGramApp.showView('view-docente'); return false;">
+        <i class="fa-solid fa-chalkboard-user"></i>
+        <span>Cattedra Docente</span>
+      </a>
+      <a href="#" class="tab-item" data-view="view-regolamento" onclick="HistoryGramApp.showView('view-regolamento'); return false;">
+        <i class="fa-solid fa-scale-balanced"></i>
+        <span>Regole</span>
+      </a>
+      <a href="#" class="tab-item" onclick="HistoryGramApp.openMiniguidaModal(); return false;">
+        <i class="fa-solid fa-circle-question"></i>
+        <span>Miniguida</span>
+      </a>
+    </nav>
 
   </div>
 
@@ -314,15 +606,15 @@
                 </label>
                 <label class="style-card" data-style="barricade">
                   <input type="radio" name="postStyle" value="barricade">
-                  <span>🚩 Barricata & Rivolta</span>
+                  <span>🚩 Barricata &amp; Rivolta</span>
                 </label>
                 <label class="style-card" data-style="proclamation">
                   <input type="radio" name="postStyle" value="proclamation">
-                  <span>📰 Torchio & Manifesto</span>
+                  <span>📰 Torchio &amp; Manifesto</span>
                 </label>
                 <label class="style-card" data-style="cathedral">
                   <input type="radio" name="postStyle" value="cathedral">
-                  <span>🏛️ Sigillo & Cattedrale</span>
+                  <span>🏛️ Sigillo &amp; Cattedrale</span>
                 </label>
               </div>
             </div>
@@ -370,103 +662,7 @@
     </div>
   </div>
 
-  <!-- Modal 2: Cattedra Docente (Regia, Coda Approvazione & Punteggi) -->
-  <div class="modal-overlay hidden" id="modalTeacher">
-    <div class="modal-box modal-lg">
-      <div class="modal-header-styled teacher-header">
-        <div>
-          <span class="modal-category-tag" style="color: #60a5fa;">SALA DI REGIA</span>
-          <h2 class="modal-title-text">Cattedra del Docente – Approvazione & Voti</h2>
-        </div>
-        <button class="btn-close-styled" id="btnCloseTeacherModal">&times;</button>
-      </div>
-
-      <div class="modal-body-padded">
-        <!-- Auth Gate con PIN (se non loggato via SSO) -->
-        <div class="pin-gate-wrap" id="teacherPinAuth">
-          <i class="fa-solid fa-lock pin-gate-icon"></i>
-          <h3>Accesso Riservato al Docente</h3>
-          <p>Inserisci il PIN per accedere alla Coda di Imprimatur e alla gestione dei voti.</p>
-          <div class="pin-form-row">
-            <input type="password" id="inputTeacherPin" class="form-input pin-box" placeholder="PIN (es. 1848)" maxlength="6">
-            <button class="btn-primary-action" id="btnUnlockTeacher">Sblocca Cattedra</button>
-          </div>
-          <small class="pin-hint">PIN predefinito: <strong>1848</strong> (o <strong>1517</strong>)</small>
-        </div>
-
-        <!-- Sezione Operativa Docente Sbloccata -->
-        <div class="teacher-workarea hidden" id="teacherWorkArea">
-          <div class="teacher-nav-tabs">
-            <button class="t-nav-btn active" data-tab="queue">
-              <i class="fa-solid fa-inbox"></i> Coda Imprimatur (<span id="tQueueCount">0</span>)
-            </button>
-            <button class="t-nav-btn" data-tab="settings">
-              <i class="fa-solid fa-sliders"></i> Gestione Sessione & Reset
-            </button>
-          </div>
-
-          <!-- Tab Coda Approvazione -->
-          <div class="t-tab-pane active" id="paneQueue">
-            <div class="queue-instruction">
-              <p>Esamina i post dei gruppi. Puoi assegnare follower bonus per la citazione di fonti e precisione storica.</p>
-            </div>
-            <div class="queue-cards-list" id="teacherQueueList"></div>
-          </div>
-
-          <!-- Tab Gestione Sessione -->
-          <div class="t-tab-pane hidden" id="paneSettings">
-            <div class="settings-grid-layout">
-              <div class="setting-card">
-                <h4><i class="fa-solid fa-school"></i> Classe Attiva</h4>
-                <p>Seleziona la classe registrata nell'Hub o inserisci un codice classe.</p>
-                <div class="input-btn-row">
-                  <input type="text" id="settingClassCode" class="form-input" value="3B">
-                  <button class="btn-refresh" id="btnSaveClassCode">Salva</button>
-                </div>
-              </div>
-
-              <div class="setting-card danger-zone">
-                <h4><i class="fa-solid fa-triangle-exclamation"></i> Azzera Sessione</h4>
-                <p>Cancella tutti i post e azzera i follower della classe corrente per avviare una nuova partita.</p>
-                <button class="btn-danger-action" id="btnResetSession">
-                  <i class="fa-solid fa-trash-can"></i> Resetta Tutto
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-
-      </div>
-    </div>
-  </div>
-
-  <!-- Modal 3: Gestione Squadre (Modello Fantaletteratura) -->
-  <div class="modal-overlay hidden" id="modalTeamsManager">
-    <div class="modal-box modal-lg">
-      <div class="modal-header-styled">
-        <div>
-          <span class="modal-category-tag">SPARTIZIONE SQUADRE</span>
-          <h2 class="modal-title-text">Gestione Squadre della Classe (Modello Fanta)</h2>
-        </div>
-        <button class="btn-close-styled" id="btnCloseTeamsModal">&times;</button>
-      </div>
-      <div class="modal-body-padded">
-        <p class="teams-manager-intro">
-          Associa gli studenti della classe ai personaggi storici. Gli studenti che entrano con il codice classe troveranno la loro squadra già pronta.
-        </p>
-        <div class="teams-grid-distribution" id="teamsGridDistribution">
-          <!-- Inserito dinamicamente da JS -->
-        </div>
-        <div class="modal-actions-right">
-          <button class="btn-primary-action" id="btnSaveTeamsDistribution">
-            <i class="fa-solid fa-floppy-disk"></i> Salva Distribuzione Squadre
-          </button>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Modal 4: Scheda Personaggio Storico Dettagliata -->
+  <!-- Modal 2: Scheda Personaggio Storico Dettagliata -->
   <div class="modal-overlay hidden" id="modalCharDetail">
     <div class="modal-box">
       <div class="modal-header-styled">
@@ -488,12 +684,12 @@
     </div>
   </div>
 
-  <!-- Modal 5: Flame / Replica di Dibattito Storico -->
+  <!-- Modal 3: Flame / Replica di Dibattito Storico -->
   <div class="modal-overlay hidden" id="modalFlameComment">
     <div class="modal-box">
       <div class="modal-header-styled">
         <div>
-          <span class="modal-category-tag" style="color: #f97316;">DIBATTITO & FLAME</span>
+          <span class="modal-category-tag" style="color: #f97316;">DIBATTITO &amp; FLAME</span>
           <h2 class="modal-title-text">Replica o Sfida Dottrinale</h2>
         </div>
         <button class="btn-close-styled" id="btnCloseCommentModal">&times;</button>
@@ -521,12 +717,42 @@
     </div>
   </div>
 
+  <!-- Modal 4: Miniguida & Guida LIM -->
+  <div class="modal-overlay hidden" id="modalMiniguida">
+    <div class="modal-box modal-lg">
+      <div class="modal-header-styled">
+        <div>
+          <span class="modal-category-tag" style="color: #c084fc;">GUIDA RAPIDA</span>
+          <h2 class="modal-title-text">Come Giocare a HistoryGram sulla LIM</h2>
+        </div>
+        <button class="btn-close-styled" onclick="HistoryGramApp.closeMiniguidaModal()">&times;</button>
+      </div>
+      <div class="modal-body-padded" style="line-height: 1.6;">
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; margin-bottom: 20px;">
+          <div style="background: var(--bg-card); border: 1px solid var(--border-color); padding: 18px; border-radius: 14px;">
+            <h4 style="color: var(--accent-purple-light); margin-top: 0;"><i class="fa-solid fa-1"></i> Prepara la Classe</h4>
+            <p style="font-size: 0.88rem; color: var(--text-muted); margin: 0;">Il docente sceglie l'epoca (Moti '800 o Riforma '500) e spartisce gli studenti nelle squadre dei personaggi storici.</p>
+          </div>
+          <div style="background: var(--bg-card); border: 1px solid var(--border-color); padding: 18px; border-radius: 14px;">
+            <h4 style="color: var(--accent-gold); margin-top: 0;"><i class="fa-solid fa-2"></i> Gli Studenti Scrivono</h4>
+            <p style="font-size: 0.88rem; color: var(--text-muted); margin: 0;">Ogni squadra crea il proprio proclama o replica dottrinale inserendo slogan persuasivo e hashtag d'epoca.</p>
+          </div>
+          <div style="background: var(--bg-card); border: 1px solid var(--border-color); padding: 18px; border-radius: 14px;">
+            <h4 style="color: #38bdf8; margin-top: 0;"><i class="fa-solid fa-3"></i> Imprimatur sulla LIM</h4>
+            <p style="font-size: 0.88rem; color: var(--text-muted); margin: 0;">Il docente convalida i post dalla Cattedra. I post approvati compaiono istantaneamente sul feed proiettato sulla LIM.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- Toast Notifiche Fluttuanti -->
   <div class="toast-container" id="toastContainer"></div>
 
   <!-- Script di logica -->
   <script src="js/characters.js"></script>
   <script src="js/historygram-service.js"></script>
+  <script src="js/music.js"></script>
   <script src="js/app.js"></script>
 </body>
 </html>
