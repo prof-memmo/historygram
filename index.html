@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>HistoryGram – Il Social Network della Storia | Prof. Memmo</title>
+  
+  <meta name="description" content="HistoryGram: Gioco educativo di storia per la scuola secondaria di primo grado. Revolution Influencer (Moti '800) e Riforma vs Controriforma (XVI Secolo).">
+  <meta name="theme-color" content="#833ab4">
+
+  <!-- Apple iOS Safari & PWA Icons (Isolate per sottodominio) -->
+  <link rel="icon" type="image/png" sizes="32x32" href="favicon.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
+  <link rel="manifest" href="manifest.json">
+  <meta name="apple-mobile-web-app-title" content="HistoryGram">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
+  <!-- Google Fonts: Inter per UI + Cinzel & Newsreader per l'eleganza storica -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700;900&family=Inter:wght@400;500;600;700;800&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,600;1,6..72,400&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <link rel="stylesheet" href="css/style.css">
+
+  <!-- Identità Gioco & Guardie Ecosistema Prof. Memmo -->
+  <script>window.HUB_GAME_ID = "historygram";</script>
+  <script src="https://prof-memmo.github.io/prof-memmo-gestione-siti/shared/hub-subscription-guard.js?v=20261009_historygram_guard"></script>
+  <script src="https://prof-memmo.github.io/prof-memmo-gestione-siti/shared/legal-modal.js?v=20261009_historygram_legal"></script>
+
+  <!-- Firebase SDKs Centralizzati (prof-memmo-hub) -->
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+  <script src="js/firebase-init.js"></script>
+</head>
+<body class="theme-dark">
+
+  <div id="app-root">
+
+    <!-- HEADER DELL'ECOSISTEMA (BRAND UNIFORME - Art. 4) -->
+    <header class="app-header" id="main-app-header">
+      <div class="header-container">
+        
+        <!-- Sinistra: Logo HistoryGram Header -->
+        <div class="header-left">
+          <img src="assets/branding/historygram-header.png" alt="Logo HistoryGram" class="header-game-logo" id="btnLogoHome">
+        </div>
+
+        <!-- Centro: Logo Avatar Prof. Memmo -->
+        <div class="header-center-logo">
+          <a href="https://profmemmo.it/portal.html" class="header-prof-logo-wrapper" title="Torna all'Hub Prof. Memmo">
+            <img src="https://prof-memmo.github.io/prof-memmo-gestione-siti/shared/assets/branding/prof-memmo/prof-memmo-avatar.png" class="header-prof-logo" alt="Prof. Memmo Logo">
+          </a>
+        </div>
+
+        <!-- Destra: Pillola Profilo Utente & Accesso Docente SSO -->
+        <div class="header-right">
+          <div class="room-pill" id="roomPillIndicator" title="Codice Classe Attiva">
+            <span class="room-dot"></span>
+            <span class="room-label">Classe:</span>
+            <strong id="displayClassCode">3B</strong>
+            <button class="btn-icon-subtle" id="btnSelectClass" title="Cambia Classe">✏️</button>
+          </div>
+
+          <div class="user-menu-container" id="header-user-container">
+            <div class="user-menu-trigger" id="header-user-menu-trigger" onclick="event.stopPropagation(); window.HistoryGramApp.toggleUserDropdown();">
+              <div class="user-avatar-circle">
+                <img id="header-user-avatar-img" src="https://prof-memmo.github.io/prof-memmo-gestione-siti/shared/assets/branding/prof-memmo/prof-memmo-avatar.png" alt="Avatar" onerror="this.src='https://prof-memmo.github.io/prof-memmo-gestione-siti/shared/assets/branding/prof-memmo/prof-memmo-avatar.png'">
+              </div>
+              <span class="user-name-label" id="header-user-name">Docente</span>
+              <i class="fa-solid fa-chevron-down" style="font-size: 0.75rem;"></i>
+            </div>
+
+            <!-- Dropdown Menu SSO -->
+            <div class="user-dropdown-menu hidden" id="userDropdownMenu">
+              <div class="dropdown-header">
+                <strong id="dropdownUserTitle">Prof. Memmo</strong>
+                <small id="dropdownUserRole">Docente Ecosistema</small>
+              </div>
+              <div class="dropdown-divider"></div>
+              <button class="dropdown-item" id="btnOpenTeacherDashboard">
+                <i class="fa-solid fa-chalkboard-user"></i> Cattedra & Approvazione
+              </button>
+              <button class="dropdown-item" id="btnOpenTeamsManager">
+                <i class="fa-solid fa-users-gear"></i> Gestione Squadre (Fanta)
+              </button>
+              <a href="https://profmemmo.it/portal.html" class="dropdown-item">
+                <i class="fa-solid fa-house"></i> Hub Principale
+              </a>
+              <div class="dropdown-divider"></div>
+              <button class="dropdown-item text-danger" id="btnUserLogout">
+                <i class="fa-solid fa-arrow-right-from-bracket"></i> Esci
+              </button>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </header>
+
+    <!-- Navigazione Modalità (Ottocento vs Cinquecento) -->
+    <nav class="sub-nav-bar">
+      <div class="sub-nav-container">
+        <div class="mode-tabs" role="tablist">
+          <button class="mode-tab active" id="tabRevolution" data-mode="revolution_1800">
+            <span class="tab-emoji">🇮🇹</span>
+            <span class="tab-title">Revolution Influencer ('800)</span>
+            <span class="tab-badge">3ª Media</span>
+          </button>
+          <button class="mode-tab" id="tabReformation" data-mode="reformation_1500">
+            <span class="tab-emoji">✝️</span>
+            <span class="tab-title">Riforma vs Controriforma ('500)</span>
+            <span class="tab-badge">2ª Media</span>
+          </button>
+        </div>
+
+        <div class="sub-nav-actions">
+          <button class="btn-primary-action" id="btnOpenCreatePost">
+            <i class="fa-solid fa-feather-pointed"></i> Pubblica Post Squadra
+          </button>
+          <button class="btn-cattedra-action" id="btnOpenTeacherModalTop">
+            <i class="fa-solid fa-shield-halved"></i> Cattedra Docente
+            <span class="badge-pending-count hidden" id="badgePendingCount">0</span>
+          </button>
+        </div>
+      </div>
+    </nav>
+
+    <!-- Banner Didattico della Modalità -->
+    <section class="game-banner">
+      <div class="game-banner-container">
+        <div class="banner-text">
+          <span class="banner-subtag" id="bannerSubtag">■ Terza Media • Moti Rivoluzionari dell'Ottocento</span>
+          <h1 class="banner-heading" id="bannerHeading">Revolution Influencer – Like alla Libertà!</h1>
+          <p class="banner-description" id="bannerDescription">
+            Ogni gruppo rappresenta un team influencer dell'Ottocento. Trasforma i proclami storici in slogan e hashtag virali: 
+            ogni like vale 1 follower. Conquista il consenso pubblico e guida la rivoluzione!
+          </p>
+        </div>
+        <div class="banner-status-box">
+          <div class="status-stat">
+            <span class="stat-number" id="statFollowersTotal">0</span>
+            <span class="stat-label">Follower Distribuiti</span>
+          </div>
+          <div class="status-stat">
+            <span class="stat-number" id="statApprovedPostsTotal">0</span>
+            <span class="stat-label">Post Pubblicati</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Barra Storie & Profili Storici / Squadre -->
+    <section class="stories-bar-section">
+      <div class="stories-bar-container">
+        <div class="stories-bar-header">
+          <span>SQUADRE & PROFILI IN GIOCO</span>
+          <small>Clicca su una squadra per consultare la scheda storica e le fonti</small>
+        </div>
+        <div class="stories-list" id="storiesList">
+          <!-- Inseriti da JS -->
+        </div>
+      </div>
+    </section>
+
+    <!-- Layout Principale a Due Colonne: Feed Live + Tabellone Punti -->
+    <main class="main-content-grid">
+
+      <!-- Colonna Sinistra: Feed Live LIM -->
+      <section class="feed-column">
+        <div class="feed-controls-bar">
+          <div class="feed-live-indicator">
+            <span class="live-dot"></span>
+            <h2>Feed Storico in Diretta</h2>
+            <span class="feed-posts-count" id="feedPostsCount">(0 post)</span>
+          </div>
+          <button class="btn-refresh" id="btnRefreshFeed" title="Aggiorna Feed">
+            <i class="fa-solid fa-arrows-rotate"></i> Aggiorna
+          </button>
+        </div>
+
+        <div class="feed-stream" id="feedStream">
+          <div class="empty-feed-placeholder" id="emptyFeedState">
+            <div class="placeholder-icon">📜</div>
+            <h3>La Piazza Storica è in attesa dei vostri proclami!</h3>
+            <p>I team stanno componendo i loro post. Quando il docente concederà l'imprimatur, appariranno qui sulla LIM.</p>
+            <button class="btn-primary-action" onclick="document.getElementById('btnOpenCreatePost').click()">
+              <i class="fa-solid fa-feather-pointed"></i> Scrivi il primo post
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- Colonna Destra: Classifica Follower & Podio -->
+      <aside class="sidebar-column">
+        <div class="leaderboard-card">
+          <div class="card-header-styled">
+            <div class="ch-left">
+              <i class="fa-solid fa-trophy" style="color: #ffd700;"></i>
+              <h3>Tabellone Follower & Like</h3>
+            </div>
+            <span class="badge-live">LIVE</span>
+          </div>
+
+          <p class="card-intro-text" id="leaderboardMetricInfo">
+            Ogni like ❤️ vale 1 follower. Il docente assegna follower bonus per accuratezza e citazione di fonti!
+          </p>
+
+          <!-- Podio Visivo 1°, 2°, 3° -->
+          <div class="podium-wrap" id="podiumWrap"></div>
+
+          <!-- Tabella Squadre -->
+          <div class="table-responsive">
+            <table class="leaderboard-table">
+              <thead>
+                <tr>
+                  <th>Pos</th>
+                  <th>Squadra / Personaggio</th>
+                  <th>Post</th>
+                  <th class="text-right" id="lbMetricColumnTitle">Follower</th>
+                </tr>
+              </thead>
+              <tbody id="leaderboardTableBody"></tbody>
+            </table>
+          </div>
+
+          <!-- Box Criteri di Valutazione -->
+          <div class="evaluation-rules-box">
+            <h4><i class="fa-solid fa-lightbulb"></i> Criteri Didattici</h4>
+            <ul id="evaluationRulesList">
+              <li><strong>Accuratezza Storica:</strong> Idee, date e territori coerenti con la scheda.</li>
+              <li><strong>Linguaggio Social:</strong> Slogan sintetici, hashtag persuasivi.</li>
+              <li><strong>Zero Anacronismi:</strong> Rispetta la tecnologia e i costumi dell'epoca!</li>
+            </ul>
+          </div>
+        </div>
+      </aside>
+
+    </main>
+
+    <!-- FOOTER DI COPYRIGHT PATAMU (Art. 4 - Obbligatorio a 52px esatti) -->
+    <footer class="app-footer">
+      <div class="footer-container">
+        <div class="patamu-block">
+          <img src="https://prof-memmo.github.io/prof-memmo-gestione-siti/shared/assets/branding/patamu-badge.png" alt="Tutela Patamu" class="patamu-badge" onerror="this.src='https://profmemmo.it/assets/patamu.png'">
+          <div class="patamu-text">
+            <strong>Opera protetta e depositata con marcatura temporale digitale su Patamu.com.</strong>
+            <span>Tutti i diritti d'autore, loghi, concept e grafiche appartengono al Prof. Memmo. È vietata la riproduzione non autorizzata.</span>
+          </div>
+        </div>
+        <div class="footer-links">
+          <a href="https://profmemmo.it/termini.html" target="_blank">Termini di Servizio</a>
+          <a href="https://profmemmo.it/privacy.html" target="_blank">Privacy Policy</a>
+          <a href="https://profmemmo.it/portal.html">Hub Docente</a>
+        </div>
+      </div>
+    </footer>
+
+  </div>
+
+  <!-- ================= MODALI PROTETTI (Art. 4: .hidden obbligatorio) ================= -->
+
+  <!-- Modal 1: Crea Post Studenti (con Mockup Smartphone Live) -->
+  <div class="modal-overlay hidden" id="modalCreatePost">
+    <div class="modal-box modal-xl">
+      <div class="modal-header-styled">
+        <div>
+          <span class="modal-category-tag">ATTIVITÀ DIDATTICA</span>
+          <h2 class="modal-title-text">Crea il tuo Post da Influencer Storico</h2>
+        </div>
+        <button class="btn-close-styled" id="btnCloseCreateModal">&times;</button>
+      </div>
+
+      <div class="modal-body-two-cols">
+        <!-- Form -->
+        <div class="form-col">
+          <form id="formCreatePost">
+            <div class="form-group">
+              <label for="selectCharacter">1. Seleziona la tua Squadra / Personaggio</label>
+              <select id="selectCharacter" class="form-input" required></select>
+            </div>
+
+            <div class="form-group">
+              <label for="inputGroupName">2. Nome del Gruppo o Componenti (Banco)</label>
+              <input type="text" id="inputGroupName" class="form-input" placeholder="Es. Team Garibaldi - Banco 3 (Sara, Matteo, Luca)" required>
+            </div>
+
+            <div class="form-group">
+              <label for="inputSlogan">3. Slogan Virale (Titolo a effetto)</label>
+              <input type="text" id="inputSlogan" class="form-input" placeholder="Es. Nessun re senza Costituzione!" maxlength="90" required>
+              <div class="chips-container" id="slogansChips"></div>
+            </div>
+
+            <div class="form-group">
+              <label for="inputText">4. Proclama / Tesi Storica (Testo del post)</label>
+              <textarea id="inputText" class="form-input" rows="4" placeholder="Esponi le motivazioni storiche, i diritti rivendicati e gli ideali..." maxlength="450" required></textarea>
+              <div class="char-count-text"><span id="charCounter">0</span>/450 caratteri</div>
+            </div>
+
+            <div class="form-group">
+              <label for="inputHashtags">5. Hashtag Storici</label>
+              <input type="text" id="inputHashtags" class="form-input" placeholder="#CostituzioneOra #UnitiperlaPatria">
+              <div class="chips-container" id="hashtagsChips"></div>
+            </div>
+
+            <div class="form-group">
+              <label>6. Cornice Visiva d'Epoca</label>
+              <div class="style-selector-grid" id="styleSelectorGrid">
+                <label class="style-card active" data-style="parchment">
+                  <input type="radio" name="postStyle" value="parchment" checked>
+                  <span>📜 Pergamena d'Epoca</span>
+                </label>
+                <label class="style-card" data-style="barricade">
+                  <input type="radio" name="postStyle" value="barricade">
+                  <span>🚩 Barricata & Rivolta</span>
+                </label>
+                <label class="style-card" data-style="proclamation">
+                  <input type="radio" name="postStyle" value="proclamation">
+                  <span>📰 Torchio & Manifesto</span>
+                </label>
+                <label class="style-card" data-style="cathedral">
+                  <input type="radio" name="postStyle" value="cathedral">
+                  <span>🏛️ Sigillo & Cattedrale</span>
+                </label>
+              </div>
+            </div>
+
+            <button type="submit" class="btn-submit-post">
+              <i class="fa-solid fa-paper-plane"></i> Invia alla Cattedra per Imprimatur
+            </button>
+            <p class="form-disclaimer">🛡️ <em>Il post apparirà sulla LIM dopo la revisione del docente.</em></p>
+          </form>
+        </div>
+
+        <!-- Anteprima Smartphone -->
+        <div class="preview-col">
+          <div class="smartphone-frame">
+            <div class="phone-speaker"></div>
+            <div class="phone-screen-inner">
+              <div class="phone-status-bar">
+                <span>HistoryGram</span>
+                <span>18:48</span>
+              </div>
+              <div class="preview-card-wrap">
+                <div class="preview-card-head">
+                  <span class="preview-avatar-icon" id="prevAvatar">🕯️</span>
+                  <div>
+                    <strong id="prevCharName">Il Carbonaro</strong>
+                    <small id="prevGroupName">Team Studenti</small>
+                  </div>
+                </div>
+                <div class="preview-banner-styled style-parchment" id="prevBanner">
+                  <span id="prevSlogan">La libertà si accende nell'ombra.</span>
+                </div>
+                <div class="preview-body-styled">
+                  <p id="prevText">Scrivi il tuo proclama per visualizzare l'anteprima in tempo reale...</p>
+                  <div class="preview-hashtags" id="prevTags">#CostituzioneOra</div>
+                </div>
+                <div class="preview-footer-styled">
+                  <span>❤️ 0 Like</span>
+                  <span>💬 0 Commenti</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal 2: Cattedra Docente (Regia, Coda Approvazione & Punteggi) -->
+  <div class="modal-overlay hidden" id="modalTeacher">
+    <div class="modal-box modal-lg">
+      <div class="modal-header-styled teacher-header">
+        <div>
+          <span class="modal-category-tag" style="color: #60a5fa;">SALA DI REGIA</span>
+          <h2 class="modal-title-text">Cattedra del Docente – Approvazione & Voti</h2>
+        </div>
+        <button class="btn-close-styled" id="btnCloseTeacherModal">&times;</button>
+      </div>
+
+      <div class="modal-body-padded">
+        <!-- Auth Gate con PIN (se non loggato via SSO) -->
+        <div class="pin-gate-wrap" id="teacherPinAuth">
+          <i class="fa-solid fa-lock pin-gate-icon"></i>
+          <h3>Accesso Riservato al Docente</h3>
+          <p>Inserisci il PIN per accedere alla Coda di Imprimatur e alla gestione dei voti.</p>
+          <div class="pin-form-row">
+            <input type="password" id="inputTeacherPin" class="form-input pin-box" placeholder="PIN (es. 1848)" maxlength="6">
+            <button class="btn-primary-action" id="btnUnlockTeacher">Sblocca Cattedra</button>
+          </div>
+          <small class="pin-hint">PIN predefinito: <strong>1848</strong> (o <strong>1517</strong>)</small>
+        </div>
+
+        <!-- Sezione Operativa Docente Sbloccata -->
+        <div class="teacher-workarea hidden" id="teacherWorkArea">
+          <div class="teacher-nav-tabs">
+            <button class="t-nav-btn active" data-tab="queue">
+              <i class="fa-solid fa-inbox"></i> Coda Imprimatur (<span id="tQueueCount">0</span>)
+            </button>
+            <button class="t-nav-btn" data-tab="settings">
+              <i class="fa-solid fa-sliders"></i> Gestione Sessione & Reset
+            </button>
+          </div>
+
+          <!-- Tab Coda Approvazione -->
+          <div class="t-tab-pane active" id="paneQueue">
+            <div class="queue-instruction">
+              <p>Esamina i post dei gruppi. Puoi assegnare follower bonus per la citazione di fonti e precisione storica.</p>
+            </div>
+            <div class="queue-cards-list" id="teacherQueueList"></div>
+          </div>
+
+          <!-- Tab Gestione Sessione -->
+          <div class="t-tab-pane hidden" id="paneSettings">
+            <div class="settings-grid-layout">
+              <div class="setting-card">
+                <h4><i class="fa-solid fa-school"></i> Classe Attiva</h4>
+                <p>Seleziona la classe registrata nell'Hub o inserisci un codice classe.</p>
+                <div class="input-btn-row">
+                  <input type="text" id="settingClassCode" class="form-input" value="3B">
+                  <button class="btn-refresh" id="btnSaveClassCode">Salva</button>
+                </div>
+              </div>
+
+              <div class="setting-card danger-zone">
+                <h4><i class="fa-solid fa-triangle-exclamation"></i> Azzera Sessione</h4>
+                <p>Cancella tutti i post e azzera i follower della classe corrente per avviare una nuova partita.</p>
+                <button class="btn-danger-action" id="btnResetSession">
+                  <i class="fa-solid fa-trash-can"></i> Resetta Tutto
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal 3: Gestione Squadre (Modello Fantaletteratura) -->
+  <div class="modal-overlay hidden" id="modalTeamsManager">
+    <div class="modal-box modal-lg">
+      <div class="modal-header-styled">
+        <div>
+          <span class="modal-category-tag">SPARTIZIONE SQUADRE</span>
+          <h2 class="modal-title-text">Gestione Squadre della Classe (Modello Fanta)</h2>
+        </div>
+        <button class="btn-close-styled" id="btnCloseTeamsModal">&times;</button>
+      </div>
+      <div class="modal-body-padded">
+        <p class="teams-manager-intro">
+          Associa gli studenti della classe ai personaggi storici. Gli studenti che entrano con il codice classe troveranno la loro squadra già pronta.
+        </p>
+        <div class="teams-grid-distribution" id="teamsGridDistribution">
+          <!-- Inserito dinamicamente da JS -->
+        </div>
+        <div class="modal-actions-right">
+          <button class="btn-primary-action" id="btnSaveTeamsDistribution">
+            <i class="fa-solid fa-floppy-disk"></i> Salva Distribuzione Squadre
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal 4: Scheda Personaggio Storico Dettagliata -->
+  <div class="modal-overlay hidden" id="modalCharDetail">
+    <div class="modal-box">
+      <div class="modal-header-styled">
+        <div class="char-detail-heading">
+          <div class="char-detail-avatar-circle" id="mCharAvatar">🕯️</div>
+          <div>
+            <h2 class="modal-title-text" id="mCharName">Il Carbonaro</h2>
+            <span class="char-faction-tag" id="mCharFaction">Italia (1820-21)</span>
+          </div>
+        </div>
+        <button class="btn-close-styled" id="btnCloseCharModal">&times;</button>
+      </div>
+      <div class="modal-body-padded char-detail-content" id="mCharBody"></div>
+      <div class="modal-actions-right">
+        <button class="btn-primary-action" id="btnSelectCharFromModal">
+          <i class="fa-solid fa-pen-nib"></i> Scrivi Post per questa Squadra
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal 5: Flame / Replica di Dibattito Storico -->
+  <div class="modal-overlay hidden" id="modalFlameComment">
+    <div class="modal-box">
+      <div class="modal-header-styled">
+        <div>
+          <span class="modal-category-tag" style="color: #f97316;">DIBATTITO & FLAME</span>
+          <h2 class="modal-title-text">Replica o Sfida Dottrinale</h2>
+        </div>
+        <button class="btn-close-styled" id="btnCloseCommentModal">&times;</button>
+      </div>
+      <div class="modal-body-padded">
+        <div class="target-quote-card" id="commentTargetQuote"></div>
+        <form id="formAddComment">
+          <div class="form-group">
+            <label for="selectCommentChar">Con quale voce storica ribatti?</label>
+            <select id="selectCommentChar" class="form-input" required></select>
+          </div>
+          <div class="form-group">
+            <label for="inputCommentAuthor">Nome Gruppo / Studente</label>
+            <input type="text" id="inputCommentAuthor" class="form-input" placeholder="Es. Team Zwingli - Banco 2" required>
+          </div>
+          <div class="form-group">
+            <label for="inputCommentText">Argomentazione Storica di Risposta</label>
+            <textarea id="inputCommentText" class="form-input" rows="3" placeholder="Sostieni la tua replica con tesi o argomenti storici corretti..." maxlength="300" required></textarea>
+          </div>
+          <button type="submit" class="btn-submit-post">
+            <i class="fa-solid fa-comment-dots"></i> Pubblica Replica nel Thread
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notifiche Fluttuanti -->
+  <div class="toast-container" id="toastContainer"></div>
+
+  <!-- Script di logica -->
+  <script src="js/characters.js"></script>
+  <script src="js/historygram-service.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
