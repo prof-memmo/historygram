@@ -11,21 +11,21 @@ const AudioEngine = {
   audioEl: null,
 
   tracks: [
-    { title: "Aventure - Close Friends", src: "https://loratore.profmemmo.it/assets/audio/Aventure%20-%20Close%20Friends%20(freetouse.com).mp3" },
-    { title: "Burgundy - Chances", src: "https://loratore.profmemmo.it/assets/audio/Burgundy%20-%20Chances%20(freetouse.com).mp3" },
-    { title: "Epic Spectrum - Forgiveness", src: "https://loratore.profmemmo.it/assets/audio/Epic%20Spectrum%20-%20Forgiveness%20(freetouse.com).mp3" },
-    { title: "Hazelwood - At Ease", src: "https://loratore.profmemmo.it/assets/audio/Hazelwood%20-%20At%20Ease%20(freetouse.com).mp3" },
-    { title: "Hazelwood - Coming Of Age", src: "https://loratore.profmemmo.it/assets/audio/Hazelwood%20-%20Coming%20Of%20Age%20(freetouse.com).mp3" },
-    { title: "Johny Grimes - Senseless", src: "https://loratore.profmemmo.it/assets/audio/Johny%20Grimes%20-%20Senseless%20(freetouse.com).mp3" },
-    { title: "Nebulite - A New Day", src: "https://loratore.profmemmo.it/assets/audio/Nebulite%20-%20A%20New%20Day%20(freetouse.com).mp3" },
-    { title: "Nebulite - Kyoto", src: "https://loratore.profmemmo.it/assets/audio/Nebulite%20-%20Kyoto%20(freetouse.com).mp3" },
-    { title: "Nebulite - Mountain", src: "https://loratore.profmemmo.it/assets/audio/Nebulite%20-%20Mountain%20(freetouse.com).mp3" },
-    { title: "Piki - 9am, meeeh", src: "https://loratore.profmemmo.it/assets/audio/Piki%20-%209am,%20meeeh%20(freetouse.com).mp3" },
-    { title: "Pufino - Soaked", src: "https://loratore.profmemmo.it/assets/audio/Pufino%20-%20Soaked%20(freetouse.com).mp3" },
-    { title: "Waesto - Morning", src: "https://loratore.profmemmo.it/assets/audio/Waesto%20-%20Morning%20(freetouse.com).mp3" },
-    { title: "Zambolino - Smooth Place", src: "https://loratore.profmemmo.it/assets/audio/Zambolino%20-%20Smooth%20Place%20(freetouse.com).mp3" },
-    { title: "massobeats - peach prosecco", src: "https://loratore.profmemmo.it/assets/audio/massobeats%20-%20peach%20prosecco%20(freetouse.com).mp3" },
-    { title: "tubebackr & Filo - Morning Sun", src: "https://loratore.profmemmo.it/assets/audio/tubebackr%20&%20Filo%20Starquez%20-%20Morning%20Sun%20(freetouse.com).mp3" }
+    { title: "Aventure - Close Friends", src: "https://prof-memmo.github.io/l-oratore/assets/audio/Aventure%20-%20Close%20Friends%20(freetouse.com).mp3" },
+    { title: "Burgundy - Chances", src: "https://prof-memmo.github.io/l-oratore/assets/audio/Burgundy%20-%20Chances%20(freetouse.com).mp3" },
+    { title: "Epic Spectrum - Forgiveness", src: "https://prof-memmo.github.io/l-oratore/assets/audio/Epic%20Spectrum%20-%20Forgiveness%20(freetouse.com).mp3" },
+    { title: "Hazelwood - At Ease", src: "https://prof-memmo.github.io/l-oratore/assets/audio/Hazelwood%20-%20At%20Ease%20(freetouse.com).mp3" },
+    { title: "Hazelwood - Coming Of Age", src: "https://prof-memmo.github.io/l-oratore/assets/audio/Hazelwood%20-%20Coming%20Of%20Age%20(freetouse.com).mp3" },
+    { title: "Johny Grimes - Senseless", src: "https://prof-memmo.github.io/l-oratore/assets/audio/Johny%20Grimes%20-%20Senseless%20(freetouse.com).mp3" },
+    { title: "Nebulite - A New Day", src: "https://prof-memmo.github.io/l-oratore/assets/audio/Nebulite%20-%20A%20New%20Day%20(freetouse.com).mp3" },
+    { title: "Nebulite - Kyoto", src: "https://prof-memmo.github.io/l-oratore/assets/audio/Nebulite%20-%20Kyoto%20(freetouse.com).mp3" },
+    { title: "Nebulite - Mountain", src: "https://prof-memmo.github.io/l-oratore/assets/audio/Nebulite%20-%20Mountain%20(freetouse.com).mp3" },
+    { title: "Piki - 9am, meeeh", src: "https://prof-memmo.github.io/l-oratore/assets/audio/Piki%20-%209am,%20meeeh%20(freetouse.com).mp3" },
+    { title: "Pufino - Soaked", src: "https://prof-memmo.github.io/l-oratore/assets/audio/Pufino%20-%20Soaked%20(freetouse.com).mp3" },
+    { title: "Waesto - Morning", src: "https://prof-memmo.github.io/l-oratore/assets/audio/Waesto%20-%20Morning%20(freetouse.com).mp3" },
+    { title: "Zambolino - Smooth Place", src: "https://prof-memmo.github.io/l-oratore/assets/audio/Zambolino%20-%20Smooth%20Place%20(freetouse.com).mp3" },
+    { title: "massobeats - peach prosecco", src: "https://prof-memmo.github.io/l-oratore/assets/audio/massobeats%20-%20peach%20prosecco%20(freetouse.com).mp3" },
+    { title: "tubebackr & Filo - Morning Sun", src: "https://prof-memmo.github.io/l-oratore/assets/audio/tubebackr%20&%20Filo%20Starquez%20-%20Morning%20Sun%20(freetouse.com).mp3" }
   ],
 
   init() {
