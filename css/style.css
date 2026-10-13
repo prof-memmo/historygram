@@ -2485,32 +2485,24 @@ h1, h2, h3, h4, h5, h6 {
    ========================================================================== */
 body.view-no-scroll {
   overflow: hidden !important;
-  height: 100vh !important;
 }
 
 body.view-no-scroll .main-views-container {
-  padding: 4px 16px 72px 16px !important;
-  height: 100vh !important;
-  max-height: 100vh !important;
-  overflow: hidden !important;
-  display: flex !important;
-  flex-direction: column !important;
+  padding: 8px 16px 72px 16px !important;
   box-sizing: border-box !important;
 }
 
 #view-setup-class.active {
   display: flex;
   flex-direction: column;
-  gap: 6px;
-  height: 100%;
-  max-height: 100%;
-  overflow: hidden;
-  flex: 1;
-  min-height: 0;
+  gap: 8px;
+  max-width: 1400px;
+  margin: 0 auto;
+  width: 100%;
 }
 
 .setup-header-box.lim-setup-header {
-  padding: 4px 12px;
+  padding: 6px 14px;
   margin: 0;
   flex-shrink: 0;
   border-radius: var(--radius-md);
@@ -2522,7 +2514,7 @@ body.view-no-scroll .main-views-container {
   background: #ffffff;
   border: 1.5px solid var(--border-color);
   border-radius: var(--radius-md);
-  padding: 6px 10px;
+  padding: 8px 12px;
   box-shadow: var(--shadow-sm);
   flex-shrink: 0;
 }
@@ -2531,8 +2523,8 @@ body.view-no-scroll .main-views-container {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 4px;
-  padding-bottom: 2px;
+  margin-bottom: 6px;
+  padding-bottom: 3px;
   border-bottom: 1px solid var(--border-color);
 }
 
@@ -2563,26 +2555,18 @@ body.view-no-scroll .main-views-container {
   background: #ffffff;
   border: 1.5px solid var(--border-color);
   border-radius: var(--radius-sm);
-  padding: 4px 8px;
+  padding: 6px 10px;
   min-height: 38px;
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 6px;
-  text-align: left;
+  justify-content: center;
+  gap: 8px;
+  text-align: center;
   cursor: pointer;
   transition: all 0.18s cubic-bezier(0.4, 0, 0.2, 1);
   box-shadow: 0 1px 3px rgba(0,0,0,0.04);
   position: relative;
   user-select: none;
-}
-
-.pawn-card-left {
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  min-width: 0;
-  flex: 1;
 }
 
 .pawn-card:hover {
@@ -2610,16 +2594,9 @@ body.view-no-scroll .main-views-container {
   transform: scale(1.10);
 }
 
-.pawn-card-info-col {
-  display: flex;
-  flex-direction: column;
-  min-width: 0;
-  overflow: hidden;
-}
-
 .pawn-card-title {
   font-family: var(--font-heading);
-  font-size: 0.76rem;
+  font-size: 0.78rem;
   font-weight: 800;
   color: var(--text-main);
   text-transform: uppercase;
@@ -2631,60 +2608,22 @@ body.view-no-scroll .main-views-container {
   text-overflow: ellipsis;
 }
 
-.pawn-card-members-preview {
-  font-size: 0.65rem;
-  color: var(--text-muted);
-  font-weight: 600;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.pawn-count-badge {
-  font-size: 0.68rem;
-  font-weight: 700;
-  padding: 1px 6px;
-  border-radius: 999px;
-  white-space: nowrap;
-  flex-shrink: 0;
-  display: inline-flex;
-  align-items: center;
-  gap: 3px;
-}
-
-.pawn-count-badge.active {
-  background: #ecfdf5;
-  color: var(--accent-green-dark);
-  border: 1px solid #a7f3d0;
-}
-
-.pawn-count-badge.empty {
-  background: #f8fafc;
-  color: #94a3b8;
-  border: 1px solid #e2e8f0;
-}
-
 /* SEZIONE 2: ASSEGNAZIONE MEMBRI SQUADRA ATTIVA */
 .setup-members-panel {
   background: #ffffff;
   border: 1.5px solid var(--border-color);
   border-radius: var(--radius-md);
-  padding: 6px 10px;
+  padding: 8px 12px;
   box-shadow: var(--shadow-sm);
-  flex: 1;
-  min-height: 0;
-  max-height: 200px;
   display: flex;
   flex-direction: column;
-  overflow: hidden;
+  gap: 6px;
 }
 
 .setup-members-workbench {
   display: flex;
   flex-direction: column;
-  height: 100%;
-  min-height: 0;
-  gap: 4px;
+  gap: 6px;
 }
 
 .members-workbench-header {
@@ -2693,7 +2632,7 @@ body.view-no-scroll .main-views-container {
   align-items: center;
   flex-wrap: wrap;
   gap: 6px;
-  padding-bottom: 4px;
+  padding-bottom: 5px;
   border-bottom: 1px solid var(--border-color);
   flex-shrink: 0;
 }
@@ -2794,31 +2733,23 @@ body.view-no-scroll .main-views-container {
 .members-chips-section {
   display: flex;
   flex-direction: column;
-  gap: 3px;
-  flex: 1;
-  min-height: 0;
-  overflow: hidden;
+  gap: 4px;
 }
 
 .members-chips-grid {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  align-content: flex-start;
   gap: 6px;
-  padding: 6px;
+  padding: 8px;
   border: 1px dashed var(--border-color);
   border-radius: var(--radius-sm);
   background: #f8fafc;
-  flex: 1;
-  min-height: 50px;
-  max-height: 100%;
-  overflow-y: auto;
 }
 
 .setup-footer-nav.lim-footer-nav {
-  padding: 6px 0 2px 0;
-  margin: 0;
+  padding: 4px 0 0 0;
+  margin-top: 2px;
   flex-shrink: 0;
   display: flex;
   justify-content: space-between;

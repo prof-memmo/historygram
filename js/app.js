@@ -395,30 +395,17 @@
   function renderPawnsGrid() {
     if (!DOM.pawnsGridContainer) return;
     const chars = HISTORY_MODES[AppState.currentMode].characters;
-    const assignments = (AppState.sessionData && AppState.sessionData.teamAssignments) || {};
 
     DOM.pawnsGridContainer.innerHTML = chars.map(c => {
       const isSelected = (c.id === AppState.selectedSetupFactionId);
-      const teamList = assignments[c.id] || [];
-      const count = teamList.length;
-      const countBadge = count > 0 
-        ? `<span class="pawn-count-badge active" title="${count} studenti: ${escapeHtml(teamList.join(', '))}"><i class="fa-solid fa-users"></i> ${count}</span>`
-        : `<span class="pawn-count-badge empty" title="Nessuno studente"><i class="fa-solid fa-user-plus"></i> 0</span>`;
-      const membersPreview = count > 0 ? escapeHtml(teamList.join(', ')) : 'Nessun membro';
 
       return `
         <div class="pawn-card ${isSelected ? 'selected' : ''}" 
              data-char-id="${c.id}"
              onclick="HistoryGramApp.selectPawnFaction('${c.id}')"
-             title="${escapeHtml(c.name)}: ${count} studenti">
-          <div class="pawn-card-left">
-            <span class="pawn-card-avatar">${c.avatar}</span>
-            <div class="pawn-card-info-col">
-              <span class="pawn-card-title">${escapeHtml(c.name)}</span>
-              <span class="pawn-card-members-preview">${membersPreview}</span>
-            </div>
-          </div>
-          ${countBadge}
+             title="${escapeHtml(c.name)}">
+          <span class="pawn-card-avatar">${c.avatar}</span>
+          <span class="pawn-card-title">${escapeHtml(c.name)}</span>
         </div>
       `;
     }).join('');
