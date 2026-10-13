@@ -372,13 +372,22 @@
   /* ================= CONTROLLO SSO UTENTE ================= */
   function checkSSOUser() {
     try {
-      const ssoName = localStorage.getItem('hub_user_name') || localStorage.getItem('fanta_user_name');
-      const ssoAvatar = localStorage.getItem('hub_user_avatar') || localStorage.getItem('fanta_user_avatar');
+      const ssoName = localStorage.getItem('hub_user_name') || localStorage.getItem('fanta_user_name') || localStorage.getItem('loratore_user_name');
+      let ssoAvatar = localStorage.getItem('hub_user_avatar') || localStorage.getItem('fanta_user_avatar') || localStorage.getItem('loratore_user_avatar');
       const ssoRole = localStorage.getItem('hub_user_role') || 'docente';
 
+      try {
+        const pmUser = JSON.parse(localStorage.getItem('pm_oratore_user') || '{}');
+        if (pmUser.avatar && !ssoAvatar) ssoAvatar = pmUser.avatar;
+        if (pmUser.name && !ssoName) {
+          if (DOM.headerUserName) DOM.headerUserName.textContent = pmUser.name.toUpperCase();
+          if (DOM.dropdownUserName) DOM.dropdownUserName.textContent = pmUser.name.toUpperCase();
+        }
+      } catch (e) {}
+
       if (ssoName) {
-        if (DOM.headerUserName) DOM.headerUserName.textContent = ssoName;
-        if (DOM.dropdownUserName) DOM.dropdownUserName.textContent = ssoName;
+        if (DOM.headerUserName) DOM.headerUserName.textContent = ssoName.toUpperCase();
+        if (DOM.dropdownUserName) DOM.dropdownUserName.textContent = ssoName.toUpperCase();
         const roleLabel = (ssoRole === 'docente' || ssoRole === 'admin') ? 'AMMINISTRATORE' : 'STUDENTE';
         if (DOM.headerUserRole) DOM.headerUserRole.textContent = roleLabel;
         if (DOM.dropdownUserRoleSub) DOM.dropdownUserRoleSub.textContent = roleLabel;
@@ -651,25 +660,74 @@
     }
 
     // Render Tabella
-    DOM.leaderboardTableBody.innerHTML = '';
-    ranking.forEach((team, idx) => {
-      const tr = document.createElement('tr');
-      tr.innerHTML = `
-        <td style="font-weight: 800; color: ${idx === 0 ? 'var(--accent-gold)' : 'var(--text-muted)'};">#${idx + 1}</td>
-        <td>
-          <div style="display: flex; align-items: center; gap: 8px;">
-            <span>${team.avatar}</span>
-            <div>
-              <strong>${escapeHtml(team.name)}</strong>
-              <small style="display: block; color: var(--text-muted); font-size: 0.72rem;">${escapeHtml(team.faction)}</small>
+    if (DOM.leaderboardTableBody) {
+      DOM.leaderboardTableBody.innerHTML = '';
+      ranking.forEach((team, idx) => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td style="font-weight: 800; color: ${idx === 0 ? 'var(--accent-gold)' : 'var(--text-muted)'};">#${idx + 1}</td>
+          <td>
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <span>${team.avatar}</span>
+              <div>
+                <strong>${escapeHtml(team.name)}</strong>
+                <small style="display: block; color: var(--text-muted); font-size: 0.72rem;">${escapeHtml(team.faction)}</small>
+              </div>
             </div>
+          </td>
+          <td>${team.postsCount}</td>
+          <td class="text-right font-bold" style="color: var(--accent-gold); font-size: 1.05rem;">${team.followers}</td>
+        `;
+        DOM.leaderboardTableBody.appendChild(tr);
+      });
+    }
+
+    // Render Tabella Vista Dedicata "Classifica"
+    const fullTableBody = document.getElementById('leaderboardFullTableBody');
+    if (fullTableBody) {
+      fullTableBody.innerHTML = '';
+      ranking.forEach((team, idx) => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td style="font-weight: 800; text-align: center; color: ${idx === 0 ? 'var(--accent-gold)' : 'var(--text-muted)'}; font-size: 1.1rem;">#${idx + 1}</td>
+          <td>
+            <div style="display: flex; align-items: center; gap: 10px;">
+              <span style="font-size: 1.3rem;">${team.avatar}</span>
+              <div>
+                <strong style="font-size: 1rem; color: var(--text-main);">${escapeHtml(team.name)}</strong>
+                <small style="display: block; color: var(--text-muted); font-size: 0.75rem;">${escapeHtml(team.faction)}</small>
+              </div>
+            </div>
+          </td>
+          <td style="text-align: center; font-weight: 600;">${team.postsCount}</td>
+          <td style="text-align: center; color: var(--accent-red); font-weight: 700;">${team.likes || 0}</td>
+          <td style="text-align: center; color: var(--accent-blue); font-weight: 700;">${team.commentsCount || 0}</td>
+          <td style="text-align: right; font-weight: 800; color: var(--accent-green); font-size: 1.15rem;">${team.followers}</td>
+        `;
+        fullTableBody.appendChild(tr);
+      });
+    }
+
+    // Render Podio Vista Dedicata
+    const fullPodium = document.getElementById('leaderboardFullPodiumWrap');
+    if (fullPodium) {
+      fullPodium.innerHTML = '';
+      const top3 = ranking.slice(0, 3);
+      top3.forEach((team, idx) => {
+        const place = idx + 1;
+        const col = document.createElement('div');
+        col.className = `podium-col place-${place}`;
+        col.innerHTML = `
+          <div class="podium-avatar-ring" style="font-size: 1.8rem;">${team.avatar}</div>
+          <span class="podium-name">${escapeHtml(team.name)}</span>
+          <div class="podium-pillar">
+            <span class="podium-rank-badge">#${place}</span>
+            <span class="podium-score">${team.followers} Follower</span>
           </div>
-        </td>
-        <td>${team.postsCount}</td>
-        <td class="text-right font-bold" style="color: var(--accent-gold); font-size: 1.05rem;">${team.followers}</td>
-      `;
-      DOM.leaderboardTableBody.appendChild(tr);
-    });
+        `;
+        fullPodium.appendChild(col);
+      });
+    }
   }
 
   /* ================= CATTEDRA DOCENTE DEDICATA ================= */
