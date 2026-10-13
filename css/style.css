@@ -2481,17 +2481,10 @@ h1, h2, h3, h4, h5, h6 {
    PASSO 2: SMISTAMENTO FAZIONI & SQUADRE (SEMIFICATO, INTUITIVO & LIM-READY)
    ========================================================================== */
 /* ==========================================================================
-   PASSO 2: SMISTAMENTO FAZIONI & SQUADRE (ZERO-SCROLL PER LIM & LAPTOP)
+   PASSO 2: SMISTAMENTO FAZIONI & SQUADRE (RESPONSIVE: ZERO-SCROLL LIM, SCROLL MOBILE)
    ========================================================================== */
-body.view-no-scroll {
-  overflow: hidden !important;
-}
 
-body.view-no-scroll .main-views-container {
-  padding: 8px 16px 72px 16px !important;
-  box-sizing: border-box !important;
-}
-
+/* Regole Generali Passo 2 */
 #view-setup-class.active {
   display: flex;
   flex-direction: column;
@@ -2555,8 +2548,8 @@ body.view-no-scroll .main-views-container {
   background: #ffffff;
   border: 1.5px solid var(--border-color);
   border-radius: var(--radius-sm);
-  padding: 6px 10px;
-  min-height: 38px;
+  padding: 8px 10px;
+  min-height: 40px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -2613,17 +2606,17 @@ body.view-no-scroll .main-views-container {
   background: #ffffff;
   border: 1.5px solid var(--border-color);
   border-radius: var(--radius-md);
-  padding: 8px 12px;
+  padding: 10px 14px;
   box-shadow: var(--shadow-sm);
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 8px;
 }
 
 .setup-members-workbench {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 8px;
 }
 
 .members-workbench-header {
@@ -2632,7 +2625,7 @@ body.view-no-scroll .main-views-container {
   align-items: center;
   flex-wrap: wrap;
   gap: 6px;
-  padding-bottom: 5px;
+  padding-bottom: 6px;
   border-bottom: 1px solid var(--border-color);
   flex-shrink: 0;
 }
@@ -2640,21 +2633,21 @@ body.view-no-scroll .main-views-container {
 .members-active-team-info {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
   min-width: 0;
   flex: 1;
 }
 
 .members-active-avatar {
-  width: 28px;
-  height: 28px;
+  width: 32px;
+  height: 32px;
   border-radius: 50%;
   background: #f8fafc;
   border: 2px solid var(--accent-green);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.15rem;
+  font-size: 1.25rem;
   flex-shrink: 0;
 }
 
@@ -2673,7 +2666,7 @@ body.view-no-scroll .main-views-container {
 
 .members-active-name {
   font-family: var(--font-heading);
-  font-size: 0.88rem;
+  font-size: 0.90rem;
   font-weight: 800;
   color: var(--text-main);
   text-transform: uppercase;
@@ -2733,29 +2726,122 @@ body.view-no-scroll .main-views-container {
 .members-chips-section {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 6px;
 }
 
 .members-chips-grid {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 6px;
-  padding: 8px;
-  border: 1px dashed var(--border-color);
-  border-radius: var(--radius-sm);
-  background: #f8fafc;
+  gap: 8px;
+  padding: 4px 0;
+  background: transparent;
+  border: none;
 }
 
 .setup-footer-nav.lim-footer-nav {
-  padding: 4px 0 0 0;
-  margin-top: 2px;
+  padding: 6px 0 0 0;
+  margin-top: auto;
   flex-shrink: 0;
   display: flex;
   justify-content: space-between;
   align-items: center;
   position: relative;
   z-index: 10;
+}
+
+/* --- 1. SCHERMI GRANDI (DESKTOP & LIM: MIN-WIDTH 1024px E MIN-HEIGHT 650px) --- */
+/* Zero-scroll, occupa tutta l'altezza utile senza spazi vuoti giganti */
+@media (min-width: 1024px) and (min-height: 650px) {
+  body.view-no-scroll {
+    overflow: hidden !important;
+    height: 100vh !important;
+  }
+
+  body.view-no-scroll .main-views-container {
+    padding: 8px 16px 72px 16px !important;
+    height: calc(100vh - 75px) !important;
+    max-height: calc(100vh - 75px) !important;
+    box-sizing: border-box !important;
+    overflow: hidden !important;
+    display: flex !important;
+    flex-direction: column !important;
+  }
+
+  body.view-no-scroll #view-setup-class.active {
+    height: 100%;
+    max-height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 8px;
+  }
+
+  body.view-no-scroll .setup-members-panel {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+  }
+
+  body.view-no-scroll .setup-members-workbench {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+  }
+
+  body.view-no-scroll .members-chips-section {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+  }
+
+  body.view-no-scroll .members-chips-grid {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    align-content: flex-start;
+  }
+}
+
+/* --- 2. SCHERMI RIDOTTI (SMARTPHONE, TABLET & SCHERMI BASSI) --- */
+/* Lo scroll verticale deve esserci liberamente */
+@media (max-width: 1023px), (max-height: 649px) {
+  body.view-no-scroll {
+    overflow-y: auto !important;
+    height: auto !important;
+  }
+
+  body.view-no-scroll .main-views-container {
+    padding: 10px 14px 84px 14px !important;
+    height: auto !important;
+    max-height: none !important;
+    overflow: visible !important;
+  }
+
+  #view-setup-class.active {
+    height: auto !important;
+    min-height: auto !important;
+    gap: 12px;
+  }
+
+  .setup-members-panel {
+    height: auto !important;
+    max-height: none !important;
+  }
+
+  .members-chips-grid {
+    height: auto !important;
+    max-height: none !important;
+    overflow: visible !important;
+  }
+
+  .setup-footer-nav.lim-footer-nav {
+    margin-top: 14px;
+    padding-bottom: 16px;
+  }
 }
 
 /* POP-UP GRANDE SCHEDA FAZIONE */
