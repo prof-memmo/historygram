@@ -289,7 +289,15 @@
     DOM.setupSelectClass.innerHTML = '<option value="">Caricamento classi...</option>';
     let classes = [];
     if (window.HistoryGramService) {
-      classes = await window.HistoryGramService.getTeacherClasses(AppState.teacherUser ? AppState.teacherUser.uid : null);
+      classes = await window.HistoryGramService.getTeacherClasses(AppState.teacherUser || (window.fbAuth && window.fbAuth.currentUser));
+    }
+
+    if (classes && classes.length > 0) {
+      const hasCurrent = classes.some(c => c.id === AppState.currentClassId || (c.code && c.code === AppState.currentClassCode));
+      if (!hasCurrent && classes[0]) {
+        AppState.currentClassId = classes[0].id;
+        AppState.currentClassCode = (classes[0].code || classes[0].classCode || classes[0].id).toUpperCase();
+      }
     }
 
     DOM.setupSelectClass.innerHTML = '';
@@ -337,16 +345,22 @@
     if (!Array.isArray(classes)) return;
     const currentCls = classes.find(c => c.id === AppState.currentClassId || c.code === AppState.currentClassCode);
     if (currentCls) {
+      const extractName = s => {
+        if (typeof s === 'string') return s;
+        if (!s) return 'Studente';
+        return s.displayName || s.name || s.nickname || (s.anagrafica && s.anagrafica.nome) || s.id || 'Studente';
+      };
+
       if (Array.isArray(currentCls.students) && currentCls.students.length > 0) {
-        AppState.currentClassStudents = currentCls.students.map(s => typeof s === 'string' ? s : (s.name || s.id));
+        AppState.currentClassStudents = currentCls.students.map(extractName);
         return;
       }
       if (Array.isArray(currentCls.studenti) && currentCls.studenti.length > 0) {
-        AppState.currentClassStudents = currentCls.studenti.map(s => typeof s === 'string' ? s : (s.name || s.id));
+        AppState.currentClassStudents = currentCls.studenti.map(extractName);
         return;
       }
       if (Array.isArray(currentCls.studentNames) && currentCls.studentNames.length > 0) {
-        AppState.currentClassStudents = [...currentCls.studentNames];
+        AppState.currentClassStudents = currentCls.studentNames.map(extractName);
         return;
       }
     }
@@ -748,6 +762,11 @@
             localStorage.setItem('hub_user_name', displayName);
             if (userAvatar) localStorage.setItem('hub_user_avatar', userAvatar);
           } catch(e) {}
+
+          // Se ci troviamo nella vista di configurazione classe, ricarica subito le classi del docente autenticato
+          if (AppState.currentView === 'view-setup-class') {
+            await renderSetupClassView();
+          }
         }
       });
     }

@@ -10,20 +10,74 @@ class HistoryGramService {
     this.localKeyPrefix = 'historygram_session_';
   }
 
-  // Recupera le classi create dal docente nell'Hub
-  async getTeacherClasses(teacherId) {
-    if (window.fbDb && teacherId) {
+  // Recupera le classi create dal docente nell'Hub (multi-query robusta su hub_classes e classes)
+  async getTeacherClasses(teacherUser) {
+    let uid = null;
+    let email = '';
+    if (teacherUser) {
+      uid = typeof teacherUser === 'string' ? teacherUser : (teacherUser.uid || null);
+      email = (typeof teacherUser === 'object' && teacherUser.email) ? teacherUser.email.toLowerCase() : '';
+    } else if (window.fbAuth && window.fbAuth.currentUser) {
+      uid = window.fbAuth.currentUser.uid;
+      email = (window.fbAuth.currentUser.email || '').toLowerCase();
+    }
+
+    if (window.fbDb && (uid || email)) {
       try {
-        let snap = await window.fbDb.collection('hub_classes')
-          .where('teacherId', '==', teacherId)
-          .get();
-        if (snap.empty) {
-          snap = await window.fbDb.collection('classes')
-            .where('teacherId', '==', teacherId)
-            .get();
+        const queries = [];
+        if (uid) {
+          queries.push(window.fbDb.collection('hub_classes').where('teacherId', '==', uid).get().catch(() => ({ docs: [] })));
+          queries.push(window.fbDb.collection('hub_classes').where('teacherIds', 'array-contains', uid).get().catch(() => ({ docs: [] })));
+          queries.push(window.fbDb.collection('classes').where('teacherId', '==', uid).get().catch(() => ({ docs: [] })));
+          queries.push(window.fbDb.collection('classes').where('teacherIds', 'array-contains', uid).get().catch(() => ({ docs: [] })));
         }
-        if (!snap.empty) {
-          return snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        if (email) {
+          queries.push(window.fbDb.collection('hub_classes').where('teacherEmail', '==', email).get().catch(() => ({ docs: [] })));
+          queries.push(window.fbDb.collection('hub_classes').where('collaboratori', 'array-contains', email).get().catch(() => ({ docs: [] })));
+          queries.push(window.fbDb.collection('classes').where('teacherEmail', '==', email).get().catch(() => ({ docs: [] })));
+          queries.push(window.fbDb.collection('classes').where('collaboratori', 'array-contains', email).get().catch(() => ({ docs: [] })));
+        }
+
+        const results = await Promise.all(queries);
+        const classMap = new Map();
+        results.forEach(snap => {
+          if (snap && snap.docs) {
+            snap.docs.forEach(doc => {
+              classMap.set(doc.id, { id: doc.id, ...doc.data() });
+            });
+          }
+        });
+
+        if (classMap.size > 0) {
+          const classList = Array.from(classMap.values());
+          // Per ciascuna classe, se gli studenti non sono salvati direttamente nell'oggetto, recuperali da hub_users per classCode
+          for (let cls of classList) {
+            const hasDirectStudents = (Array.isArray(cls.students) && cls.students.length > 0) ||
+                                      (Array.isArray(cls.studenti) && cls.studenti.length > 0) ||
+                                      (Array.isArray(cls.studentNames) && cls.studentNames.length > 0);
+            if (!hasDirectStudents) {
+              const code = (cls.code || cls.classCode || '').toUpperCase();
+              if (code) {
+                try {
+                  const uSnap = await window.fbDb.collection('hub_users').where('classCode', '==', code).get();
+                  if (!uSnap.empty) {
+                    cls.students = uSnap.docs
+                      .map(d => ({ uid: d.id, ...d.data() }))
+                      .filter(u => {
+                        const r = (u.role || '').toLowerCase();
+                        return r !== 'docente' && r !== 'admin' && r !== 'insegnante';
+                      })
+                      .map(u => u.displayName || u.name || (u.anagrafica && u.anagrafica.nome) || u.nickname || 'Studente');
+                  }
+                } catch(e) {}
+              }
+            }
+          }
+
+          try {
+            localStorage.setItem('hub_teacher_classes', JSON.stringify(classList));
+          } catch (e) {}
+          return classList;
         }
       } catch (e) {
         console.warn("⚠️ Recupero classi docente da Firestore fallito, uso classi locali:", e);
