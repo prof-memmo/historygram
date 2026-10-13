@@ -261,7 +261,12 @@
     const characters = HISTORY_MODES[modeId].characters;
     AppState.selectedSetupFactionId = characters[0] ? characters[0].id : null;
 
-    connectSession();
+    // Disconnette eventuali listener attivi durante il setup: il docente ha controllo esclusivo e reattivo
+    if (AppState.unsubscribeSession) {
+      AppState.unsubscribeSession();
+      AppState.unsubscribeSession = null;
+    }
+
     await renderSetupClassView();
     showView('view-setup-class');
   }
@@ -348,7 +353,7 @@
   function renderPawnsGrid() {
     if (!DOM.pawnsGridContainer) return;
     const chars = HISTORY_MODES[AppState.currentMode].characters;
-    const assignments = AppState.sessionData.teamAssignments || {};
+    const assignments = (AppState.sessionData && AppState.sessionData.teamAssignments) || {};
 
     DOM.pawnsGridContainer.innerHTML = chars.map(c => {
       const assigned = assignments[c.id] || [];
@@ -361,23 +366,28 @@
 
       return `
         <div class="pawn-card ${isSelected ? 'selected' : ''}" 
-             onclick="HistoryGramApp.selectPawnFaction('${c.id}')"
-             title="Clicca per aprire la scheda di ${escapeHtml(c.name)}">
-          <div class="pawn-card-icon-wrap" style="border-color: ${isSelected ? 'var(--accent-green)' : 'var(--border-color)'};">
+             data-char-id="${c.id}"
+             onclick="HistoryGramApp.selectPawnFaction('${c.id}', true)"
+             title="Clicca per visualizzare la scheda di ${escapeHtml(c.name)} e assegnare gli studenti">
+          <div class="pawn-card-icon-wrap">
             ${c.avatar}
           </div>
           <div class="pawn-card-title">${escapeHtml(c.name)}</div>
           <div class="pawn-card-faction">${escapeHtml(c.faction)}</div>
           ${countBadge}
+          <span class="pawn-info-pill"><i class="fa-solid fa-circle-info"></i> Descrizione</span>
         </div>
       `;
     }).join('');
   }
 
-  function selectPawnFaction(charId) {
+  function selectPawnFaction(charId, openPopup = false) {
     AppState.selectedSetupFactionId = charId;
     renderPawnsGrid();
     renderFactionWorkbench(charId);
+    if (openPopup) {
+      openCharDetailModal(charId);
+    }
   }
 
   function renderFactionWorkbench(charId) {
@@ -386,14 +396,14 @@
     const c = chars.find(item => item.id === charId);
     if (!c) {
       DOM.setupActiveFactionWorkbench.innerHTML = `
-        <p style="text-align: center; color: var(--text-muted); font-size: 0.95rem; padding: 20px 0;">
-          <i class="fa-solid fa-chess-pawn"></i> Clicca su una pedina in alto per visualizzarne la descrizione e assegnare gli studenti.
+        <p style="text-align: center; color: var(--text-muted); font-size: 0.95rem; padding: 24px 0;">
+          <i class="fa-solid fa-chess-pawn"></i> Clicca su una delle schede in alto per visualizzarne la descrizione e assegnare gli studenti.
         </p>
       `;
       return;
     }
 
-    const assignments = AppState.sessionData.teamAssignments || {};
+    const assignments = (AppState.sessionData && AppState.sessionData.teamAssignments) || {};
     const currentAssigned = assignments[c.id] || [];
     const allStudents = AppState.currentClassStudents || [];
 
@@ -406,8 +416,6 @@
       });
     });
 
-    // Costruisce i chip degli studenti stile Fantaletteratura
-    // Costruisce i chip degli studenti stile Fantaletteratura
     let chipsHtml = '';
     if (allStudents.length === 0) {
       chipsHtml = `<span style="font-size: 0.85rem; color: var(--text-muted);">Nessuno studente presente nel registro. Aggiungi i nomi tramite il campo sottostante.</span>`;
@@ -444,52 +452,49 @@
     }
 
     DOM.setupActiveFactionWorkbench.innerHTML = `
-      <div class="workbench-top-grid">
-        <div class="workbench-avatar-large">
-          ${c.avatar}
-        </div>
-        <div>
-          <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 6px;">
-            <h3 class="workbench-info-title">${escapeHtml(c.name)}</h3>
-            <span class="workbench-info-faction">${escapeHtml(c.faction)}</span>
+      <div class="members-workbench-header">
+        <div class="members-active-team-info">
+          <div class="members-active-avatar">${c.avatar}</div>
+          <div>
+            <h3 class="members-active-name">${escapeHtml(c.name)}</h3>
+            <span class="members-active-tag">${escapeHtml(c.faction)}</span>
           </div>
-          <p class="workbench-info-desc">${escapeHtml(c.context || '')}</p>
-          <p class="workbench-info-objective"><strong>🎯 Obiettivo Storico:</strong> ${escapeHtml(c.objective || '')}</p>
         </div>
+        <button type="button" class="btn btn-secondary-action btn-sm" onclick="HistoryGramApp.openCharDetailModal('${c.id}')" title="Riapri la scheda storica dettagliata">
+          <i class="fa-solid fa-book-open"></i> Scheda Storica
+        </button>
       </div>
 
-      <div class="workbench-students-section">
-        <div class="workbench-section-header">
-          <div>
-            <h4 class="workbench-section-title">
-              <i class="fa-solid fa-users" style="color: var(--accent-green);"></i> 
-              Studenti Assegnati a ${escapeHtml(c.name)}
-            </h4>
-            <span class="workbench-section-subtitle">
-              Clicca su uno studente per inserirlo o rimuoverlo da questa squadra.
-            </span>
-          </div>
+      <div class="members-chips-section">
+        <div class="members-chips-header">
+          <h4 class="members-chips-title">
+            <i class="fa-solid fa-users" style="color: var(--accent-green);"></i> 
+            Studenti Assegnati a ${escapeHtml(c.name)}
+          </h4>
+          <span class="members-chips-subtitle">
+            Clicca su uno studente per inserirlo o rimuoverlo da questa squadra.
+          </span>
         </div>
 
-        <div class="workbench-chips-box">
+        <div class="members-chips-grid">
           ${chipsHtml}
         </div>
 
         <!-- Inserimento rapido studente extra -->
-        <div class="workbench-add-custom-box">
-          <input type="text" id="inputCustomStudentName" class="form-input" placeholder="Aggiungi studente extra..." style="font-size: 0.85rem;" onkeydown="if(event.key==='Enter'){ event.preventDefault(); HistoryGramApp.addCustomStudent(); }">
-          <button type="button" class="btn btn-secondary-action" onclick="HistoryGramApp.addCustomStudent()" style="white-space: nowrap;">
+        <div class="workbench-add-custom-box" style="margin-top: 6px; max-width: 440px;">
+          <input type="text" id="inputCustomStudentName" class="form-input form-input-sm" placeholder="Aggiungi studente extra..." onkeydown="if(event.key==='Enter'){ event.preventDefault(); HistoryGramApp.addCustomStudent(); }">
+          <button type="button" class="btn btn-secondary-action btn-sm" onclick="HistoryGramApp.addCustomStudent()" style="white-space: nowrap;">
             <i class="fa-solid fa-user-plus"></i> Aggiungi
           </button>
         </div>
       </div>
 
-      <div class="workbench-actions-bar">
-        <div class="workbench-team-count-pill">
+      <div class="members-actions-bar">
+        <div class="members-team-count-pill">
           <i class="fa-solid fa-user-check" style="color: var(--accent-green);"></i>
           <span><strong>${currentAssigned.length}</strong> studenti in ${escapeHtml(c.name)}</span>
         </div>
-        <button type="button" class="btn-primary-action" onclick="HistoryGramApp.saveCurrentFactionTeam('${c.id}')" style="min-width: 170px;">
+        <button type="button" class="btn-primary-action btn-sm" onclick="HistoryGramApp.saveCurrentFactionTeam('${c.id}')" style="min-width: 150px;">
           <i class="fa-solid fa-floppy-disk"></i> Salva Squadra
         </button>
       </div>
@@ -547,6 +552,12 @@
 
     // Mantiene attiva la fazione selezionata
     AppState.selectedSetupFactionId = charId;
+
+    // Persiste immediatamente nello storage locale
+    try {
+      const sessionId = `${AppState.currentClassId}_${AppState.currentMode}`;
+      localStorage.setItem(`historygram_session_${sessionId}`, JSON.stringify(AppState.sessionData));
+    } catch(e) {}
 
     renderPawnsGrid();
     renderFactionWorkbench(charId);
@@ -1327,31 +1338,35 @@
     if (DOM.mCharFaction) DOM.mCharFaction.textContent = char.faction;
 
     let thesesHtml = '';
-    if (char.mainTheses) {
+    const thesesList = char.theses || char.mainTheses;
+    if (Array.isArray(thesesList) && thesesList.length > 0) {
       thesesHtml = `
-        <h4 style="color:var(--accent-gold); margin-top:14px;">📜 Tesi Teologiche &amp; Dottrinali:</h4>
-        <ul style="padding-left:18px; font-size:0.9rem;">
-          ${char.mainTheses.map(t => `<li>${escapeHtml(t)}</li>`).join('')}
+        <h4 style="color:var(--accent-gold); margin-top:16px; font-family:var(--font-heading);">📜 Tesi Teologiche &amp; Dottrinali:</h4>
+        <ul style="padding-left:20px; font-size:0.92rem; line-height: 1.6; color: var(--text-main);">
+          ${thesesList.map(t => `<li style="margin-bottom: 6px;">${escapeHtml(t)}</li>`).join('')}
         </ul>
       `;
     }
 
     if (DOM.mCharBody) {
       DOM.mCharBody.innerHTML = `
-        <h4 style="color:var(--accent-gold); margin-top:0;">🎯 Obiettivo Storico:</h4>
-        <p style="font-size:0.9rem;">${escapeHtml(char.objective)}</p>
-
-        <h4 style="color:var(--accent-gold); margin-top:14px;">🛠️ Strumenti di Diffusione:</h4>
-        <p style="font-size:0.9rem;">${escapeHtml(char.tools)}</p>
+        <h4 style="color:var(--accent-gold); margin-top:0; font-family:var(--font-heading);">📖 Inquadramento Storiografico:</h4>
+        <p style="font-size:0.96rem; color:var(--text-main); line-height: 1.7; margin-bottom: 12px;">${escapeHtml(char.context || '')}</p>
 
         ${thesesHtml}
-
-        <h4 style="color:var(--accent-gold); margin-top:14px;">📖 Contesto Storico:</h4>
-        <p style="font-size:0.9rem; color:var(--text-muted);">${escapeHtml(char.context || '')}</p>
       `;
     }
 
     DOM.modalCharDetail.classList.remove('hidden');
+  }
+
+  function closeCharDetailModal() {
+    if (DOM.modalCharDetail) {
+      DOM.modalCharDetail.classList.add('hidden');
+    }
+    if (DOM.setupActiveFactionWorkbench) {
+      DOM.setupActiveFactionWorkbench.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
   }
 
   /* ================= MINIGUIDA MODAL LOGIC (Stile L'Oratore) ================= */
@@ -1787,7 +1802,8 @@
     toggleLike,
     ratePost,
     openFlameModal,
-    openCharDetailModal
+    openCharDetailModal,
+    closeCharDetailModal
   };
 
   window.addEventListener('DOMContentLoaded', init);

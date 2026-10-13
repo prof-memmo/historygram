@@ -22,7 +22,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700;900&family=Inter:wght@400;500;600;700;800&family=Julius+Sans+One&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,600;1,6..72,400&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
-  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/style.css?v=preview_2.4">
 
   <!-- Identità Gioco & Guardie Ecosistema Prof. Memmo -->
   <script>window.HUB_GAME_ID = "historygram";</script>
@@ -224,64 +224,60 @@
       </section>
 
       <!-- ========================================
-           3. VIEW: STEP 2 - SCELTA INFLUENCER & SQUADRE
+           3. VIEW: STEP 2 - SCELTA FAZIONE & SMISTAMENTO CLASSE (LIM DASHBOARD)
            ======================================== -->
       <section id="view-setup-class" class="view">
-        <div class="setup-header-box">
-          <span class="setup-step-badge">Passo 2 di 2</span>
-          <h2 class="setup-title">Scegli quale influencer vuoi essere</h2>
-          <p class="setup-subtitle">
-            Clicca su una pedina per visualizzarne l'identikit storico e smistare gli studenti della classe.
-          </p>
+        <div class="setup-header-box lim-setup-header">
+          <div class="lim-header-top-row">
+            <div>
+              <span class="setup-step-badge">Passo 2 di 2</span>
+              <h2 class="setup-title">Smistamento Fazioni &amp; Squadre</h2>
+              <p class="setup-subtitle">Clicca su una squadra per aprirne la descrizione storica e assegnare i membri della classe.</p>
+            </div>
+            <!-- Toolbar Selezione Classe & Azzera -->
+            <div class="setup-class-toolbar-inline">
+              <div class="toolbar-field-inline">
+                <label for="setupSelectClass"><i class="fa-solid fa-chalkboard-user"></i> Classe:</label>
+                <select id="setupSelectClass" class="form-input form-input-sm" onchange="HistoryGramApp.onSetupClassChange(this.value)">
+                  <!-- Popolato da JS -->
+                </select>
+              </div>
+              <button type="button" class="btn btn-secondary-action btn-sm" onclick="HistoryGramApp.resetTeamAssignments()" title="Azzera le assegnazioni per ricominciare">
+                <i class="fa-solid fa-arrow-rotate-left"></i> Azzera
+              </button>
+            </div>
+          </div>
         </div>
 
-        <div class="setup-step2-container">
-          <!-- Toolbar Selezione Classe & Strumenti Rapidi -->
-          <div class="setup-class-toolbar">
-            <div class="toolbar-field">
-              <label for="setupSelectClass"><i class="fa-solid fa-chalkboard-user"></i> Classe dell'Hub / Codice Stanza:</label>
-              <select id="setupSelectClass" class="form-input" onchange="HistoryGramApp.onSetupClassChange(this.value)">
-                <!-- Popolato da JS -->
-              </select>
-            </div>
-            <div class="toolbar-actions">
-              <button class="btn-secondary-action" onclick="HistoryGramApp.autoDistributeTeams()" title="Distribuisce automaticamente gli studenti disponibili">
-                <i class="fa-solid fa-wand-magic-sparkles"></i> Distribuzione Equilibrata
-              </button>
-              <button class="btn-secondary-action" onclick="HistoryGramApp.resetTeamAssignments()" title="Azzera le assegnazioni per ricominciare">
-                <i class="fa-solid fa-arrow-rotate-left"></i> Azzera Squadre
-              </button>
-            </div>
+        <!-- Sezione 1: Schede Grandi delle Squadre -->
+        <div class="setup-factions-panel">
+          <div class="setup-panel-header">
+            <span id="setupSelectedModeLabel" class="pawn-choice-epoch-tag">I Moti Rivoluzionari</span>
+            <span class="setup-panel-hint"><i class="fa-solid fa-circle-info"></i> Clicca su una squadra per visualizzare la descrizione storica</span>
           </div>
+          <div id="pawnsGridContainer" class="pawn-choice-grid-giant">
+            <!-- Popolato dinamicamente da JS: schede grandi delle squadre con avatar, nome, fazione e studenti -->
+          </div>
+        </div>
 
-          <!-- Griglia Pedine Fazioni Storiche (Stile L'Oratore, Full Width) -->
-          <div class="pawn-choice-section">
-            <div class="pawn-choice-header">
-              <span id="setupSelectedModeLabel" class="pawn-choice-epoch-tag">I Moti Rivoluzionari</span>
-              <span class="pawn-choice-hint"><i class="fa-solid fa-hand-pointer"></i> Clicca su una pedina per aprire la scheda e assegnare gli studenti</span>
-            </div>
-            <div id="pawnsGridContainer" class="pawn-choice-grid-giant">
-              <!-- Popolato dinamicamente da JS -->
-            </div>
+        <!-- Sezione 2: Assegnazione Membri Squadra Attiva -->
+        <div class="setup-members-panel">
+          <div id="setupActiveFactionWorkbench" class="setup-members-workbench">
+            <!-- Popolato dinamicamente da JS: chips studenti per la fazione selezionata -->
           </div>
+        </div>
 
-          <!-- Workbench Fazione Attiva (Descrizione Storica + Assegnazione Studenti) -->
-          <div id="setupActiveFactionWorkbench" class="faction-workbench-card">
-            <!-- Popolato dinamicamente al click sulla pedina -->
+        <!-- Barra di Avanzamento / Footer Setup -->
+        <div class="setup-footer-nav lim-footer-nav">
+          <button type="button" class="btn-secondary-action" onclick="HistoryGramApp.showView('view-setup-mode')">
+            <i class="fa-solid fa-arrow-left"></i> Cambia Epoca
+          </button>
+          <div id="setupRosterSummaryStatus" class="setup-summary-text">
+            <!-- Popolato da JS -->
           </div>
-
-          <!-- Barra di Avanzamento / Footer Setup -->
-          <div class="setup-footer-nav">
-            <button class="btn-secondary-action" onclick="HistoryGramApp.showView('view-setup-mode')">
-              <i class="fa-solid fa-arrow-left"></i> Cambia Epoca
-            </button>
-            <div id="setupRosterSummaryStatus" class="setup-summary-text">
-              <!-- Popolato da JS -->
-            </div>
-            <button id="btnLaunchGame" class="btn-giant btn-primary" onclick="HistoryGramApp.launchGameFromSetup()">
-              <i class="fa-solid fa-rocket"></i> Avvia Sfida sul Muro &rarr;
-            </button>
-          </div>
+          <button type="button" id="btnLaunchGame" class="btn-giant btn-primary" onclick="HistoryGramApp.launchGameFromSetup()">
+            <i class="fa-solid fa-rocket"></i> Avvia Sfida sul Muro &rarr;
+          </button>
         </div>
       </section>
 
@@ -725,9 +721,9 @@
     </div>
   </div>
 
-  <!-- Modal 2: Scheda Personaggio Storico Dettagliata -->
+  <!-- Modal 2: Scheda Fazione Storica Dettagliata (Pop-up Grande) -->
   <div class="modal-overlay hidden" id="modalCharDetail">
-    <div class="modal-box">
+    <div class="modal-box modal-xl modal-history-detail">
       <div class="modal-header-styled">
         <div class="char-detail-heading">
           <div class="char-detail-avatar-circle" id="mCharAvatar">🕯️</div>
@@ -736,12 +732,12 @@
             <span class="char-faction-tag" id="mCharFaction">Italia (1820-21)</span>
           </div>
         </div>
-        <button class="btn-close-styled" id="btnCloseCharModal">&times;</button>
+        <button class="btn-close-styled" id="btnCloseCharModal" onclick="HistoryGramApp.closeCharDetailModal()">&times;</button>
       </div>
       <div class="modal-body-padded char-detail-content" id="mCharBody"></div>
       <div class="modal-actions-right">
-        <button class="btn-primary-action" id="btnSelectCharFromModal">
-          <i class="fa-solid fa-pen-nib"></i> Scrivi Post per questa Squadra
+        <button class="btn-giant btn-primary" id="btnSelectCharFromModal" onclick="HistoryGramApp.closeCharDetailModal()">
+          <i class="fa-solid fa-users"></i> Scegli i Membri della Squadra &rarr;
         </button>
       </div>
     </div>
@@ -836,9 +832,9 @@
   <div class="toast-container" id="toastContainer"></div>
 
   <!-- Script di logica -->
-  <script src="js/characters.js"></script>
-  <script src="js/historygram-service.js"></script>
-  <script src="js/music.js"></script>
-  <script src="js/app.js"></script>
+  <script src="js/characters.js?v=preview_2.4"></script>
+  <script src="js/historygram-service.js?v=preview_2.4"></script>
+  <script src="js/music.js?v=preview_2.4"></script>
+  <script src="js/app.js?v=preview_2.4"></script>
 </body>
 </html>

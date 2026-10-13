@@ -2418,11 +2418,374 @@ h1, h2, h3, h4, h5, h6 {
   color: var(--text-muted);
 }
 
+/* ==========================================================================
+   PASSO 2: LIM 2-COLUMN COMMAND CENTER (ZERO SCROLLING PER LA LIM)
+   ========================================================================== */
+.lim-setup-header {
+  padding: 4px 0 8px 0;
+  margin-bottom: 6px;
+}
+
+.lim-header-top-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.setup-class-toolbar-inline {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.toolbar-field-inline {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--text-muted);
+}
+
+.form-input-sm {
+  padding: 6px 12px !important;
+  font-size: 0.84rem !important;
+  height: 36px !important;
+  border-radius: var(--radius-md) !important;
+}
+
+.btn-sm {
+  padding: 6px 12px !important;
+  font-size: 0.80rem !important;
+  height: 36px !important;
+  border-radius: var(--radius-md) !important;
+}
+
+/* ==========================================================================
+   PASSO 2: SMISTAMENTO FAZIONI & SQUADRE (SEMIFICATO, INTUITIVO & LIM-READY)
+   ========================================================================== */
+#view-setup-class.active {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.setup-factions-panel {
+  background: #ffffff;
+  border: 1.5px solid var(--border-color);
+  border-radius: var(--radius-xl);
+  padding: 14px 18px;
+  box-shadow: var(--shadow-sm);
+}
+
+.setup-panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 12px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.setup-panel-hint {
+  font-size: 0.76rem;
+  color: var(--text-muted);
+  font-weight: 700;
+  text-transform: uppercase;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
 .pawn-choice-grid-giant {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-  gap: 14px;
+  grid-template-columns: repeat(auto-fit, minmax(145px, 1fr));
+  gap: 12px;
   width: 100%;
+}
+
+.pawn-card {
+  background: #ffffff;
+  border: 2px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  padding: 14px 10px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: var(--shadow-sm);
+  position: relative;
+  user-select: none;
+}
+
+.pawn-card:hover {
+  transform: translateY(-3px);
+  border-color: var(--accent-green);
+  box-shadow: 0 8px 22px rgba(5, 150, 105, 0.16);
+}
+
+.pawn-card.selected {
+  border-color: var(--accent-green);
+  background: #f0fdf4;
+  box-shadow: 0 0 0 2px var(--accent-green), 0 8px 24px rgba(5, 150, 105, 0.22);
+}
+
+.pawn-card-icon-wrap {
+  width: 54px;
+  height: 54px;
+  border-radius: 50%;
+  background: #f8fafc;
+  border: 1.5px solid var(--border-color);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.9rem;
+  margin-bottom: 8px;
+  transition: transform 0.2s ease;
+}
+
+.pawn-card.selected .pawn-card-icon-wrap {
+  border-color: var(--accent-green);
+  background: #ffffff;
+  transform: scale(1.08);
+}
+
+.pawn-card-title {
+  font-family: var(--font-heading);
+  font-size: 0.88rem;
+  font-weight: 800;
+  color: var(--text-main);
+  text-transform: uppercase;
+  margin-bottom: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+}
+
+.pawn-card-faction {
+  font-size: 0.70rem;
+  color: var(--text-muted);
+  margin-bottom: 8px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+}
+
+.pawn-info-pill {
+  font-size: 0.68rem;
+  color: var(--accent-green-dark);
+  background: #ecfdf5;
+  border: 1px solid #a7f3d0;
+  padding: 2px 8px;
+  border-radius: 999px;
+  margin-top: 6px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-weight: 700;
+}
+
+.pawn-count-badge {
+  font-size: 0.70rem;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+
+.pawn-count-badge.active {
+  background: #ecfdf5;
+  color: var(--accent-green-dark);
+  border: 1px solid #a7f3d0;
+}
+
+.pawn-count-badge.empty {
+  background: #f8fafc;
+  color: #94a3b8;
+  border: 1px solid #e2e8f0;
+}
+
+/* SEZIONE 2: ASSEGNAZIONE MEMBRI SQUADRA ATTIVA */
+.setup-members-panel {
+  background: #ffffff;
+  border: 1.5px solid var(--border-color);
+  border-radius: var(--radius-xl);
+  padding: 16px 20px;
+  box-shadow: var(--shadow-sm);
+}
+
+.setup-members-workbench {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.members-workbench-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  padding-bottom: 10px;
+  border-bottom: 1.5px solid var(--border-color);
+}
+
+.members-active-team-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.members-active-avatar {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: #f8fafc;
+  border: 2px solid var(--accent-green);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.6rem;
+  flex-shrink: 0;
+}
+
+.members-active-name {
+  font-family: var(--font-heading);
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: var(--text-main);
+  text-transform: uppercase;
+  margin: 0;
+}
+
+.members-active-tag {
+  font-size: 0.74rem;
+  color: var(--text-muted);
+  font-weight: 700;
+}
+
+.members-chips-section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.members-chips-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.members-chips-title {
+  font-family: var(--font-heading);
+  font-size: 0.86rem;
+  font-weight: 800;
+  color: var(--text-main);
+  text-transform: uppercase;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.members-chips-subtitle {
+  font-size: 0.74rem;
+  color: var(--text-muted);
+}
+
+.members-chips-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 10px;
+  border: 1.5px dashed var(--border-color);
+  border-radius: var(--radius-lg);
+  background: #f8fafc;
+  min-height: 80px;
+}
+
+.members-actions-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  padding-top: 8px;
+  border-top: 1.5px solid var(--border-color);
+}
+
+.members-team-count-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.82rem;
+  color: var(--text-main);
+  background: #f1f5f9;
+  padding: 6px 12px;
+  border-radius: 999px;
+  font-weight: 600;
+}
+
+/* POP-UP GRANDE SCHEDA FAZIONE */
+.modal-history-detail {
+  max-width: 820px !important;
+  width: 92% !important;
+  max-height: 85vh;
+}
+
+.modal-history-detail .char-detail-content {
+  font-size: 0.95rem;
+  line-height: 1.65;
+  color: var(--text-main);
+  max-height: 60vh;
+  overflow-y: auto;
+  padding-right: 8px;
+}
+
+.modal-history-detail .char-detail-heading {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.modal-history-detail .char-detail-avatar-circle {
+  width: 58px;
+  height: 58px;
+  border-radius: 50%;
+  background: #f8fafc;
+  border: 2px solid var(--accent-green);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2.2rem;
+  box-shadow: var(--shadow-sm);
+  flex-shrink: 0;
+}
+
+/* FOOTER NAV LIM */
+.lim-footer-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  padding: 10px 18px;
+  background: #ffffff;
+  border: 1.5px solid var(--border-color);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-sm);
+  margin-top: 4px;
 }
 
 .pawn-card {
