@@ -2673,6 +2673,7 @@ body.view-no-scroll .main-views-container {
   box-shadow: var(--shadow-sm);
   flex: 1;
   min-height: 0;
+  max-height: 200px;
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -2802,7 +2803,9 @@ body.view-no-scroll .main-views-container {
 .members-chips-grid {
   display: flex;
   flex-wrap: wrap;
-  gap: 5px;
+  align-items: center;
+  align-content: flex-start;
+  gap: 6px;
   padding: 6px;
   border: 1px dashed var(--border-color);
   border-radius: var(--radius-sm);
@@ -2814,12 +2817,14 @@ body.view-no-scroll .main-views-container {
 }
 
 .setup-footer-nav.lim-footer-nav {
-  padding: 4px 0 0 0;
+  padding: 6px 0 2px 0;
   margin: 0;
   flex-shrink: 0;
   display: flex;
   justify-content: space-between;
   align-items: center;
+  position: relative;
+  z-index: 10;
 }
 
 /* POP-UP GRANDE SCHEDA FAZIONE */
@@ -3110,22 +3115,25 @@ body.view-no-scroll .main-views-container {
 
 /* CHIPS STUDENTI STILE FANTALETTERATURA */
 .student-chip {
-  padding: 7px 14px;
+  height: 30px;
+  padding: 0 12px;
   border-radius: 999px;
   font-family: var(--font-heading);
-  font-size: 0.82rem;
+  font-size: 0.78rem;
   font-weight: 700;
   cursor: pointer;
-  transition: all 0.18s ease;
+  transition: all 0.16s ease;
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  justify-content: center;
+  gap: 5px;
   user-select: none;
   border: 1.5px solid transparent;
   outline: none;
   background: #ffffff;
   appearance: none;
   -webkit-appearance: none;
+  flex-shrink: 0;
 }
 
 .student-chip * {
