@@ -556,21 +556,20 @@
       assignments[charId] = [];
     }
 
-    const currentList = assignments[charId];
-    const indexInTarget = currentList.indexOf(studentName);
+    const isAlreadyInTarget = assignments[charId].includes(studentName);
 
-    if (indexInTarget > -1) {
+    if (isAlreadyInTarget) {
       // Rimuove da questa squadra
-      currentList.splice(indexInTarget, 1);
+      assignments[charId] = assignments[charId].filter(st => st !== studentName);
     } else {
-      // Rimuove prima da qualsiasi altra squadra per evitare doppioni
+      // Rimuove da tutte le squadre per evitare doppioni
       Object.keys(assignments).forEach(cid => {
         if (Array.isArray(assignments[cid])) {
           assignments[cid] = assignments[cid].filter(st => st !== studentName);
         }
       });
-      // Aggiunge a questa squadra
-      currentList.push(studentName);
+      // Aggiunge direttamente alla squadra target
+      assignments[charId].push(studentName);
     }
 
     // Mantiene attiva la fazione selezionata
