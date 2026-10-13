@@ -6,7 +6,7 @@
 class HistoryGramService {
   constructor() {
     this.collectionName = 'historygram_sessions';
-    this.classesCollection = 'classes';
+    this.classesCollection = 'hub_classes';
     this.localKeyPrefix = 'historygram_session_';
   }
 
@@ -14,9 +14,14 @@ class HistoryGramService {
   async getTeacherClasses(teacherId) {
     if (window.fbDb && teacherId) {
       try {
-        const snap = await window.fbDb.collection(this.classesCollection)
+        let snap = await window.fbDb.collection('hub_classes')
           .where('teacherId', '==', teacherId)
           .get();
+        if (snap.empty) {
+          snap = await window.fbDb.collection('classes')
+            .where('teacherId', '==', teacherId)
+            .get();
+        }
         if (!snap.empty) {
           return snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
         }
@@ -42,9 +47,14 @@ class HistoryGramService {
     const code = String(rawCode || '').trim().toUpperCase();
     if (window.fbDb) {
       try {
-        const snap = await window.fbDb.collection(this.classesCollection)
+        let snap = await window.fbDb.collection('hub_classes')
           .where('code', '==', code)
           .get();
+        if (snap.empty) {
+          snap = await window.fbDb.collection('classes')
+            .where('code', '==', code)
+            .get();
+        }
         if (!snap.empty) {
           const doc = snap.docs[0];
           return { id: doc.id, ...doc.data() };
@@ -60,11 +70,13 @@ class HistoryGramService {
   // Ascolta gli aggiornamenti in tempo reale della sessione (Firestore con fallback LocalStorage)
   subscribeSession(classId, modeId, callback) {
     const sessionId = `${classId}_${modeId}`;
+    let activeCleanup = null;
+    let isCleanedUp = false;
     
     if (window.fbDb) {
       try {
         const docRef = window.fbDb.collection(this.collectionName).doc(sessionId);
-        const unsubscribe = docRef.onSnapshot(doc => {
+        const unsubscribeFirestore = docRef.onSnapshot(doc => {
           if (doc.exists) {
             callback(doc.data());
           } else {
@@ -74,7 +86,7 @@ class HistoryGramService {
               try {
                 const localData = JSON.parse(localRaw);
                 callback(localData);
-                // Sincronizza verso Firestore per creare il documento online
+                // Prova a sincronizzare verso Firestore
                 docRef.set(localData, { merge: true }).catch(() => {});
                 return;
               } catch (e) {}
@@ -83,10 +95,17 @@ class HistoryGramService {
             callback(initial);
           }
         }, err => {
-          console.warn("⚠️ Errore listener Firestore, passaggio a LocalStorage:", err);
-          this.listenLocalStorage(sessionId, callback);
+          console.warn("⚠️ Listener Firestore (passaggio a LocalStorage):", err && err.message);
+          if (!isCleanedUp) {
+            activeCleanup = this.listenLocalStorage(sessionId, callback);
+          }
         });
-        return unsubscribe;
+
+        return () => {
+          isCleanedUp = true;
+          try { unsubscribeFirestore(); } catch(e) {}
+          if (typeof activeCleanup === 'function') activeCleanup();
+        };
       } catch (e) {
         console.warn("⚠️ Firestore onSnapshot non disponibile:", e);
       }
@@ -98,16 +117,16 @@ class HistoryGramService {
   listenLocalStorage(sessionId, callback) {
     const key = `${this.localKeyPrefix}${sessionId}`;
     let lastRaw = null;
+
     const checkUpdate = () => {
       try {
         const raw = localStorage.getItem(key);
         if (raw === lastRaw) return;
         lastRaw = raw;
         if (raw) {
-          callback(JSON.parse(raw));
-        } else {
-          const parts = sessionId.split('_');
-          callback(this.getDefaultSessionState(parts[0], parts.slice(1).join('_')));
+          try {
+            callback(JSON.parse(raw));
+          } catch(e) {}
         }
       } catch (e) {
         console.warn("⚠️ Errore lettura sessione locale:", e);

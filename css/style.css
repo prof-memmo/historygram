@@ -2674,6 +2674,14 @@ h1, h2, h3, h4, h5, h6 {
   gap: 6px;
   user-select: none;
   border: 1.5px solid transparent;
+  outline: none;
+  background: #ffffff;
+  appearance: none;
+  -webkit-appearance: none;
+}
+
+.student-chip * {
+  pointer-events: none;
 }
 
 .student-chip.in-this-team {

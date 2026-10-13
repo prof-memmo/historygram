@@ -407,6 +407,7 @@
     });
 
     // Costruisce i chip degli studenti stile Fantaletteratura
+    // Costruisce i chip degli studenti stile Fantaletteratura
     let chipsHtml = '';
     if (allStudents.length === 0) {
       chipsHtml = `<span style="font-size: 0.85rem; color: var(--text-muted);">Nessuno studente presente nel registro. Aggiungi i nomi tramite il campo sottostante.</span>`;
@@ -417,30 +418,30 @@
 
         if (isHere) {
           return `
-            <div class="student-chip in-this-team" data-student="${escapeHtml(stName)}" data-char-id="${c.id}" onclick="HistoryGramApp.toggleStudentAssignment(this.dataset.student, this.dataset.charId)" title="Clicca per rimuovere da questa squadra">
-              <i class="fa-solid fa-check"></i> ${escapeHtml(stName)}
+            <button type="button" class="student-chip in-this-team" data-student="${escapeHtml(stName)}" data-char-id="${c.id}" onclick="HistoryGramApp.handleStudentChipClick(this, event)" title="Clicca per rimuovere da ${escapeHtml(c.name)}">
+              <i class="fa-solid fa-check"></i>
+              <span>${escapeHtml(stName)}</span>
               <i class="fa-solid fa-xmark" style="font-size: 0.72rem; margin-left: 4px; opacity: 0.85;"></i>
-            </div>
+            </button>
           `;
         } else if (otherFaction) {
           return `
-            <div class="student-chip in-other-team" data-student="${escapeHtml(stName)}" data-char-id="${c.id}" onclick="HistoryGramApp.toggleStudentAssignment(this.dataset.student, this.dataset.charId)" title="Attualmente in ${escapeHtml(otherFaction.name)}. Clicca per spostare in questa squadra.">
-              <i class="fa-solid fa-arrow-right-arrow-left"></i> ${escapeHtml(stName)}
+            <button type="button" class="student-chip in-other-team" data-student="${escapeHtml(stName)}" data-char-id="${c.id}" onclick="HistoryGramApp.handleStudentChipClick(this, event)" title="Attualmente in ${escapeHtml(otherFaction.name)}. Clicca per spostare in ${escapeHtml(c.name)}.">
+              <i class="fa-solid fa-arrow-right-arrow-left"></i>
+              <span>${escapeHtml(stName)}</span>
               <span class="chip-team-tag">${escapeHtml(otherFaction.name)}</span>
-            </div>
+            </button>
           `;
         } else {
           return `
-            <div class="student-chip available" data-student="${escapeHtml(stName)}" data-char-id="${c.id}" onclick="HistoryGramApp.toggleStudentAssignment(this.dataset.student, this.dataset.charId)" title="Disponibile. Clicca per aggiungere a ${escapeHtml(c.name)}">
-              <i class="fa-solid fa-plus"></i> ${escapeHtml(stName)}
-            </div>
+            <button type="button" class="student-chip available" data-student="${escapeHtml(stName)}" data-char-id="${c.id}" onclick="HistoryGramApp.handleStudentChipClick(this, event)" title="Disponibile. Clicca per aggiungere a ${escapeHtml(c.name)}">
+              <i class="fa-solid fa-plus"></i>
+              <span>${escapeHtml(stName)}</span>
+            </button>
           `;
         }
       }).join('');
     }
-
-    // Slogans storici
-    const slogansList = (c.slogans || []).map(s => `<span class="workbench-slogan-pill">"${escapeHtml(s)}"</span>`).join('');
 
     DOM.setupActiveFactionWorkbench.innerHTML = `
       <div class="workbench-top-grid">
@@ -454,7 +455,6 @@
           </div>
           <p class="workbench-info-desc">${escapeHtml(c.context || '')}</p>
           <p class="workbench-info-objective"><strong>🎯 Obiettivo Storico:</strong> ${escapeHtml(c.objective || '')}</p>
-          ${slogansList ? `<div class="workbench-slogans-box">${slogansList}</div>` : ''}
         </div>
       </div>
 
@@ -478,7 +478,7 @@
         <!-- Inserimento rapido studente extra -->
         <div class="workbench-add-custom-box">
           <input type="text" id="inputCustomStudentName" class="form-input" placeholder="Aggiungi studente extra..." style="font-size: 0.85rem;" onkeydown="if(event.key==='Enter'){ event.preventDefault(); HistoryGramApp.addCustomStudent(); }">
-          <button class="btn btn-secondary-action" onclick="HistoryGramApp.addCustomStudent()" style="white-space: nowrap;">
+          <button type="button" class="btn btn-secondary-action" onclick="HistoryGramApp.addCustomStudent()" style="white-space: nowrap;">
             <i class="fa-solid fa-user-plus"></i> Aggiungi
           </button>
         </div>
@@ -489,24 +489,46 @@
           <i class="fa-solid fa-user-check" style="color: var(--accent-green);"></i>
           <span><strong>${currentAssigned.length}</strong> studenti in ${escapeHtml(c.name)}</span>
         </div>
-        <button class="btn-primary-action" onclick="HistoryGramApp.saveCurrentFactionTeam('${c.id}')" style="min-width: 170px;">
+        <button type="button" class="btn-primary-action" onclick="HistoryGramApp.saveCurrentFactionTeam('${c.id}')" style="min-width: 170px;">
           <i class="fa-solid fa-floppy-disk"></i> Salva Squadra
         </button>
       </div>
     `;
   }
 
+  function handleStudentChipClick(buttonEl, event) {
+    if (event) {
+      if (typeof event.preventDefault === 'function') event.preventDefault();
+      if (typeof event.stopPropagation === 'function') event.stopPropagation();
+    }
+    if (!buttonEl) return;
+    const student = buttonEl.getAttribute('data-student') || (buttonEl.dataset && buttonEl.dataset.student);
+    const charId = buttonEl.getAttribute('data-char-id') || (buttonEl.dataset && buttonEl.dataset.charId) || AppState.selectedSetupFactionId;
+    if (!student) {
+      console.warn("⚠️ handleStudentChipClick: studente mancante", buttonEl);
+      return;
+    }
+    toggleStudentAssignment(student.trim(), charId);
+  }
+
   function toggleStudentAssignment(studentName, targetCharId) {
-    if (!studentName || !targetCharId) return;
-    if (!AppState.sessionData.teamAssignments) {
+    if (!studentName) return;
+    const charId = targetCharId || AppState.selectedSetupFactionId;
+    if (!charId) return;
+
+    if (!AppState.sessionData) {
+      AppState.sessionData = {};
+    }
+    if (!AppState.sessionData.teamAssignments || typeof AppState.sessionData.teamAssignments !== 'object') {
       AppState.sessionData.teamAssignments = {};
     }
+
     const assignments = AppState.sessionData.teamAssignments;
-    if (!Array.isArray(assignments[targetCharId])) {
-      assignments[targetCharId] = [];
+    if (!Array.isArray(assignments[charId])) {
+      assignments[charId] = [];
     }
 
-    const currentList = assignments[targetCharId];
+    const currentList = assignments[charId];
     const indexInTarget = currentList.indexOf(studentName);
 
     if (indexInTarget > -1) {
@@ -523,20 +545,25 @@
       currentList.push(studentName);
     }
 
+    // Mantiene attiva la fazione selezionata
+    AppState.selectedSetupFactionId = charId;
+
     renderPawnsGrid();
-    renderFactionWorkbench(targetCharId);
+    renderFactionWorkbench(charId);
     updateSetupSummary();
     persistSessionAsync();
   }
 
   async function saveCurrentFactionTeam(charId) {
+    const cid = charId || AppState.selectedSetupFactionId;
     const chars = HISTORY_MODES[AppState.currentMode].characters;
-    const c = chars.find(item => item.id === charId);
-    const count = (AppState.sessionData.teamAssignments[charId] || []).length;
+    const c = chars.find(item => item.id === cid);
+    const assignments = (AppState.sessionData && AppState.sessionData.teamAssignments) || {};
+    const count = (assignments[cid] || []).length;
     
     await persistSessionAsync();
     renderPawnsGrid();
-    renderFactionWorkbench(charId);
+    renderFactionWorkbench(cid);
     updateSetupSummary();
     showToast(`✅ Squadra ${c ? c.name : ''} salvata (${count} studenti)!`, "toast-success");
   }
@@ -770,6 +797,23 @@
         AppState.currentMode,
         (data) => {
           if (data) {
+            // Se abbiamo già assegnazioni attive in locale, non sovrascriverle con un payload vuoto
+            const localHasAssignments = AppState.sessionData && 
+              AppState.sessionData.teamAssignments && 
+              Object.values(AppState.sessionData.teamAssignments).some(arr => Array.isArray(arr) && arr.length > 0);
+            const incomingHasAssignments = data.teamAssignments && 
+              Object.values(data.teamAssignments).some(arr => Array.isArray(arr) && arr.length > 0);
+
+            if (localHasAssignments && !incomingHasAssignments) {
+              return;
+            }
+
+            // Ignora snapshot obsoleti se lo stato locale è più recente (evita race conditions)
+            if (AppState.sessionData && AppState.sessionData.updatedAt && data.updatedAt) {
+              if (new Date(data.updatedAt).getTime() < new Date(AppState.sessionData.updatedAt).getTime()) {
+                return;
+              }
+            }
             AppState.sessionData = data;
             renderAll();
             if (AppState.currentView === 'view-setup-class') {
@@ -1302,11 +1346,6 @@
 
         ${thesesHtml}
 
-        <h4 style="color:var(--accent-gold); margin-top:14px;">📢 Slogan Consigliati:</h4>
-        <ul style="padding-left:18px; font-size:0.9rem;">
-          ${(char.slogans || []).map(s => `<li><em>"${escapeHtml(s)}"</em></li>`).join('')}
-        </ul>
-
         <h4 style="color:var(--accent-gold); margin-top:14px;">📖 Contesto Storico:</h4>
         <p style="font-size:0.9rem; color:var(--text-muted);">${escapeHtml(char.context || '')}</p>
       `;
@@ -1540,21 +1579,9 @@
     if (DOM.prevAvatar) DOM.prevAvatar.textContent = char.avatar;
     if (DOM.prevCharName) DOM.prevCharName.textContent = char.name;
 
-    // Genera chips per slogan e hashtag
+    // Gli slogan/motti vengono inventati liberamente dagli studenti
     if (DOM.slogansChips) {
       DOM.slogansChips.innerHTML = '';
-      (char.slogans || []).forEach(s => {
-        const chip = document.createElement('span');
-        chip.className = 'chip-slogan';
-        chip.textContent = `"${s}"`;
-        chip.onclick = () => {
-          if (DOM.inputSlogan) {
-            DOM.inputSlogan.value = s;
-            if (DOM.prevSlogan) DOM.prevSlogan.textContent = s;
-          }
-        };
-        DOM.slogansChips.appendChild(chip);
-      });
     }
 
     if (DOM.hashtagsChips) {
@@ -1733,6 +1760,7 @@
     selectSetupMode,
     onSetupClassChange,
     selectPawnFaction,
+    handleStudentChipClick,
     toggleStudentAssignment,
     saveCurrentFactionTeam,
     addCustomStudent,
