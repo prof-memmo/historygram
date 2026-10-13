@@ -402,12 +402,43 @@
     } catch (e) {}
 
     if (window.fbAuth) {
-      window.fbAuth.onAuthStateChanged(user => {
+      window.fbAuth.onAuthStateChanged(async user => {
         if (user) {
           AppState.teacherUser = user;
+          const isSuperAdmin = (user.email && user.email.toLowerCase() === 'prof.memmo@gmail.com');
+          let displayName = isSuperAdmin ? 'PROF. MEMMO' : (user.displayName || user.email.split('@')[0]).toUpperCase();
+          let userAvatar = user.photoURL || '';
+          let userRole = isSuperAdmin ? 'AMMINISTRATORE' : 'DOCENTE';
+
+          if (window.fbDb) {
+            try {
+              const doc = await window.fbDb.collection('hub_users').doc(user.uid).get();
+              if (doc.exists) {
+                const data = doc.data() || {};
+                if (data.anagrafica && data.anagrafica.nome) {
+                  displayName = data.anagrafica.nome.toUpperCase();
+                }
+                const rawAvatar = data.avatar || (data.anagrafica && data.anagrafica.avatar) || '';
+                if (rawAvatar) userAvatar = rawAvatar;
+                if (data.role === 'admin' || isSuperAdmin) userRole = 'AMMINISTRATORE';
+              }
+            } catch (err) {
+              console.warn("Lettura hub_users Firestore:", err);
+            }
+          }
+
           AppState.isTeacherUnlocked = true;
-          if (DOM.headerUserName) DOM.headerUserName.textContent = user.displayName || user.email.split('@')[0];
-          if (DOM.dropdownUserName) DOM.dropdownUserName.textContent = user.displayName || user.email.split('@')[0];
+          if (DOM.headerUserName) DOM.headerUserName.textContent = displayName;
+          if (DOM.dropdownUserName) DOM.dropdownUserName.textContent = displayName;
+          if (DOM.headerUserRole) DOM.headerUserRole.textContent = userRole;
+          if (DOM.dropdownUserRoleSub) DOM.dropdownUserRoleSub.textContent = userRole;
+          if (userAvatar && DOM.headerUserAvatar) {
+            DOM.headerUserAvatar.src = userAvatar;
+          }
+          try {
+            localStorage.setItem('hub_user_name', displayName);
+            if (userAvatar) localStorage.setItem('hub_user_avatar', userAvatar);
+          } catch(e) {}
         }
       });
     }
