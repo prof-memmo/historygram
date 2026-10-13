@@ -211,6 +211,9 @@
     if (viewId === 'view-docente') {
       renderTeacherView();
     }
+    if (viewId === 'view-setup-class') {
+      renderSetupClassView();
+    }
 
     // Scroll verso l'alto
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -273,6 +276,14 @@
 
   async function renderSetupClassView() {
     if (!DOM.setupSelectClass || !DOM.pawnsGridContainer) return;
+
+    // Assicura subito la selezione fazione e renderizza immediatamente le card per zero latenza
+    const charsInit = HISTORY_MODES[AppState.currentMode].characters;
+    if (!AppState.selectedSetupFactionId || !charsInit.some(c => c.id === AppState.selectedSetupFactionId)) {
+      AppState.selectedSetupFactionId = charsInit[0] ? charsInit[0].id : null;
+    }
+    renderPawnsGrid();
+    renderFactionWorkbench(AppState.selectedSetupFactionId);
 
     // Carica classi del docente
     DOM.setupSelectClass.innerHTML = '<option value="">Caricamento classi...</option>';
@@ -353,29 +364,15 @@
   function renderPawnsGrid() {
     if (!DOM.pawnsGridContainer) return;
     const chars = HISTORY_MODES[AppState.currentMode].characters;
-    const assignments = (AppState.sessionData && AppState.sessionData.teamAssignments) || {};
 
     DOM.pawnsGridContainer.innerHTML = chars.map(c => {
-      const assigned = assignments[c.id] || [];
-      const count = assigned.length;
       const isSelected = (c.id === AppState.selectedSetupFactionId);
-
-      const countBadge = count > 0 
-        ? `<span class="pawn-count-badge active"><i class="fa-solid fa-users"></i> ${count} Studenti</span>`
-        : `<span class="pawn-count-badge empty">Nessuno studente</span>`;
 
       return `
         <div class="pawn-card ${isSelected ? 'selected' : ''}" 
              data-char-id="${c.id}"
-             onclick="HistoryGramApp.selectPawnFaction('${c.id}', true)"
-             title="Clicca per visualizzare la scheda di ${escapeHtml(c.name)} e assegnare gli studenti">
-          <div class="pawn-card-icon-wrap">
-            ${c.avatar}
-          </div>
+             onclick="HistoryGramApp.selectPawnFaction('${c.id}', true)">
           <div class="pawn-card-title">${escapeHtml(c.name)}</div>
-          <div class="pawn-card-faction">${escapeHtml(c.faction)}</div>
-          ${countBadge}
-          <span class="pawn-info-pill"><i class="fa-solid fa-circle-info"></i> Descrizione</span>
         </div>
       `;
     }).join('');
