@@ -2133,26 +2133,29 @@ h1, h2, h3, h4, h5, h6 {
 
 /* ================= WELCOME HERO ================= */
 .welcome-hero {
-  background: #ffffff;
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius-lg);
-  padding: 40px 24px;
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  padding: 20px 24px;
   text-align: center;
-  max-width: 900px;
-  margin: 20px auto 40px auto;
-  box-shadow: var(--shadow-lg);
+  max-width: 960px;
+  margin: 10px auto 30px auto;
   position: relative;
-  overflow: hidden;
 }
 
 .welcome-hero-logo {
-  height: 180px;
+  height: 280px;
   max-width: 100%;
   width: auto;
   object-fit: contain;
-  margin: 0 auto 24px auto;
+  margin: 0 auto 20px auto;
   display: block;
-  filter: drop-shadow(0 8px 16px rgba(5, 150, 105, 0.25));
+  filter: drop-shadow(0 12px 24px rgba(5, 150, 105, 0.2));
+  transition: transform 0.25s ease;
+}
+
+.welcome-hero-logo:hover {
+  transform: scale(1.02);
 }
 
 .welcome-title {
