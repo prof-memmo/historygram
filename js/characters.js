@@ -7,16 +7,16 @@
 const HISTORY_MODES = {
   revolution_1800: {
     id: "revolution_1800",
-    title: "Revolution Influencer",
-    subtitle: "Like alla Libertà!",
+    title: "I moti rivoluzionari",
+    subtitle: "Moti dell'Ottocento",
     targetClass: "Secondaria di 1° Grado - Classi Terze",
     badge: "🇮🇹 Moti 1820 - 1848 🇫🇷",
-    description: "I gruppi rappresentano un team influencer dell'Ottocento: trasformano proclami e idee storiche in slogan virali e hashtag. Ogni like vale 1 follower. Vince chi guida l'opinione pubblica!",
+    description: "I gruppi rappresentano un team influencer dell'Ottocento: trasformano proclami e idee storiche in slogan virali e hashtag. Vince chi guida l'opinione pubblica!",
     scoringMetric: "Follower (1 Like = 1 Follower + Bonus Merito Docente)",
     characters: [
       {
         id: "carbonaro",
-        name: "Il Carbonaro",
+        name: "I Carbonari",
         faction: "Italia (1820-21)",
         avatar: "🕯️",
         accentColor: "#2b2d42",
@@ -32,7 +32,7 @@ const HISTORY_MODES = {
       },
       {
         id: "patriota_greco",
-        name: "Il Patriota Greco",
+        name: "I Patrioti Greci",
         faction: "Grecia (1821-29)",
         avatar: "🏛️",
         accentColor: "#0077b6",
@@ -48,7 +48,7 @@ const HISTORY_MODES = {
       },
       {
         id: "liberale_spagnolo",
-        name: "Il Liberale Spagnolo",
+        name: "I Liberali Spagnoli",
         faction: "Spagna (1820)",
         avatar: "📜",
         accentColor: "#d90429",
@@ -64,8 +64,8 @@ const HISTORY_MODES = {
       },
       {
         id: "mazziniano",
-        name: "Il Mazziniano",
-        faction: "Italia (anni '30-'40)",
+        name: "I Mazziniani",
+        faction: "Italia (1831-48)",
         avatar: "🔥",
         accentColor: "#2d6a4f",
         objective: "Un'Italia Una, Indipendente, Libera e Repubblicana.",
@@ -80,8 +80,8 @@ const HISTORY_MODES = {
       },
       {
         id: "socialista_utopista",
-        name: "Il Socialista Utopista",
-        faction: "Europa (1830-40)",
+        name: "I Socialisti Utopisti",
+        faction: "Europa (1830-48)",
         avatar: "⚙️",
         accentColor: "#e76f51",
         objective: "Uguaglianza, diritti dei lavoratori, solidarietà sociale e cooperazione tra produttori.",
@@ -96,7 +96,7 @@ const HISTORY_MODES = {
       },
       {
         id: "patriota_francese",
-        name: "Il Patriota Francese",
+        name: "I Patrioti Francesi",
         faction: "Francia (1830)",
         avatar: "🗼",
         accentColor: "#1d3557",
@@ -112,7 +112,7 @@ const HISTORY_MODES = {
       },
       {
         id: "polacco",
-        name: "Il Polacco",
+        name: "I Patrioti Polacchi",
         faction: "Polonia (1830-31)",
         avatar: "🦅",
         accentColor: "#9d0208",
@@ -131,11 +131,11 @@ const HISTORY_MODES = {
 
   reformation_1500: {
     id: "reformation_1500",
-    title: "Influencer del XVI Secolo",
-    subtitle: "Riforma vs Controriforma (Flame del '500)",
+    title: "Riforma e Controriforma",
+    subtitle: "Flame del Cinquecento",
     targetClass: "Secondaria di 1° Grado - Classi Seconde",
     badge: "✝️ Dispute 1517 - 1563 🏛️",
-    description: "Scegli un protagonista del Cinquecento: pubblica post tesi con le idee dottrinali chiave e commenta/sfida i post degli avversari con argomentazioni storiche corrette. Votazione finale su Accuratezza, Creatività e Chiarezza!",
+    description: "Scegli un protagonista del Cinquecento: pubblica post tesi con le idee dottrinali chiave e commenta/sfida i post degli avversari con argomentazioni storiche corrette.",
     scoringMetric: "Valutazione Tripla (Accuratezza Storica ⭐, Creatività 💡, Chiarezza 🗣️)",
     characters: [
       {

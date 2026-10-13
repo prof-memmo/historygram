@@ -187,33 +187,31 @@
         <div class="setup-header-box">
           <span class="setup-step-badge">Passo 1 di 2</span>
           <h2 class="setup-title">Scegli l'Epoca Storica</h2>
-          <p class="setup-subtitle">Seleziona la modalità didattica su cui si sfideranno le squadre della classe.</p>
+          <p class="setup-subtitle">Seleziona il percorso didattico per la sfida della tua classe.</p>
         </div>
 
         <div class="setup-choice-grid">
-          <!-- Card 1: Ottocento -->
+          <!-- Card 1: I Moti Rivoluzionari -->
           <div class="setup-choice-card" onclick="HistoryGramApp.selectSetupMode('revolution_1800')">
             <div class="setup-choice-icon">🇮🇹</div>
-            <span class="setup-choice-badge">Sec. 1° Grado (Classi Terze) • Ottocento</span>
-            <h3 class="setup-choice-title">Revolution Influencer</h3>
+            <h3 class="setup-choice-title">I moti rivoluzionari</h3>
             <p class="setup-choice-desc">
-              I Moti Rivoluzionari del 1820-21, 1830 e 1848. 7 Fazioni Storiche (Carbonari, Mazziniani, Greci, Spagnoli, Socialisti Utopisti, Francesi, Polacchi). Ogni like vale 1 follower per la libertà!
+              Società segrete, barricate e ideali di libertà nell'Ottocento europeo.
             </p>
             <button class="btn-primary-action" style="pointer-events: none;">
-              Scegli Ottocento &rarr;
+              Seleziona &rarr;
             </button>
           </div>
 
-          <!-- Card 2: Cinquecento -->
+          <!-- Card 2: Riforma e Controriforma -->
           <div class="setup-choice-card" onclick="HistoryGramApp.selectSetupMode('reformation_1500')">
             <div class="setup-choice-icon">✝️</div>
-            <span class="setup-choice-badge">Sec. 1° Grado (Classi Seconde) • Cinquecento</span>
-            <h3 class="setup-choice-title">Riforma vs Controriforma</h3>
+            <h3 class="setup-choice-title">Riforma e Controriforma</h3>
             <p class="setup-choice-desc">
-              La grande sfida di idee e i flame del XVI secolo tra 6 figure storiche: Lutero, Calvino, Zwingli, Loyola, Borromeo e Paolo III. Post dottrinali, dibattiti e votazione a 3 stelle!
+              Dispute dottrinali, flame teologici e grandi protagonisti del Cinquecento.
             </p>
             <button class="btn-primary-action" style="pointer-events: none;">
-              Scegli Cinquecento &rarr;
+              Seleziona &rarr;
             </button>
           </div>
         </div>
@@ -226,47 +224,62 @@
       </section>
 
       <!-- ========================================
-           3. VIEW: STEP 2 - CLASSE & SQUADRE (Fanta)
+           3. VIEW: STEP 2 - SCELTA INFLUENCER & SQUADRE
            ======================================== -->
       <section id="view-setup-class" class="view">
         <div class="setup-header-box">
           <span class="setup-step-badge">Passo 2 di 2</span>
-          <h2 class="setup-title">Classe &amp; Spartizione Squadre</h2>
+          <h2 class="setup-title">Scegli quale influencer vuoi essere</h2>
           <p class="setup-subtitle">
-            Seleziona la classe registrata nell'Hub e ripartisci gli studenti nelle squadre storiche.
+            Clicca su una pedina per visualizzarne l'identikit storico e smistare gli studenti della classe.
           </p>
         </div>
 
-        <div class="glass-card" style="max-width: 900px; margin: 0 auto; padding: 25px; border-radius: 18px; border: 1px solid var(--border-color); background: var(--bg-card);">
-          <div style="display: flex; gap: 20px; flex-wrap: wrap; align-items: flex-end; margin-bottom: 25px;">
-            <div style="flex: 1; min-width: 240px;">
-              <label style="display: block; font-weight: 700; margin-bottom: 8px; color: var(--text-main);">Classe dell'Hub / Codice Stanza:</label>
+        <div class="setup-step2-container">
+          <!-- Toolbar Selezione Classe & Strumenti Rapidi -->
+          <div class="setup-class-toolbar">
+            <div class="toolbar-field">
+              <label for="setupSelectClass"><i class="fa-solid fa-chalkboard-user"></i> Classe dell'Hub / Codice Stanza:</label>
               <select id="setupSelectClass" class="form-input" onchange="HistoryGramApp.onSetupClassChange(this.value)">
                 <!-- Popolato da JS -->
               </select>
             </div>
-            <div>
-              <button class="btn-secondary-action" onclick="HistoryGramApp.autoDistributeTeams()" title="Assegna automaticamente in modo equo">
+            <div class="toolbar-actions">
+              <button class="btn-secondary-action" onclick="HistoryGramApp.autoDistributeTeams()" title="Distribuisce automaticamente gli studenti disponibili">
                 <i class="fa-solid fa-wand-magic-sparkles"></i> Distribuzione Equilibrata
+              </button>
+              <button class="btn-secondary-action" onclick="HistoryGramApp.resetTeamAssignments()" title="Azzera le assegnazioni per ricominciare">
+                <i class="fa-solid fa-arrow-rotate-left"></i> Azzera Squadre
               </button>
             </div>
           </div>
 
-          <h3 style="font-size: 1.15rem; margin-bottom: 15px; color: var(--text-main); display: flex; align-items: center; gap: 8px;">
-            <i class="fa-solid fa-users-gear" style="color: var(--accent-purple-light);"></i> 
-            Tavolo di Assegnazione Squadre &bull; <span id="setupSelectedModeLabel" style="color: var(--accent-gold);">Moti '800</span>
-          </h3>
-
-          <div id="setupTeamsRosterGrid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 14px; margin-bottom: 30px;">
-            <!-- Popolato dinamicamente da JS -->
+          <!-- Griglia Pedine Fazioni Storiche (Stile L'Oratore, Full Width) -->
+          <div class="pawn-choice-section">
+            <div class="pawn-choice-header">
+              <span id="setupSelectedModeLabel" class="pawn-choice-epoch-tag">I Moti Rivoluzionari</span>
+              <span class="pawn-choice-hint"><i class="fa-solid fa-hand-pointer"></i> Clicca su una pedina per aprire la scheda e assegnare gli studenti</span>
+            </div>
+            <div id="pawnsGridContainer" class="pawn-choice-grid-giant">
+              <!-- Popolato dinamicamente da JS -->
+            </div>
           </div>
 
-          <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--border-color); padding-top: 20px; flex-wrap: wrap; gap: 12px;">
+          <!-- Workbench Fazione Attiva (Descrizione Storica + Assegnazione Studenti) -->
+          <div id="setupActiveFactionWorkbench" class="faction-workbench-card">
+            <!-- Popolato dinamicamente al click sulla pedina -->
+          </div>
+
+          <!-- Barra di Avanzamento / Footer Setup -->
+          <div class="setup-footer-nav">
             <button class="btn-secondary-action" onclick="HistoryGramApp.showView('view-setup-mode')">
               <i class="fa-solid fa-arrow-left"></i> Cambia Epoca
             </button>
-            <button class="btn-giant btn-primary" onclick="HistoryGramApp.launchGameFromSetup()">
-              <i class="fa-solid fa-rocket"></i> Lancia Partita sulla LIM &rarr;
+            <div id="setupRosterSummaryStatus" class="setup-summary-text">
+              <!-- Popolato da JS -->
+            </div>
+            <button id="btnLaunchGame" class="btn-giant btn-primary" onclick="HistoryGramApp.launchGameFromSetup()">
+              <i class="fa-solid fa-rocket"></i> Avvia Sfida sul Muro &rarr;
             </button>
           </div>
         </div>

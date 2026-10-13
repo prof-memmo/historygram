@@ -15,6 +15,12 @@
     isTeacherUnlocked: false,
     teacherUser: null,
     unsubscribeSession: null,
+    currentClassStudents: [
+      "Sara", "Marco", "Luca", "Giulia", "Matteo", "Chiara",
+      "Andrea", "Francesca", "Davide", "Elena", "Federico", "Sofia",
+      "Simone", "Martina", "Lorenzo", "Alessia", "Gabriele", "Valentina"
+    ],
+    selectedSetupFactionId: null,
     sessionData: {
       teamAssignments: {},
       pendingPosts: [],
@@ -45,8 +51,11 @@
 
     // Setup Flow
     setupSelectClass: document.getElementById('setupSelectClass'),
-    setupTeamsRosterGrid: document.getElementById('setupTeamsRosterGrid'),
     setupSelectedModeLabel: document.getElementById('setupSelectedModeLabel'),
+    pawnsGridContainer: document.getElementById('pawnsGridContainer'),
+    setupActiveFactionWorkbench: document.getElementById('setupActiveFactionWorkbench'),
+    setupRosterSummaryStatus: document.getElementById('setupRosterSummaryStatus'),
+    btnLaunchGame: document.getElementById('btnLaunchGame'),
 
     // Game View - Banner & Stats
     bannerSubtag: document.getElementById('bannerSubtag'),
@@ -225,15 +234,18 @@
 
     // Aggiorna etichetta modalità nel passo 2
     if (DOM.setupSelectedModeLabel) {
-      DOM.setupSelectedModeLabel.textContent = HISTORY_MODES[modeId].title + " (" + HISTORY_MODES[modeId].targetClass + ")";
+      DOM.setupSelectedModeLabel.textContent = HISTORY_MODES[modeId].title;
     }
+
+    const characters = HISTORY_MODES[modeId].characters;
+    AppState.selectedSetupFactionId = characters[0] ? characters[0].id : null;
 
     renderSetupClassView();
     showView('view-setup-class');
   }
 
   async function renderSetupClassView() {
-    if (!DOM.setupSelectClass || !DOM.setupTeamsRosterGrid) return;
+    if (!DOM.setupSelectClass || !DOM.pawnsGridContainer) return;
 
     // Carica classi del docente
     DOM.setupSelectClass.innerHTML = '<option value="">Caricamento classi...</option>';
@@ -259,7 +271,329 @@
     optCustom.textContent = '➕ Inserisci un nuovo codice classe...';
     DOM.setupSelectClass.appendChild(optCustom);
 
-    renderSetupTeamsRoster();
+    // Carica studenti della classe selezionata
+    loadStudentsForCurrentClass(classes);
+
+    // Assicura che una fazione sia attiva
+    const chars = HISTORY_MODES[AppState.currentMode].characters;
+    if (!AppState.selectedSetupFactionId || !chars.some(c => c.id === AppState.selectedSetupFactionId)) {
+      AppState.selectedSetupFactionId = chars[0] ? chars[0].id : null;
+    }
+
+    renderPawnsGrid();
+    renderFactionWorkbench(AppState.selectedSetupFactionId);
+    updateSetupSummary();
+  }
+
+  function loadStudentsForCurrentClass(classes) {
+    if (!Array.isArray(classes)) return;
+    const currentCls = classes.find(c => c.id === AppState.currentClassId || c.code === AppState.currentClassCode);
+    if (currentCls) {
+      if (Array.isArray(currentCls.students) && currentCls.students.length > 0) {
+        AppState.currentClassStudents = currentCls.students.map(s => typeof s === 'string' ? s : (s.name || s.id));
+        return;
+      }
+      if (Array.isArray(currentCls.studenti) && currentCls.studenti.length > 0) {
+        AppState.currentClassStudents = currentCls.studenti.map(s => typeof s === 'string' ? s : (s.name || s.id));
+        return;
+      }
+      if (Array.isArray(currentCls.studentNames) && currentCls.studentNames.length > 0) {
+        AppState.currentClassStudents = [...currentCls.studentNames];
+        return;
+      }
+    }
+
+    // Se la classe non ha un elenco salvato, mantiene il roster predefinito ricco
+    if (!AppState.currentClassStudents || AppState.currentClassStudents.length === 0) {
+      AppState.currentClassStudents = [
+        "Sara", "Marco", "Luca", "Giulia", "Matteo", "Chiara",
+        "Andrea", "Francesca", "Davide", "Elena", "Federico", "Sofia",
+        "Simone", "Martina", "Lorenzo", "Alessia", "Gabriele", "Valentina"
+      ];
+    }
+  }
+
+  function renderPawnsGrid() {
+    if (!DOM.pawnsGridContainer) return;
+    const chars = HISTORY_MODES[AppState.currentMode].characters;
+    const assignments = AppState.sessionData.teamAssignments || {};
+
+    DOM.pawnsGridContainer.innerHTML = chars.map(c => {
+      const assigned = assignments[c.id] || [];
+      const count = assigned.length;
+      const isSelected = (c.id === AppState.selectedSetupFactionId);
+
+      const countBadge = count > 0 
+        ? `<span class="pawn-count-badge active"><i class="fa-solid fa-users"></i> ${count} Studenti</span>`
+        : `<span class="pawn-count-badge empty">Nessuno studente</span>`;
+
+      return `
+        <div class="pawn-card ${isSelected ? 'selected' : ''}" 
+             onclick="HistoryGramApp.selectPawnFaction('${c.id}')"
+             title="Clicca per aprire la scheda di ${escapeHtml(c.name)}">
+          <div class="pawn-card-icon-wrap" style="border-color: ${isSelected ? 'var(--accent-green)' : 'var(--border-color)'};">
+            ${c.avatar}
+          </div>
+          <div class="pawn-card-title">${escapeHtml(c.name)}</div>
+          <div class="pawn-card-faction">${escapeHtml(c.faction)}</div>
+          ${countBadge}
+        </div>
+      `;
+    }).join('');
+  }
+
+  function selectPawnFaction(charId) {
+    AppState.selectedSetupFactionId = charId;
+    renderPawnsGrid();
+    renderFactionWorkbench(charId);
+  }
+
+  function renderFactionWorkbench(charId) {
+    if (!DOM.setupActiveFactionWorkbench) return;
+    const chars = HISTORY_MODES[AppState.currentMode].characters;
+    const c = chars.find(item => item.id === charId);
+    if (!c) {
+      DOM.setupActiveFactionWorkbench.innerHTML = `
+        <p style="text-align: center; color: var(--text-muted); font-size: 0.95rem; padding: 20px 0;">
+          <i class="fa-solid fa-chess-pawn"></i> Clicca su una pedina in alto per visualizzarne la descrizione e assegnare gli studenti.
+        </p>
+      `;
+      return;
+    }
+
+    const assignments = AppState.sessionData.teamAssignments || {};
+    const currentAssigned = assignments[c.id] || [];
+    const allStudents = AppState.currentClassStudents || [];
+
+    // Mappa per sapere in quale squadra si trova ogni studente
+    const studentTeamMap = {};
+    chars.forEach(faction => {
+      const roster = assignments[faction.id] || [];
+      roster.forEach(stName => {
+        studentTeamMap[stName] = faction;
+      });
+    });
+
+    // Costruisce i chip degli studenti stile Fantaletteratura
+    let chipsHtml = '';
+    if (allStudents.length === 0) {
+      chipsHtml = `<span style="font-size: 0.85rem; color: var(--text-muted);">Nessuno studente presente nel registro. Aggiungi i nomi tramite il campo sottostante.</span>`;
+    } else {
+      chipsHtml = allStudents.map(stName => {
+        const isHere = currentAssigned.includes(stName);
+        const otherFaction = (!isHere && studentTeamMap[stName]) ? studentTeamMap[stName] : null;
+
+        if (isHere) {
+          return `
+            <div class="student-chip in-this-team" data-student="${escapeHtml(stName)}" data-char-id="${c.id}" onclick="HistoryGramApp.toggleStudentAssignment(this.dataset.student, this.dataset.charId)" title="Clicca per rimuovere da questa squadra">
+              <i class="fa-solid fa-check"></i> ${escapeHtml(stName)}
+              <i class="fa-solid fa-xmark" style="font-size: 0.72rem; margin-left: 4px; opacity: 0.85;"></i>
+            </div>
+          `;
+        } else if (otherFaction) {
+          return `
+            <div class="student-chip in-other-team" data-student="${escapeHtml(stName)}" data-char-id="${c.id}" onclick="HistoryGramApp.toggleStudentAssignment(this.dataset.student, this.dataset.charId)" title="Attualmente in ${escapeHtml(otherFaction.name)}. Clicca per spostare in questa squadra.">
+              <i class="fa-solid fa-arrow-right-arrow-left"></i> ${escapeHtml(stName)}
+              <span class="chip-team-tag">${escapeHtml(otherFaction.name)}</span>
+            </div>
+          `;
+        } else {
+          return `
+            <div class="student-chip available" data-student="${escapeHtml(stName)}" data-char-id="${c.id}" onclick="HistoryGramApp.toggleStudentAssignment(this.dataset.student, this.dataset.charId)" title="Disponibile. Clicca per aggiungere a ${escapeHtml(c.name)}">
+              <i class="fa-solid fa-plus"></i> ${escapeHtml(stName)}
+            </div>
+          `;
+        }
+      }).join('');
+    }
+
+    // Slogans storici
+    const slogansList = (c.slogans || []).map(s => `<span class="workbench-slogan-pill">"${escapeHtml(s)}"</span>`).join('');
+
+    DOM.setupActiveFactionWorkbench.innerHTML = `
+      <div class="workbench-top-grid">
+        <div class="workbench-avatar-large">
+          ${c.avatar}
+        </div>
+        <div>
+          <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 6px;">
+            <h3 class="workbench-info-title">${escapeHtml(c.name)}</h3>
+            <span class="workbench-info-faction">${escapeHtml(c.faction)}</span>
+          </div>
+          <p class="workbench-info-desc">${escapeHtml(c.context || '')}</p>
+          <p class="workbench-info-objective"><strong>🎯 Obiettivo Storico:</strong> ${escapeHtml(c.objective || '')}</p>
+          ${slogansList ? `<div class="workbench-slogans-box">${slogansList}</div>` : ''}
+        </div>
+      </div>
+
+      <div class="workbench-students-section">
+        <div class="workbench-section-header">
+          <div>
+            <h4 class="workbench-section-title">
+              <i class="fa-solid fa-users" style="color: var(--accent-green);"></i> 
+              Studenti Assegnati a ${escapeHtml(c.name)}
+            </h4>
+            <span class="workbench-section-subtitle">
+              Clicca su uno studente per inserirlo o rimuoverlo da questa squadra.
+            </span>
+          </div>
+        </div>
+
+        <div class="workbench-chips-box">
+          ${chipsHtml}
+        </div>
+
+        <!-- Inserimento rapido studente extra -->
+        <div class="workbench-add-custom-box">
+          <input type="text" id="inputCustomStudentName" class="form-input" placeholder="Aggiungi studente extra..." style="font-size: 0.85rem;" onkeydown="if(event.key==='Enter'){ event.preventDefault(); HistoryGramApp.addCustomStudent(); }">
+          <button class="btn btn-secondary-action" onclick="HistoryGramApp.addCustomStudent()" style="white-space: nowrap;">
+            <i class="fa-solid fa-user-plus"></i> Aggiungi
+          </button>
+        </div>
+      </div>
+
+      <div class="workbench-actions-bar">
+        <div class="workbench-team-count-pill">
+          <i class="fa-solid fa-user-check" style="color: var(--accent-green);"></i>
+          <span><strong>${currentAssigned.length}</strong> studenti in ${escapeHtml(c.name)}</span>
+        </div>
+        <button class="btn-primary-action" onclick="HistoryGramApp.saveCurrentFactionTeam('${c.id}')" style="min-width: 170px;">
+          <i class="fa-solid fa-floppy-disk"></i> Salva Squadra
+        </button>
+      </div>
+    `;
+  }
+
+  function toggleStudentAssignment(studentName, targetCharId) {
+    if (!studentName || !targetCharId) return;
+    if (!AppState.sessionData.teamAssignments) {
+      AppState.sessionData.teamAssignments = {};
+    }
+    const assignments = AppState.sessionData.teamAssignments;
+    if (!Array.isArray(assignments[targetCharId])) {
+      assignments[targetCharId] = [];
+    }
+
+    const currentList = assignments[targetCharId];
+    const indexInTarget = currentList.indexOf(studentName);
+
+    if (indexInTarget > -1) {
+      // Rimuove da questa squadra
+      currentList.splice(indexInTarget, 1);
+    } else {
+      // Rimuove prima da qualsiasi altra squadra per evitare doppioni
+      Object.keys(assignments).forEach(cid => {
+        if (Array.isArray(assignments[cid])) {
+          assignments[cid] = assignments[cid].filter(st => st !== studentName);
+        }
+      });
+      // Aggiunge a questa squadra
+      currentList.push(studentName);
+    }
+
+    renderPawnsGrid();
+    renderFactionWorkbench(targetCharId);
+    updateSetupSummary();
+  }
+
+  function saveCurrentFactionTeam(charId) {
+    const chars = HISTORY_MODES[AppState.currentMode].characters;
+    const c = chars.find(item => item.id === charId);
+    const count = (AppState.sessionData.teamAssignments[charId] || []).length;
+    
+    renderPawnsGrid();
+    renderFactionWorkbench(charId);
+    updateSetupSummary();
+    showToast(`✅ Squadra ${c ? c.name : ''} salvata (${count} studenti)!`, "toast-success");
+  }
+
+  function addCustomStudent() {
+    const inp = document.getElementById('inputCustomStudentName');
+    if (!inp) return;
+    const val = inp.value.trim();
+    if (!val) return;
+
+    if (!AppState.currentClassStudents.includes(val)) {
+      AppState.currentClassStudents.push(val);
+    }
+
+    if (AppState.selectedSetupFactionId) {
+      toggleStudentAssignment(val, AppState.selectedSetupFactionId);
+    }
+    inp.value = '';
+    showToast(`👤 Studente "${val}" aggiunto alla rosa!`, "toast-success");
+  }
+
+  function autoDistributeTeams() {
+    const chars = HISTORY_MODES[AppState.currentMode].characters;
+    const students = AppState.currentClassStudents || [];
+
+    if (students.length === 0) {
+      showToast("⚠️ Nessuno studente presente da distribuire.", "toast-warning");
+      return;
+    }
+
+    const assignments = {};
+    chars.forEach(c => {
+      assignments[c.id] = [];
+    });
+
+    students.forEach((stud, idx) => {
+      const charId = chars[idx % chars.length].id;
+      assignments[charId].push(stud);
+    });
+
+    AppState.sessionData.teamAssignments = assignments;
+    renderPawnsGrid();
+    if (AppState.selectedSetupFactionId) {
+      renderFactionWorkbench(AppState.selectedSetupFactionId);
+    }
+    updateSetupSummary();
+    showToast("✨ Studenti distribuiti in modo equilibrato nelle fazioni!", "toast-success");
+  }
+
+  function resetTeamAssignments() {
+    AppState.sessionData.teamAssignments = {};
+    renderPawnsGrid();
+    if (AppState.selectedSetupFactionId) {
+      renderFactionWorkbench(AppState.selectedSetupFactionId);
+    }
+    updateSetupSummary();
+    showToast("🔄 Assegnazioni delle squadre azzerate.", "toast-info");
+  }
+
+  function updateSetupSummary() {
+    if (!DOM.setupRosterSummaryStatus) return;
+    const chars = HISTORY_MODES[AppState.currentMode].characters;
+    const assignments = AppState.sessionData.teamAssignments || {};
+    const allStudents = AppState.currentClassStudents || [];
+
+    let totalAssigned = 0;
+    let activeTeams = 0;
+
+    chars.forEach(c => {
+      const count = (assignments[c.id] || []).length;
+      if (count > 0) {
+        totalAssigned += count;
+        activeTeams++;
+      }
+    });
+
+    DOM.setupRosterSummaryStatus.innerHTML = `
+      <span><strong>${totalAssigned}</strong> su <strong>${allStudents.length}</strong> studenti smistati &bull; <strong>${activeTeams}</strong> squadre attive</span>
+    `;
+
+    if (DOM.btnLaunchGame) {
+      if (totalAssigned > 0) {
+        DOM.btnLaunchGame.removeAttribute('disabled');
+        DOM.btnLaunchGame.style.opacity = '1';
+        DOM.btnLaunchGame.style.pointerEvents = 'auto';
+      } else {
+        DOM.btnLaunchGame.setAttribute('disabled', 'true');
+        DOM.btnLaunchGame.style.opacity = '0.5';
+        DOM.btnLaunchGame.style.pointerEvents = 'none';
+      }
+    }
   }
 
   function onSetupClassChange(val) {
@@ -276,73 +610,19 @@
     const parts = val.replace('classe_', '').toUpperCase();
     AppState.currentClassCode = parts || '3B';
     connectSession();
-    renderSetupTeamsRoster();
-  }
-
-  function renderSetupTeamsRoster() {
-    if (!DOM.setupTeamsRosterGrid) return;
-    const chars = HISTORY_MODES[AppState.currentMode].characters;
-    const assignments = AppState.sessionData.teamAssignments || {};
-
-    DOM.setupTeamsRosterGrid.innerHTML = '';
-    chars.forEach(c => {
-      const card = document.createElement('div');
-      card.style.cssText = `background: var(--bg-secondary); border: 1.5px solid var(--border-color); border-radius: 12px; padding: 14px; display: flex; flex-direction: column; gap: 8px;`;
-
-      const currentStudents = assignments[c.id] || [];
-
-      card.innerHTML = `
-        <div style="display: flex; align-items: center; gap: 10px;">
-          <span style="font-size: 1.8rem;">${c.avatar}</span>
-          <div style="flex: 1;">
-            <strong style="color: var(--text-main); font-size: 0.95rem;">${escapeHtml(c.name)}</strong>
-            <small style="display: block; color: var(--text-muted); font-size: 0.75rem;">${escapeHtml(c.faction)}</small>
-          </div>
-        </div>
-        <div>
-          <label style="font-size: 0.78rem; font-weight: 700; color: var(--text-muted); display: block; margin-bottom: 4px;">Studenti assegnati (separati da virgola):</label>
-          <input type="text" class="form-input setup-team-input" data-char-id="${c.id}" value="${escapeHtml(currentStudents.join(', '))}" placeholder="Es. Marco, Elena, Davide" style="font-size: 0.82rem; padding: 6px 10px;">
-        </div>
-      `;
-      DOM.setupTeamsRosterGrid.appendChild(card);
-    });
-  }
-
-  function autoDistributeTeams() {
-    const chars = HISTORY_MODES[AppState.currentMode].characters;
-    const defaultRoster = [
-      "Sara", "Marco", "Luca", "Giulia", "Matteo", "Chiara",
-      "Andrea", "Francesca", "Davide", "Elena", "Federico", "Sofia",
-      "Simone", "Martina", "Lorenzo", "Alessia", "Gabriele", "Valentina"
-    ];
-
-    const assignments = {};
-    chars.forEach((c, idx) => {
-      assignments[c.id] = [];
-    });
-
-    defaultRoster.forEach((stud, idx) => {
-      const charId = chars[idx % chars.length].id;
-      assignments[charId].push(stud);
-    });
-
-    AppState.sessionData.teamAssignments = assignments;
-    renderSetupTeamsRoster();
-    showToast("✨ Studenti distribuiti in modo equilibrato nelle squadre!", "toast-success");
+    renderSetupClassView();
   }
 
   async function launchGameFromSetup() {
     try {
-      // Raccoglie gli input delle squadre
-      const inputs = document.querySelectorAll('.setup-team-input');
-      const assignments = {};
-      inputs.forEach(inp => {
-        const cid = inp.getAttribute('data-char-id');
-        const val = inp.value.trim();
-        assignments[cid] = val ? val.split(',').map(s => s.trim()).filter(Boolean) : [];
-      });
+      const assignments = AppState.sessionData.teamAssignments || {};
+      const chars = HISTORY_MODES[AppState.currentMode].characters;
+      const activeTeams = chars.filter(c => (assignments[c.id] || []).length > 0);
 
-      AppState.sessionData.teamAssignments = assignments;
+      if (activeTeams.length === 0) {
+        showToast("⚠️ Assegna almeno uno studente a una squadra prima di iniziare!", "toast-warning");
+        return;
+      }
 
       if (window.HistoryGramService) {
         try {
@@ -358,11 +638,10 @@
 
       connectSession();
       renderAll();
-      showToast("🚀 Partita avviata con successo! Benvenuti sulla LIM.", "toast-success");
+      showToast("🚀 Partita avviata con successo! Benvenuti sul Muro.", "toast-success");
       showView('view-game');
     } catch (err) {
       console.error("Errore launchGameFromSetup:", err);
-      // Garantisce comunque il passaggio alla vista della partita
       connectSession();
       renderAll();
       showView('view-game');
@@ -1418,6 +1697,11 @@
     startSetupFlow,
     selectSetupMode,
     onSetupClassChange,
+    selectPawnFaction,
+    toggleStudentAssignment,
+    saveCurrentFactionTeam,
+    addCustomStudent,
+    resetTeamAssignments,
     autoDistributeTeams,
     launchGameFromSetup,
     toggleUserDropdown,
