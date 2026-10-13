@@ -332,25 +332,41 @@
   }
 
   async function launchGameFromSetup() {
-    // Raccoglie gli input delle squadre
-    const inputs = document.querySelectorAll('.setup-team-input');
-    const assignments = {};
-    inputs.forEach(inp => {
-      const cid = inp.getAttribute('data-char-id');
-      const val = inp.value.trim();
-      assignments[cid] = val ? val.split(',').map(s => s.trim()).filter(Boolean) : [];
-    });
+    try {
+      // Raccoglie gli input delle squadre
+      const inputs = document.querySelectorAll('.setup-team-input');
+      const assignments = {};
+      inputs.forEach(inp => {
+        const cid = inp.getAttribute('data-char-id');
+        const val = inp.value.trim();
+        assignments[cid] = val ? val.split(',').map(s => s.trim()).filter(Boolean) : [];
+      });
 
-    AppState.sessionData.teamAssignments = assignments;
+      AppState.sessionData.teamAssignments = assignments;
 
-    if (window.HistoryGramService) {
-      await window.HistoryGramService.bulkAssignTeams(AppState.currentClassId, AppState.currentMode, assignments);
+      if (window.HistoryGramService) {
+        try {
+          if (typeof window.HistoryGramService.bulkAssignTeams === 'function') {
+            await window.HistoryGramService.bulkAssignTeams(AppState.currentClassId, AppState.currentMode, assignments);
+          } else if (typeof window.HistoryGramService.updateTeamAssignments === 'function') {
+            await window.HistoryGramService.updateTeamAssignments(AppState.currentClassId, AppState.currentMode, assignments);
+          }
+        } catch (syncErr) {
+          console.warn("Avviso sincronizzazione squadre:", syncErr);
+        }
+      }
+
+      connectSession();
+      renderAll();
+      showToast("🚀 Partita avviata con successo! Benvenuti sulla LIM.", "toast-success");
+      showView('view-game');
+    } catch (err) {
+      console.error("Errore launchGameFromSetup:", err);
+      // Garantisce comunque il passaggio alla vista della partita
+      connectSession();
+      renderAll();
+      showView('view-game');
     }
-
-    connectSession();
-    renderAll();
-    showToast("🚀 Partita avviata con successo! Benvenuti sulla LIM.", "toast-success");
-    showView('view-game');
   }
 
   /* ================= CONTROLLO SSO UTENTE ================= */
@@ -363,8 +379,10 @@
       if (ssoName) {
         if (DOM.headerUserName) DOM.headerUserName.textContent = ssoName;
         if (DOM.dropdownUserName) DOM.dropdownUserName.textContent = ssoName;
-        if (DOM.dropdownUserRoleSub) DOM.dropdownUserRoleSub.textContent = ssoRole === 'docente' ? 'DOCENTE ECOSISTEMA' : 'STUDENTE';
-        if (ssoRole === 'docente') AppState.isTeacherUnlocked = true;
+        const roleLabel = (ssoRole === 'docente' || ssoRole === 'admin') ? 'AMMINISTRATORE' : 'STUDENTE';
+        if (DOM.headerUserRole) DOM.headerUserRole.textContent = roleLabel;
+        if (DOM.dropdownUserRoleSub) DOM.dropdownUserRoleSub.textContent = roleLabel;
+        if (ssoRole === 'docente' || ssoRole === 'admin') AppState.isTeacherUnlocked = true;
       }
       if (ssoAvatar && DOM.headerUserAvatar) {
         DOM.headerUserAvatar.src = ssoAvatar;
@@ -891,12 +909,75 @@
     DOM.modalCharDetail.classList.remove('hidden');
   }
 
+  /* ================= MINIGUIDA MODAL LOGIC (Stile L'Oratore) ================= */
+  const guideSteps = [
+    {
+      icon: "👥",
+      title: "1. Forma le Squadre e Scegli l'Epoca",
+      desc: "Il docente seleziona la classe dall'Hub e la modalità storica (Ottocento: Moti Rivoluzionari o Cinquecento: Riforma vs Controriforma), assegnando gli studenti alle fazioni e ai protagonisti storici."
+    },
+    {
+      icon: "✍️",
+      title: "2. Componi Proclami e Slogan d'Epoca",
+      desc: "Ogni squadra cala le tesi storiche nei linguaggi della comunicazione social: argomenta ideali e riforme, cita fonti autentiche, inventa slogan virali e sceglie la cornice visiva d'epoca."
+    },
+    {
+      icon: "🛡️",
+      title: "3. Imprimatur del Docente sulla LIM",
+      desc: "I post vengono inviati alla Cattedra. Il docente verifica l'accuratezza storica, assegna follower bonus per merito e convalida l'imprimatur per proiettare i post in tempo reale sulla LIM."
+    },
+    {
+      icon: "🔥",
+      title: "4. Repliche, Dibattito e Like alla Libertà",
+      desc: "La classe vota i proclami più persuasivi con Like ❤️ e scatena repliche o sfide dottrinali per far trionfare la propria tesi storica sul tabellone finale!"
+    }
+  ];
+
+  let currentGuideStepIndex = 0;
+
+  function renderGuideStep() {
+    const s = guideSteps[currentGuideStepIndex];
+    const iconEl = document.getElementById('guide-step-icon');
+    const titleEl = document.getElementById('guide-step-title');
+    const descEl = document.getElementById('guide-step-desc');
+    const numEl = document.getElementById('guide-step-num');
+    const prevBtn = document.getElementById('guide-prev-btn');
+    const nextBtn = document.getElementById('guide-next-btn');
+
+    if (iconEl) iconEl.textContent = s.icon;
+    if (titleEl) titleEl.textContent = s.title;
+    if (descEl) descEl.textContent = s.desc;
+    if (numEl) numEl.textContent = `Passo ${currentGuideStepIndex + 1} di ${guideSteps.length}`;
+    if (prevBtn) prevBtn.style.visibility = currentGuideStepIndex === 0 ? 'hidden' : 'visible';
+    if (nextBtn) nextBtn.textContent = currentGuideStepIndex === guideSteps.length - 1 ? 'Chiudi ✓' : 'Avanti ➔';
+  }
+
+  function nextGuideStep() {
+    if (currentGuideStepIndex < guideSteps.length - 1) {
+      currentGuideStepIndex++;
+      renderGuideStep();
+    } else {
+      closeMiniguidaModal();
+    }
+  }
+
+  function prevGuideStep() {
+    if (currentGuideStepIndex > 0) {
+      currentGuideStepIndex--;
+      renderGuideStep();
+    }
+  }
+
   function openMiniguidaModal() {
-    if (DOM.modalMiniguida) DOM.modalMiniguida.classList.remove('hidden');
+    currentGuideStepIndex = 0;
+    renderGuideStep();
+    const m = document.getElementById('modalMiniguida');
+    if (m) m.classList.remove('hidden');
   }
 
   function closeMiniguidaModal() {
-    if (DOM.modalMiniguida) DOM.modalMiniguida.classList.add('hidden');
+    const m = document.getElementById('modalMiniguida');
+    if (m) m.classList.add('hidden');
   }
 
   /* ================= BIND EVENTI ================= */
@@ -1144,6 +1225,101 @@
     }
   }
 
+  /* ================= GESTIONE MODALE RIPRENDI PARTITA (Stile L'Oratore) ================= */
+  function openSavedGamesModal() {
+    renderSavedGamesList();
+    const modal = document.getElementById('savedGamesModal');
+    if (modal) modal.classList.remove('hidden');
+  }
+
+  function closeSavedGamesModal() {
+    const modal = document.getElementById('savedGamesModal');
+    if (modal) modal.classList.add('hidden');
+  }
+
+  function renderSavedGamesList() {
+    const listEl = document.getElementById('savedGamesList');
+    if (!listEl) return;
+
+    const sessions = [];
+
+    // Sessione corrente in memoria
+    const currentModeName = AppState.currentMode === 'revolution_1800' ? "Ottocento: Revolution Influencer" : "Cinquecento: Riforma vs Controriforma";
+    const currentPostCount = (AppState.sessionData.approvedPosts || []).length;
+    sessions.push({
+      id: `${AppState.currentClassId}_${AppState.currentMode}`,
+      classId: AppState.currentClassId,
+      mode: AppState.currentMode,
+      title: `Sessione Attiva (${AppState.currentClassId})`,
+      modeName: currentModeName,
+      postsCount: currentPostCount,
+      isCurrent: true,
+      updatedAt: new Date().toLocaleDateString('it-IT')
+    });
+
+    // Cerca altre sessioni in LocalStorage
+    try {
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key && key.startsWith('historygram_session_') && !key.endsWith(`${AppState.currentClassId}_${AppState.currentMode}`)) {
+          const raw = localStorage.getItem(key);
+          if (raw) {
+            const data = JSON.parse(raw);
+            const parts = key.replace('historygram_session_', '').split('_');
+            const cId = parts[0] || 'Classe';
+            const mId = parts.slice(1).join('_') || 'revolution_1800';
+            const mName = mId === 'revolution_1800' ? "Ottocento: Revolution Influencer" : "Cinquecento: Riforma vs Controriforma";
+            sessions.push({
+              id: `${cId}_${mId}`,
+              classId: cId,
+              mode: mId,
+              title: `Sessione (${cId})`,
+              modeName: mName,
+              postsCount: (data.approvedPosts || []).length,
+              isCurrent: false,
+              updatedAt: data.updatedAt || 'Precedente'
+            });
+          }
+        }
+      }
+    } catch (e) {}
+
+    let html = '';
+    sessions.forEach(sess => {
+      html += `
+        <div class="saved-game-item" style="display: flex; align-items: center; justify-content: space-between; padding: 14px 18px; background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 12px; margin-bottom: 10px; gap: 12px;">
+          <div style="flex: 1;">
+            <div style="font-weight: 800; color: var(--text-main); font-size: 0.95rem; font-family: var(--font-heading); display: flex; align-items: center; gap: 8px;">
+              <i class="fa-solid fa-graduation-cap" style="color: var(--accent-green);"></i>
+              ${sess.title}
+              ${sess.isCurrent ? '<span style="font-size: 0.7rem; background: rgba(5,150,105,0.15); color: var(--accent-green); padding: 2px 8px; border-radius: 20px; font-weight: 700;">IN CORSO</span>' : ''}
+            </div>
+            <div style="font-size: 0.82rem; color: var(--text-muted); margin-top: 4px;">
+              ${sess.modeName} &bull; <strong>${sess.postsCount}</strong> post pubblicati
+            </div>
+          </div>
+          <div>
+            <button class="btn-primary-action" style="padding: 8px 16px; font-size: 0.85rem;" onclick="HistoryGramApp.resumeSavedSession('${sess.classId}', '${sess.mode}')">
+              <i class="fa-solid fa-play"></i> Riprendi
+            </button>
+          </div>
+        </div>
+      `;
+    });
+
+    listEl.innerHTML = html;
+  }
+
+  function resumeSavedSession(classId, mode) {
+    AppState.currentClassId = classId;
+    AppState.currentMode = mode;
+    closeSavedGamesModal();
+    connectSession();
+    renderAll();
+    showToast("📂 Sessione ripresa con successo! Feed aggiornato.", "toast-success");
+    showView('view-game');
+  }
+
   /* ================= EXPORT API GLOBALE ================= */
   window.HistoryGramApp = {
     showView,
@@ -1155,6 +1331,11 @@
     toggleUserDropdown,
     openMiniguidaModal,
     closeMiniguidaModal,
+    nextGuideStep,
+    prevGuideStep,
+    openSavedGamesModal,
+    closeSavedGamesModal,
+    resumeSavedSession,
     unlockTeacherFromView,
     switchTeacherTab,
     saveTeamsFromView,

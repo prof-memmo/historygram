@@ -138,11 +138,16 @@ class HistoryGramService {
     return this.getDefaultSessionState(classId, modeId);
   }
 
-  // Gestione Squadre (Fantaletteratura style): assegna studenti ai personaggi
+  // Gestione Squadre: assegna studenti ai personaggi storici
   async updateTeamAssignments(classId, modeId, teamAssignments) {
     const state = await this.getSession(classId, modeId);
     state.teamAssignments = teamAssignments; // { characterId: ["Marco", "Sara", "Luca"] }
     await this.saveSession(classId, modeId, state);
+  }
+
+  // Alias compatibile per assegnazione massiva squadre
+  async bulkAssignTeams(classId, modeId, teamAssignments) {
+    return this.updateTeamAssignments(classId, modeId, teamAssignments);
   }
 
   // Invia post alla coda di approvazione

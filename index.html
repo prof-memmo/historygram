@@ -65,7 +65,7 @@
               </div>
               <div class="user-trigger-text">
                 <span class="user-trigger-name" id="header-user-name">PROF. MEMMO</span>
-                <span class="user-trigger-role" id="header-user-role">DOCENTE ECOSISTEMA</span>
+                <span class="user-trigger-role" id="header-user-role">AMMINISTRATORE</span>
               </div>
               <span class="user-trigger-chevron"><i class="fa-solid fa-chevron-down"></i></span>
             </div>
@@ -74,7 +74,7 @@
             <div class="user-dropdown hidden" id="user-dropdown">
               <div class="dropdown-user-header">
                 <div class="dropdown-user-title" id="dropdown-user-name">PROF. MEMMO</div>
-                <div class="dropdown-user-subtitle" id="dropdown-user-role-sub">DOCENTE ECOSISTEMA</div>
+                <div class="dropdown-user-subtitle" id="dropdown-user-role-sub">AMMINISTRATORE</div>
               </div>
 
               <!-- Sottofondo Music Player Widget -->
@@ -150,36 +150,37 @@
       <section id="view-welcome" class="view active">
         <div class="welcome-hero">
           <img src="assets/branding/historygram-logo.png" alt="HistoryGram" class="welcome-hero-logo" onerror="this.src='assets/branding/Logo Historigram base.png'">
-          <h1 class="welcome-title">HistoryGram</h1>
           <p class="welcome-subtitle">
             Il Social Network Didattico della Storia: trasforma la tua classe in una piazza viva con proclami, slogan virali, flame dottrinali e Like alla Libertà!
           </p>
 
           <div class="mode-pills-row">
-            <div class="mode-pill"><i class="fa-solid fa-flag" style="color: #38bdf8;"></i> 3ª Media: Revolution Influencer ('800)</div>
-            <div class="mode-pill"><i class="fa-solid fa-cross" style="color: #f59e0b;"></i> 2ª Media: Riforma vs Controriforma ('500)</div>
-            <div class="mode-pill"><i class="fa-solid fa-users" style="color: #a855f7;"></i> Squadre &amp; Classi (Fantaletteratura)</div>
-            <div class="mode-pill"><i class="fa-solid fa-shield-halved" style="color: #10b981;"></i> Imprimatur Docente sulla LIM</div>
+            <div class="mode-pill"><i class="fa-solid fa-flag" style="color: #38bdf8;"></i> Sec. 1° Grado (Classi Terze): Revolution Influencer ('800)</div>
+            <div class="mode-pill"><i class="fa-solid fa-cross" style="color: #f59e0b;"></i> Sec. 1° Grado (Classi Seconde): Riforma vs Controriforma ('500)</div>
+            <div class="mode-pill"><i class="fa-solid fa-users" style="color: #a855f7;"></i> Composizione Squadre per Classe</div>
           </div>
 
-          <div class="welcome-actions-wrap">
+          <div class="welcome-actions-wrap" style="display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; margin-top: 20px;">
             <button class="btn-giant btn-primary" onclick="HistoryGramApp.startSetupFlow()">
               <i class="fa-solid fa-play"></i> Inizia Nuova Partita
             </button>
-            <button class="btn-giant btn-secondary" onclick="HistoryGramApp.showView('view-game')">
-              <i class="fa-solid fa-gamepad"></i> Vai al Feed LIM
-            </button>
-            <button class="btn-giant btn-secondary" onclick="HistoryGramApp.showView('view-docente')">
-              <i class="fa-solid fa-chalkboard-user"></i> Cattedra Docente
+            <button class="btn-giant btn-secondary" onclick="HistoryGramApp.openSavedGamesModal()">
+              <i class="fa-solid fa-folder-open"></i> Riprendi Partita
             </button>
           </div>
         </div>
 
         <footer class="view-footer-copyright">
-          <img src="https://prof-memmo.github.io/prof-memmo-gestione-siti/shared/assets/legal/patamu-badge.png" alt="Patamu" class="patamu-footer-badge">
-          <p class="footer-copy">
-            &copy; 2026 Guglielmo Piersanti. Tutti i contenuti e i concept didattici di HistoryGram sono protetti tramite deposito e marcatura temporale digitale su Patamu.com. Distribuiti con licenza Creative Commons Attribuzione - Non commerciale - Non opere derivate 4.0 Internazionale (CC BY-NC-ND 4.0).
-          </p>
+          <div class="footer-legal-links" style="display: flex; justify-content: center; gap: 20px; font-size: 0.85rem; margin-bottom: 10px; width: 100%;">
+            <a href="javascript:void(0)" onclick="if(window.openSharedModal) window.openSharedModal('privacy'); else if(window.Modals) Modals.openLegalModal('privacy');" style="color: var(--accent-green); text-decoration: underline; font-weight: 600;">Privacy Policy</a>
+            <a href="javascript:void(0)" onclick="if(window.openSharedModal) window.openSharedModal('termini'); else if(window.Modals) Modals.openLegalModal('termini');" style="color: var(--accent-green); text-decoration: underline; font-weight: 600;">Termini e Condizioni</a>
+          </div>
+          <div class="footer-badge-text-row" style="display: flex; align-items: center; justify-content: center; gap: 16px; width: 100%;">
+            <img src="https://prof-memmo.github.io/prof-memmo-gestione-siti/shared/assets/legal/patamu-badge.png" alt="Patamu" class="patamu-footer-badge" style="height: 52px; object-fit: contain; flex-shrink: 0;">
+            <p class="footer-copy" style="text-align: left; font-size: 0.78rem; line-height: 1.4; margin: 0; color: var(--text-muted); max-width: 780px;">
+              &copy; 2026 Guglielmo Piersanti. Tutti i contenuti presenti su questo sito sono di proprietà dell'autore e sono protetti tramite deposito e marcatura temporale presso Patamu. I contenuti sono inoltre distribuiti con licenza Creative Commons Attribuzione - Non commerciale - Non opere derivate 4.0 Internazionale (CC BY-NC-ND 4.0).
+            </p>
+          </div>
         </footer>
       </section>
 
@@ -197,7 +198,7 @@
           <!-- Card 1: Ottocento -->
           <div class="setup-choice-card" onclick="HistoryGramApp.selectSetupMode('revolution_1800')">
             <div class="setup-choice-icon">🇮🇹</div>
-            <span class="setup-choice-badge">3ª Media • Ottocento</span>
+            <span class="setup-choice-badge">Sec. 1° Grado (Classi Terze) • Ottocento</span>
             <h3 class="setup-choice-title">Revolution Influencer</h3>
             <p class="setup-choice-desc">
               I Moti Rivoluzionari del 1820-21, 1830 e 1848. 7 Fazioni Storiche (Carbonari, Mazziniani, Greci, Spagnoli, Socialisti Utopisti, Francesi, Polacchi). Ogni like vale 1 follower per la libertà!
@@ -210,7 +211,7 @@
           <!-- Card 2: Cinquecento -->
           <div class="setup-choice-card" onclick="HistoryGramApp.selectSetupMode('reformation_1500')">
             <div class="setup-choice-icon">✝️</div>
-            <span class="setup-choice-badge">2ª Media • Cinquecento</span>
+            <span class="setup-choice-badge">Sec. 1° Grado (Classi Seconde) • Cinquecento</span>
             <h3 class="setup-choice-title">Riforma vs Controriforma</h3>
             <p class="setup-choice-desc">
               La grande sfida di idee e i flame del XVI secolo tra 6 figure storiche: Lutero, Calvino, Zwingli, Loyola, Borromeo e Paolo III. Post dottrinali, dibattiti e votazione a 3 stelle!
@@ -236,7 +237,7 @@
           <span class="setup-step-badge">Passo 2 di 2</span>
           <h2 class="setup-title">Classe &amp; Spartizione Squadre</h2>
           <p class="setup-subtitle">
-            Seleziona la classe registrata nell'Hub e ripartisci gli studenti nelle squadre storiche (Modello Fantaletteratura).
+            Seleziona la classe registrata nell'Hub e ripartisci gli studenti nelle squadre storiche.
           </p>
         </div>
 
@@ -284,7 +285,7 @@
         <section class="game-banner">
           <div class="game-banner-container">
             <div class="banner-text">
-              <span class="banner-subtag" id="bannerSubtag">■ Terza Media • Moti Rivoluzionari dell'Ottocento</span>
+              <span class="banner-subtag" id="bannerSubtag">■ Sec. 1° Grado (Classi Terze) • Moti Rivoluzionari dell'Ottocento</span>
               <h1 class="banner-heading" id="bannerHeading">Revolution Influencer – Like alla Libertà!</h1>
               <p class="banner-description" id="bannerDescription">
                 Ogni gruppo rappresenta un team influencer dell'Ottocento. Trasforma i proclami storici in slogan e hashtag virali: 
@@ -429,7 +430,7 @@
                 <i class="fa-solid fa-inbox"></i> Coda Imprimatur (<span id="viewTQueueCount">0</span>)
               </button>
               <button class="t-nav-btn" id="btnTabTeams" onclick="HistoryGramApp.switchTeacherTab('teams')">
-                <i class="fa-solid fa-users-gear"></i> Gestione Squadre (Fanta)
+                <i class="fa-solid fa-users-gear"></i> Gestione Squadre
               </button>
               <button class="t-nav-btn" id="btnTabSettings" onclick="HistoryGramApp.switchTeacherTab('settings')">
                 <i class="fa-solid fa-sliders"></i> Sessione &amp; Reset
@@ -446,7 +447,7 @@
               <div class="queue-cards-list" id="viewTeacherQueueList"></div>
             </div>
 
-            <!-- Tab 2: Gestione Squadre Fanta -->
+            <!-- Tab 2: Gestione Squadre Storiche -->
             <div id="tabDocenteTeams" class="hidden">
               <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 10px;">
                 <h4 style="margin: 0; color: var(--text-main);"><i class="fa-solid fa-users"></i> Ripartizione Studenti nelle Squadre</h4>
@@ -515,10 +516,16 @@
         </div>
 
         <footer class="view-footer-copyright">
-          <img src="https://prof-memmo.github.io/prof-memmo-gestione-siti/shared/assets/legal/patamu-badge.png" alt="Patamu" class="patamu-footer-badge">
-          <p class="footer-copy">
-            &copy; 2026 Guglielmo Piersanti. Tutti i contenuti sono protetti tramite deposito e marcatura temporale digitale su Patamu.com (CC BY-NC-ND 4.0).
-          </p>
+          <div class="footer-legal-links" style="display: flex; justify-content: center; gap: 20px; font-size: 0.85rem; margin-bottom: 10px; width: 100%;">
+            <a href="javascript:void(0)" onclick="if(window.openSharedModal) window.openSharedModal('privacy'); else if(window.Modals) Modals.openLegalModal('privacy');" style="color: var(--accent-green); text-decoration: underline; font-weight: 600;">Privacy Policy</a>
+            <a href="javascript:void(0)" onclick="if(window.openSharedModal) window.openSharedModal('termini'); else if(window.Modals) Modals.openLegalModal('termini');" style="color: var(--accent-green); text-decoration: underline; font-weight: 600;">Termini e Condizioni</a>
+          </div>
+          <div class="footer-badge-text-row" style="display: flex; align-items: center; justify-content: center; gap: 16px; width: 100%;">
+            <img src="https://prof-memmo.github.io/prof-memmo-gestione-siti/shared/assets/legal/patamu-badge.png" alt="Patamu" class="patamu-footer-badge" style="height: 52px; object-fit: contain; flex-shrink: 0;">
+            <p class="footer-copy" style="text-align: left; font-size: 0.78rem; line-height: 1.4; margin: 0; color: var(--text-muted); max-width: 780px;">
+              &copy; 2026 Guglielmo Piersanti. Tutti i contenuti sono protetti tramite deposito e marcatura temporale digitale su Patamu.com (CC BY-NC-ND 4.0).
+            </p>
+          </div>
         </footer>
       </section>
 
@@ -717,31 +724,54 @@
     </div>
   </div>
 
-  <!-- Modal 4: Miniguida & Guida LIM -->
-  <div class="modal-overlay hidden" id="modalMiniguida">
-    <div class="modal-box modal-lg">
+  <!-- Modal 4: Miniguida & Tutorial (Stile L'Oratore / Ecosistema Standard) -->
+  <div id="modalMiniguida" class="modal-overlay hidden" style="align-items: center; justify-content: center; z-index: 9999; background: rgba(15,23,42,0.8); backdrop-filter: blur(4px); position: fixed; inset: 0; padding: 20px;">
+    <div class="modal-content" style="background: white; border-radius: 24px; width: 100%; max-width: 900px; display: flex; overflow: hidden; position: relative; max-height: 90vh; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5);">
+      <div style="width: 33%; background: #f8fafc; display: flex; align-items: flex-end; justify-content: center; border-right: 2px solid #f1f5f9; padding-top: 20px;" class="hide-mobile">
+        <img src="https://prof-memmo.github.io/prof-memmo-gestione-siti/shared/assets/branding/prof-memmo/prof-memmo-full.jpg" alt="Prof Memmo" style="width: 120%; object-fit: contain; mix-blend-mode: multiply; filter: drop-shadow(0 10px 15px rgba(0,0,0,0.2));" onerror="this.src='https://prof-memmo.github.io/prof-memmo-gestione-siti/shared/assets/branding/prof-memmo/prof-memmo-avatar.png'">
+      </div>
+      <div style="flex: 1; padding: 30px 40px; display: flex; flex-direction: column; position: relative; min-height: 450px;">
+        <button onclick="HistoryGramApp.closeMiniguidaModal()" style="position: absolute; top: 15px; right: 15px; width: 36px; height: 36px; border-radius: 50%; border: none; background: #f1f5f9; color: #475569; font-size: 1.2rem; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background 0.2s;"><i class="fa-solid fa-xmark"></i></button>
+        
+        <h2 id="guide-modal-title" style="font-size: 1.85rem; font-weight: 900; color: var(--accent-green); margin-bottom: 25px; text-align: center; text-transform: uppercase; border-bottom: 4px solid rgba(5, 150, 105, 0.2); padding-bottom: 10px; display: inline-block; margin-left: auto; margin-right: auto; font-family: var(--font-heading);">Come si gioca?</h2>
+        
+        <div style="flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; animation: fadeIn 0.3s ease-out;">
+          <div id="guide-step-icon" style="font-size: 4.5rem; margin-bottom: 15px;">👥</div>
+          <h3 id="guide-step-title" style="font-size: 1.25rem; font-weight: 800; color: #1e293b; margin-bottom: 10px; font-family: var(--font-heading);">1. Forma le Squadre e Scegli l'Epoca</h3>
+          <p id="guide-step-desc" style="font-size: 1.15rem; color: #475569; line-height: 1.6; font-weight: 500; max-width: 520px;">Il docente seleziona la classe e la modalità didattica (Ottocento: Moti Rivoluzionari o Cinquecento: Riforma vs Controriforma), assegnando gli studenti alle fazioni e ai protagonisti storici.</p>
+        </div>
+        
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 20px;">
+          <div style="font-size: 0.85rem; font-weight: 700; color: #94a3b8;" id="guide-step-num">Passo 1 di 4</div>
+          <div style="display: flex; gap: 10px;">
+            <button id="guide-prev-btn" onclick="HistoryGramApp.prevGuideStep()" style="background: #f1f5f9; color: #475569; border: none; padding: 10px 20px; border-radius: 12px; font-weight: 800; font-size: 0.95rem; cursor: pointer; font-family: var(--font-heading); visibility: hidden;">Indietro</button>
+            <button id="guide-next-btn" onclick="HistoryGramApp.nextGuideStep()" style="background: var(--accent-green); color: #fff; border: none; padding: 10px 26px; border-radius: 12px; font-weight: 900; font-size: 0.95rem; cursor: pointer; box-shadow: 0 4px 6px rgba(0,0,0,0.1); font-family: var(--font-heading);">Avanti ➔</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal 5: Riprendi Partita / Sessioni Salvate (Stile L'Oratore) -->
+  <div class="modal-overlay hidden" id="savedGamesModal">
+    <div class="modal-box" style="max-width: 600px;">
       <div class="modal-header-styled">
         <div>
-          <span class="modal-category-tag" style="color: #c084fc;">GUIDA RAPIDA</span>
-          <h2 class="modal-title-text">Come Giocare a HistoryGram sulla LIM</h2>
+          <span class="modal-category-tag" style="color: var(--accent-green);">SESSIONI ATTIVE &amp; SALVATE</span>
+          <h2 class="modal-title-text"><i class="fa-solid fa-folder-open"></i> Riprendi Partita</h2>
         </div>
-        <button class="btn-close-styled" onclick="HistoryGramApp.closeMiniguidaModal()">&times;</button>
+        <button class="btn-close-styled" onclick="HistoryGramApp.closeSavedGamesModal()">&times;</button>
       </div>
-      <div class="modal-body-padded" style="line-height: 1.6;">
-        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; margin-bottom: 20px;">
-          <div style="background: var(--bg-card); border: 1px solid var(--border-color); padding: 18px; border-radius: 14px;">
-            <h4 style="color: var(--accent-purple-light); margin-top: 0;"><i class="fa-solid fa-1"></i> Prepara la Classe</h4>
-            <p style="font-size: 0.88rem; color: var(--text-muted); margin: 0;">Il docente sceglie l'epoca (Moti '800 o Riforma '500) e spartisce gli studenti nelle squadre dei personaggi storici.</p>
-          </div>
-          <div style="background: var(--bg-card); border: 1px solid var(--border-color); padding: 18px; border-radius: 14px;">
-            <h4 style="color: var(--accent-gold); margin-top: 0;"><i class="fa-solid fa-2"></i> Gli Studenti Scrivono</h4>
-            <p style="font-size: 0.88rem; color: var(--text-muted); margin: 0;">Ogni squadra crea il proprio proclama o replica dottrinale inserendo slogan persuasivo e hashtag d'epoca.</p>
-          </div>
-          <div style="background: var(--bg-card); border: 1px solid var(--border-color); padding: 18px; border-radius: 14px;">
-            <h4 style="color: #38bdf8; margin-top: 0;"><i class="fa-solid fa-3"></i> Imprimatur sulla LIM</h4>
-            <p style="font-size: 0.88rem; color: var(--text-muted); margin: 0;">Il docente convalida i post dalla Cattedra. I post approvati compaiono istantaneamente sul feed proiettato sulla LIM.</p>
-          </div>
+      <div class="modal-body-padded">
+        <p style="font-size: 0.88rem; color: var(--text-muted); margin-bottom: 16px;">
+          Seleziona una sessione precedente per riprendere la partita dal punto esatto in cui l'hai lasciata.
+        </p>
+        <div id="savedGamesList" class="saved-games-list">
+          <!-- Popolato dinamicamente da HistoryGramApp.renderSavedGamesList() -->
         </div>
+      </div>
+      <div class="modal-actions-right">
+        <button class="btn-secondary-action" onclick="HistoryGramApp.closeSavedGamesModal()">Chiudi</button>
       </div>
     </div>
   </div>
