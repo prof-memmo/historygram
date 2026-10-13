@@ -227,7 +227,28 @@
     showView('view-setup-mode');
   }
 
-  function selectSetupMode(modeId) {
+  async function persistSessionAsync() {
+    if (!AppState.sessionData) {
+      AppState.sessionData = {};
+    }
+    AppState.sessionData.classId = AppState.currentClassId;
+    AppState.sessionData.modeId = AppState.currentMode;
+    AppState.sessionData.updatedAt = new Date().toISOString();
+
+    if (window.HistoryGramService) {
+      try {
+        await window.HistoryGramService.saveSession(
+          AppState.currentClassId,
+          AppState.currentMode,
+          AppState.sessionData
+        );
+      } catch (err) {
+        console.warn("⚠️ Salvataggio persistente non riuscito:", err);
+      }
+    }
+  }
+
+  async function selectSetupMode(modeId) {
     if (!HISTORY_MODES[modeId]) return;
     AppState.currentMode = modeId;
     renderModeUI();
@@ -240,7 +261,8 @@
     const characters = HISTORY_MODES[modeId].characters;
     AppState.selectedSetupFactionId = characters[0] ? characters[0].id : null;
 
-    renderSetupClassView();
+    connectSession();
+    await renderSetupClassView();
     showView('view-setup-class');
   }
 
@@ -270,6 +292,16 @@
     optCustom.value = 'custom';
     optCustom.textContent = '➕ Inserisci un nuovo codice classe...';
     DOM.setupSelectClass.appendChild(optCustom);
+
+    // Carica eventuale sessione esistente da Firestore o LocalStorage
+    if (window.HistoryGramService) {
+      try {
+        const existingSession = await window.HistoryGramService.getSession(AppState.currentClassId, AppState.currentMode);
+        if (existingSession && existingSession.teamAssignments && Object.keys(existingSession.teamAssignments).length > 0) {
+          AppState.sessionData = existingSession;
+        }
+      } catch (e) {}
+    }
 
     // Carica studenti della classe selezionata
     loadStudentsForCurrentClass(classes);
@@ -494,13 +526,15 @@
     renderPawnsGrid();
     renderFactionWorkbench(targetCharId);
     updateSetupSummary();
+    persistSessionAsync();
   }
 
-  function saveCurrentFactionTeam(charId) {
+  async function saveCurrentFactionTeam(charId) {
     const chars = HISTORY_MODES[AppState.currentMode].characters;
     const c = chars.find(item => item.id === charId);
     const count = (AppState.sessionData.teamAssignments[charId] || []).length;
     
+    await persistSessionAsync();
     renderPawnsGrid();
     renderFactionWorkbench(charId);
     updateSetupSummary();
@@ -524,7 +558,7 @@
     showToast(`👤 Studente "${val}" aggiunto alla rosa!`, "toast-success");
   }
 
-  function autoDistributeTeams() {
+  async function autoDistributeTeams() {
     const chars = HISTORY_MODES[AppState.currentMode].characters;
     const students = AppState.currentClassStudents || [];
 
@@ -544,6 +578,7 @@
     });
 
     AppState.sessionData.teamAssignments = assignments;
+    await persistSessionAsync();
     renderPawnsGrid();
     if (AppState.selectedSetupFactionId) {
       renderFactionWorkbench(AppState.selectedSetupFactionId);
@@ -552,8 +587,9 @@
     showToast("✨ Studenti distribuiti in modo equilibrato nelle fazioni!", "toast-success");
   }
 
-  function resetTeamAssignments() {
+  async function resetTeamAssignments() {
     AppState.sessionData.teamAssignments = {};
+    await persistSessionAsync();
     renderPawnsGrid();
     if (AppState.selectedSetupFactionId) {
       renderFactionWorkbench(AppState.selectedSetupFactionId);
@@ -587,11 +623,13 @@
       if (totalAssigned > 0) {
         DOM.btnLaunchGame.removeAttribute('disabled');
         DOM.btnLaunchGame.style.opacity = '1';
+        DOM.btnLaunchGame.style.cursor = 'pointer';
         DOM.btnLaunchGame.style.pointerEvents = 'auto';
       } else {
-        DOM.btnLaunchGame.setAttribute('disabled', 'true');
-        DOM.btnLaunchGame.style.opacity = '0.5';
-        DOM.btnLaunchGame.style.pointerEvents = 'none';
+        DOM.btnLaunchGame.removeAttribute('disabled');
+        DOM.btnLaunchGame.style.opacity = '0.7';
+        DOM.btnLaunchGame.style.cursor = 'pointer';
+        DOM.btnLaunchGame.style.pointerEvents = 'auto';
       }
     }
   }
@@ -620,21 +658,11 @@
       const activeTeams = chars.filter(c => (assignments[c.id] || []).length > 0);
 
       if (activeTeams.length === 0) {
-        showToast("⚠️ Assegna almeno uno studente a una squadra prima di iniziare!", "toast-warning");
+        showToast("⚠️ Assegna almeno uno studente prima di avviare la sfida sul Muro!", "toast-warning");
         return;
       }
 
-      if (window.HistoryGramService) {
-        try {
-          if (typeof window.HistoryGramService.bulkAssignTeams === 'function') {
-            await window.HistoryGramService.bulkAssignTeams(AppState.currentClassId, AppState.currentMode, assignments);
-          } else if (typeof window.HistoryGramService.updateTeamAssignments === 'function') {
-            await window.HistoryGramService.updateTeamAssignments(AppState.currentClassId, AppState.currentMode, assignments);
-          }
-        } catch (syncErr) {
-          console.warn("Avviso sincronizzazione squadre:", syncErr);
-        }
-      }
+      await persistSessionAsync();
 
       connectSession();
       renderAll();
@@ -744,6 +772,13 @@
           if (data) {
             AppState.sessionData = data;
             renderAll();
+            if (AppState.currentView === 'view-setup-class') {
+              renderPawnsGrid();
+              if (AppState.selectedSetupFactionId) {
+                renderFactionWorkbench(AppState.selectedSetupFactionId);
+              }
+              updateSetupSummary();
+            }
           }
         }
       );

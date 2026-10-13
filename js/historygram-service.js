@@ -57,7 +57,7 @@ class HistoryGramService {
     return { id: 'classe_' + code.toLowerCase(), code: code, name: 'Classe ' + code, school: 'Scuola Secondaria' };
   }
 
-  // Ascolta gli aggiornamenti in tempo reale della sessione
+  // Ascolta gli aggiornamenti in tempo reale della sessione (Firestore con fallback LocalStorage)
   subscribeSession(classId, modeId, callback) {
     const sessionId = `${classId}_${modeId}`;
     
@@ -68,6 +68,17 @@ class HistoryGramService {
           if (doc.exists) {
             callback(doc.data());
           } else {
+            // Se non esiste ancora su Firestore, verifica se c'è un backup locale salvato
+            const localRaw = localStorage.getItem(`${this.localKeyPrefix}${sessionId}`);
+            if (localRaw) {
+              try {
+                const localData = JSON.parse(localRaw);
+                callback(localData);
+                // Sincronizza verso Firestore per creare il documento online
+                docRef.set(localData, { merge: true }).catch(() => {});
+                return;
+              } catch (e) {}
+            }
             const initial = this.getDefaultSessionState(classId, modeId);
             callback(initial);
           }
@@ -86,17 +97,25 @@ class HistoryGramService {
 
   listenLocalStorage(sessionId, callback) {
     const key = `${this.localKeyPrefix}${sessionId}`;
-    const read = () => {
+    let lastRaw = null;
+    const checkUpdate = () => {
       try {
         const raw = localStorage.getItem(key);
-        return raw ? JSON.parse(raw) : this.getDefaultSessionState();
+        if (raw === lastRaw) return;
+        lastRaw = raw;
+        if (raw) {
+          callback(JSON.parse(raw));
+        } else {
+          const parts = sessionId.split('_');
+          callback(this.getDefaultSessionState(parts[0], parts.slice(1).join('_')));
+        }
       } catch (e) {
-        return this.getDefaultSessionState();
+        console.warn("⚠️ Errore lettura sessione locale:", e);
       }
     };
 
-    callback(read());
-    const interval = setInterval(() => callback(read()), 1200);
+    checkUpdate();
+    const interval = setInterval(checkUpdate, 1500);
     return () => clearInterval(interval);
   }
 
