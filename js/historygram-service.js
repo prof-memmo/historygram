@@ -67,7 +67,17 @@ class HistoryGramService {
                         const r = (u.role || '').toLowerCase();
                         return r !== 'docente' && r !== 'admin' && r !== 'insegnante';
                       })
-                      .map(u => u.displayName || u.name || (u.anagrafica && u.anagrafica.nome) || u.nickname || 'Studente');
+                      .map(u => {
+                        if (u.anagrafica) {
+                          const full = `${u.anagrafica.nome || ''} ${u.anagrafica.cognome || ''}`.trim();
+                          if (full) return full;
+                        }
+                        if (u.nome || u.cognome) {
+                          const full = `${u.nome || ''} ${u.cognome || ''}`.trim();
+                          if (full) return full;
+                        }
+                        return u.displayName || u.name || (u.email ? u.email.split('@')[0] : '') || u.nickname || 'Studente';
+                      });
                   }
                 } catch(e) {}
               }

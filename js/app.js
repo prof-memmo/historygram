@@ -212,7 +212,10 @@
       renderTeacherView();
     }
     if (viewId === 'view-setup-class') {
+      document.body.classList.add('view-no-scroll');
       renderSetupClassView();
+    } else {
+      document.body.classList.remove('view-no-scroll');
     }
 
     // Scroll verso l'alto
@@ -348,7 +351,17 @@
       const extractName = s => {
         if (typeof s === 'string') return s;
         if (!s) return 'Studente';
-        return s.displayName || s.name || s.nickname || (s.anagrafica && s.anagrafica.nome) || s.id || 'Studente';
+        if (s.anagrafica) {
+          const n = s.anagrafica.nome || '';
+          const c = s.anagrafica.cognome || '';
+          const full = `${n} ${c}`.trim();
+          if (full) return full;
+        }
+        if (s.nome || s.cognome) {
+          const full = `${s.nome || ''} ${s.cognome || ''}`.trim();
+          if (full) return full;
+        }
+        return s.displayName || s.name || s.nickname || (s.email ? s.email.split('@')[0] : '') || s.id || 'Studente';
       };
 
       if (Array.isArray(currentCls.students) && currentCls.students.length > 0) {
@@ -361,6 +374,10 @@
       }
       if (Array.isArray(currentCls.studentNames) && currentCls.studentNames.length > 0) {
         AppState.currentClassStudents = currentCls.studentNames.map(extractName);
+        return;
+      }
+      if (Array.isArray(currentCls.members) && currentCls.members.length > 0) {
+        AppState.currentClassStudents = currentCls.members.map(extractName);
         return;
       }
     }
@@ -378,17 +395,30 @@
   function renderPawnsGrid() {
     if (!DOM.pawnsGridContainer) return;
     const chars = HISTORY_MODES[AppState.currentMode].characters;
+    const assignments = (AppState.sessionData && AppState.sessionData.teamAssignments) || {};
 
     DOM.pawnsGridContainer.innerHTML = chars.map(c => {
       const isSelected = (c.id === AppState.selectedSetupFactionId);
+      const teamList = assignments[c.id] || [];
+      const count = teamList.length;
+      const countBadge = count > 0 
+        ? `<span class="pawn-count-badge active" title="${count} studenti: ${escapeHtml(teamList.join(', '))}"><i class="fa-solid fa-users"></i> ${count}</span>`
+        : `<span class="pawn-count-badge empty" title="Nessuno studente"><i class="fa-solid fa-user-plus"></i> 0</span>`;
+      const membersPreview = count > 0 ? escapeHtml(teamList.join(', ')) : 'Nessun membro';
 
       return `
         <div class="pawn-card ${isSelected ? 'selected' : ''}" 
              data-char-id="${c.id}"
              onclick="HistoryGramApp.selectPawnFaction('${c.id}')"
-             title="${escapeHtml(c.name)}">
-          <span class="pawn-card-avatar">${c.avatar}</span>
-          <span class="pawn-card-title">${escapeHtml(c.name)}</span>
+             title="${escapeHtml(c.name)}: ${count} studenti">
+          <div class="pawn-card-left">
+            <span class="pawn-card-avatar">${c.avatar}</span>
+            <div class="pawn-card-info-col">
+              <span class="pawn-card-title">${escapeHtml(c.name)}</span>
+              <span class="pawn-card-members-preview">${membersPreview}</span>
+            </div>
+          </div>
+          ${countBadge}
         </div>
       `;
     }).join('');
@@ -461,9 +491,24 @@
       <div class="members-workbench-header">
         <div class="members-active-team-info">
           <div class="members-active-avatar">${c.avatar}</div>
-          <div>
-            <h3 class="members-active-name">${escapeHtml(c.name)}</h3>
-            <span class="members-active-tag">${escapeHtml(c.faction)}</span>
+          <div class="members-active-text-col">
+            <div class="members-active-title-row">
+              <h3 class="members-active-name">${escapeHtml(c.name)}</h3>
+              <span class="members-active-tag">${escapeHtml(c.faction)}</span>
+            </div>
+            <div class="members-team-status-line">
+              <span class="members-team-count-pill ${currentAssigned.length > 0 ? 'has-members' : ''}">
+                <i class="fa-solid ${currentAssigned.length > 0 ? 'fa-user-check' : 'fa-users'}"></i>
+                <strong>${currentAssigned.length}</strong> ${currentAssigned.length === 1 ? 'studente' : 'studenti'}
+              </span>
+              ${currentAssigned.length > 0 ? `
+                <span class="members-team-list-preview" title="${escapeHtml(currentAssigned.join(', '))}">
+                  : <strong>${escapeHtml(currentAssigned.join(', '))}</strong>
+                </span>
+              ` : `
+                <span class="members-team-empty-hint">Nessun componente assegnato (clicca sui nomi sotto per aggiungerli)</span>
+              `}
+            </div>
           </div>
         </div>
         <button type="button" class="btn btn-secondary-action btn-sm" onclick="HistoryGramApp.openCharDetailModal('${c.id}')" title="Scopri la loro storia">
@@ -530,6 +575,12 @@
 
     // Mantiene attiva la fazione selezionata
     AppState.selectedSetupFactionId = charId;
+    AppState.sessionData.updatedAt = new Date().toISOString();
+
+    // Suono click per feedback tattile se disponibile
+    if (window.AudioEngine && typeof window.AudioEngine.play === 'function') {
+      try { window.AudioEngine.play('click'); } catch(e) {}
+    }
 
     // Persiste immediatamente nello storage locale
     try {
