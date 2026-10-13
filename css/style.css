@@ -2480,15 +2480,18 @@ h1, h2, h3, h4, h5, h6 {
 /* ==========================================================================
    PASSO 2: SMISTAMENTO FAZIONI & SQUADRE (SEMIFICATO, INTUITIVO & LIM-READY)
    ========================================================================== */
+/* ==========================================================================
+   PASSO 2: SMISTAMENTO FAZIONI & SQUADRE (ZERO-SCROLL PER LIM & LAPTOP)
+   ========================================================================== */
 body.view-no-scroll {
   overflow: hidden !important;
   height: 100vh !important;
 }
 
 body.view-no-scroll .main-views-container {
-  padding: 4px 16px 4px 16px !important;
-  height: calc(100vh - 128px) !important;
-  max-height: calc(100vh - 128px) !important;
+  padding: 4px 16px 72px 16px !important;
+  height: 100vh !important;
+  max-height: 100vh !important;
   overflow: hidden !important;
   display: flex !important;
   flex-direction: column !important;
@@ -2507,17 +2510,19 @@ body.view-no-scroll .main-views-container {
 }
 
 .setup-header-box.lim-setup-header {
-  padding: 6px 14px;
+  padding: 4px 12px;
   margin: 0;
   flex-shrink: 0;
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-md);
+  background: rgba(255, 255, 255, 0.95);
+  border: 1px solid var(--border-color);
 }
 
 .setup-factions-panel {
   background: #ffffff;
   border: 1.5px solid var(--border-color);
-  border-radius: var(--radius-lg);
-  padding: 6px 12px;
+  border-radius: var(--radius-md);
+  padding: 6px 10px;
   box-shadow: var(--shadow-sm);
   flex-shrink: 0;
 }
@@ -2527,18 +2532,18 @@ body.view-no-scroll .main-views-container {
   justify-content: space-between;
   align-items: center;
   margin-bottom: 4px;
-  padding-bottom: 3px;
+  padding-bottom: 2px;
   border-bottom: 1px solid var(--border-color);
 }
 
 .setup-panel-hint {
-  font-size: 0.72rem;
+  font-size: 0.70rem;
   color: var(--text-muted);
   font-weight: 700;
   text-transform: uppercase;
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 4px;
 }
 
 .pawn-choice-grid-giant {
@@ -2556,10 +2561,10 @@ body.view-no-scroll .main-views-container {
 
 .pawn-card {
   background: #ffffff;
-  border: 2px solid var(--border-color);
-  border-radius: var(--radius-md);
-  padding: 6px 8px;
-  min-height: 42px;
+  border: 1.5px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  padding: 4px 8px;
+  min-height: 38px;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -2567,7 +2572,7 @@ body.view-no-scroll .main-views-container {
   text-align: left;
   cursor: pointer;
   transition: all 0.18s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: var(--shadow-sm);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.04);
   position: relative;
   user-select: none;
 }
@@ -2575,31 +2580,30 @@ body.view-no-scroll .main-views-container {
 .pawn-card-left {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 5px;
   min-width: 0;
   flex: 1;
 }
 
 .pawn-card:hover {
-  transform: translateY(-2px);
+  transform: translateY(-1px);
   border-color: var(--accent-green);
-  box-shadow: 0 4px 14px rgba(5, 150, 105, 0.16);
+  box-shadow: 0 3px 10px rgba(5, 150, 105, 0.14);
 }
 
 .pawn-card.selected {
   border-color: var(--accent-green);
   background: #f0fdf4;
-  box-shadow: 0 0 0 2px var(--accent-green), 0 4px 16px rgba(5, 150, 105, 0.20);
+  box-shadow: 0 0 0 2px var(--accent-green);
 }
 
 .pawn-card-avatar {
-  font-size: 1.35rem;
+  font-size: 1.25rem;
   line-height: 1;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  transition: transform 0.2s ease;
 }
 
 .pawn-card.selected .pawn-card-avatar {
@@ -2615,7 +2619,7 @@ body.view-no-scroll .main-views-container {
 
 .pawn-card-title {
   font-family: var(--font-heading);
-  font-size: 0.80rem;
+  font-size: 0.76rem;
   font-weight: 800;
   color: var(--text-main);
   text-transform: uppercase;
@@ -2628,19 +2632,18 @@ body.view-no-scroll .main-views-container {
 }
 
 .pawn-card-members-preview {
-  font-size: 0.68rem;
+  font-size: 0.65rem;
   color: var(--text-muted);
   font-weight: 600;
-  margin-top: 1px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
 .pawn-count-badge {
-  font-size: 0.70rem;
+  font-size: 0.68rem;
   font-weight: 700;
-  padding: 2px 7px;
+  padding: 1px 6px;
   border-radius: 999px;
   white-space: nowrap;
   flex-shrink: 0;
@@ -2665,8 +2668,8 @@ body.view-no-scroll .main-views-container {
 .setup-members-panel {
   background: #ffffff;
   border: 1.5px solid var(--border-color);
-  border-radius: var(--radius-lg);
-  padding: 8px 12px;
+  border-radius: var(--radius-md);
+  padding: 6px 10px;
   box-shadow: var(--shadow-sm);
   flex: 1;
   min-height: 0;
@@ -2680,7 +2683,7 @@ body.view-no-scroll .main-views-container {
   flex-direction: column;
   height: 100%;
   min-height: 0;
-  gap: 6px;
+  gap: 4px;
 }
 
 .members-workbench-header {
@@ -2690,28 +2693,28 @@ body.view-no-scroll .main-views-container {
   flex-wrap: wrap;
   gap: 6px;
   padding-bottom: 4px;
-  border-bottom: 1.5px solid var(--border-color);
+  border-bottom: 1px solid var(--border-color);
   flex-shrink: 0;
 }
 
 .members-active-team-info {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
   min-width: 0;
   flex: 1;
 }
 
 .members-active-avatar {
-  width: 34px;
-  height: 34px;
+  width: 28px;
+  height: 28px;
   border-radius: 50%;
   background: #f8fafc;
   border: 2px solid var(--accent-green);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.3rem;
+  font-size: 1.15rem;
   flex-shrink: 0;
 }
 
@@ -2730,16 +2733,16 @@ body.view-no-scroll .main-views-container {
 
 .members-active-name {
   font-family: var(--font-heading);
-  font-size: 0.98rem;
+  font-size: 0.88rem;
   font-weight: 800;
   color: var(--text-main);
   text-transform: uppercase;
   margin: 0;
-  line-height: 1.2;
+  line-height: 1.15;
 }
 
 .members-active-tag {
-  font-size: 0.68rem;
+  font-size: 0.65rem;
   color: var(--text-muted);
   font-weight: 700;
 }
@@ -2747,7 +2750,7 @@ body.view-no-scroll .main-views-container {
 .members-team-status-line {
   display: flex;
   align-items: center;
-  gap: 5px;
+  gap: 4px;
   margin-top: 1px;
   flex-wrap: wrap;
 }
@@ -2755,11 +2758,11 @@ body.view-no-scroll .main-views-container {
 .members-team-count-pill {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
-  font-size: 0.74rem;
+  gap: 3px;
+  font-size: 0.70rem;
   color: var(--text-muted);
   background: #f1f5f9;
-  padding: 1px 7px;
+  padding: 1px 6px;
   border-radius: 999px;
   font-weight: 600;
 }
@@ -2772,7 +2775,7 @@ body.view-no-scroll .main-views-container {
 }
 
 .members-team-list-preview {
-  font-size: 0.78rem;
+  font-size: 0.74rem;
   color: var(--accent-green-dark);
   font-weight: 700;
   white-space: nowrap;
@@ -2782,7 +2785,7 @@ body.view-no-scroll .main-views-container {
 }
 
 .members-team-empty-hint {
-  font-size: 0.74rem;
+  font-size: 0.70rem;
   color: var(--text-muted);
   font-style: italic;
 }
@@ -2790,7 +2793,7 @@ body.view-no-scroll .main-views-container {
 .members-chips-section {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 3px;
   flex: 1;
   min-height: 0;
   overflow: hidden;
@@ -2801,8 +2804,8 @@ body.view-no-scroll .main-views-container {
   flex-wrap: wrap;
   gap: 5px;
   padding: 6px;
-  border: 1.5px dashed var(--border-color);
-  border-radius: var(--radius-md);
+  border: 1px dashed var(--border-color);
+  border-radius: var(--radius-sm);
   background: #f8fafc;
   flex: 1;
   min-height: 50px;
