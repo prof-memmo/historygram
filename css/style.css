@@ -1407,14 +1407,14 @@ h1, h2, h3, h4, h5, h6 {
 
 /* ================= VIEW FOOTER COPYRIGHT (ECOSISTEMA STANDARD) ================= */
 .view-footer-copyright {
-  margin-top: 35px;
-  padding: 18px 0 22px 0;
+  margin-top: 14px;
+  padding: 10px 0 12px 0;
   border-top: 1px solid rgba(5, 150, 105, 0.2);
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 14px;
+  gap: 8px;
   width: 100%;
   flex-shrink: 0;
   box-sizing: border-box;
@@ -2112,7 +2112,7 @@ h1, h2, h3, h4, h5, h6 {
   width: 100%;
   max-width: 1400px;
   margin: 0 auto;
-  padding: 20px 20px 90px 20px;
+  padding: 10px 20px 70px 20px;
   box-sizing: border-box;
 }
 
@@ -2136,21 +2136,21 @@ h1, h2, h3, h4, h5, h6 {
   background: transparent;
   border: none;
   box-shadow: none;
-  padding: 20px 24px;
+  padding: 10px 20px 0 20px;
   text-align: center;
   max-width: 960px;
-  margin: 10px auto 30px auto;
+  margin: 0 auto;
   position: relative;
 }
 
 .welcome-hero-logo {
-  height: 280px;
+  height: 200px;
   max-width: 100%;
   width: auto;
   object-fit: contain;
-  margin: 0 auto 20px auto;
+  margin: 0 auto 12px auto;
   display: block;
-  filter: drop-shadow(0 12px 24px rgba(5, 150, 105, 0.2));
+  filter: drop-shadow(0 8px 18px rgba(5, 150, 105, 0.18));
   transition: transform 0.25s ease;
 }
 
@@ -2164,10 +2164,10 @@ h1, h2, h3, h4, h5, h6 {
 
 .welcome-subtitle {
   color: var(--text-muted);
-  font-size: 1.05rem;
-  max-width: 680px;
-  margin: 0 auto 28px auto;
-  line-height: 1.6;
+  font-size: 0.98rem;
+  max-width: 660px;
+  margin: 0 auto 16px auto;
+  line-height: 1.5;
 }
 
 .mode-pills-row {
@@ -2175,15 +2175,15 @@ h1, h2, h3, h4, h5, h6 {
   gap: 10px;
   justify-content: center;
   flex-wrap: wrap;
-  margin-bottom: 30px;
+  margin-bottom: 18px;
 }
 
 .mode-pill {
   background: #ffffff;
   border: 1px solid var(--border-color);
-  padding: 8px 16px;
+  padding: 6px 14px;
   border-radius: 999px;
-  font-size: 0.85rem;
+  font-size: 0.82rem;
   font-weight: 700;
   font-family: var(--font-heading);
   color: var(--text-main);
