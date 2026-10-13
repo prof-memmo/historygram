@@ -94,33 +94,31 @@ h1, h2, h3, h4, h5, h6 {
 .app-header {
   position: sticky;
   top: 0;
-  z-index: 100;
-  background: rgba(255, 255, 255, 0.95);
+  left: 0;
+  width: 100%;
+  height: 75px;
+  background: rgba(255, 255, 255, 0.96);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
   border-bottom: 1px solid var(--border-color);
-  padding: 10px 20px;
-}
-
-.header-container {
-  max-width: 1400px;
-  margin: 0 auto;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 16px;
-  position: relative;
+  padding: 0 24px;
+  z-index: 1000;
+  box-sizing: border-box;
 }
 
 /* Sinistra: Logo Gioco */
 .header-left {
   display: flex;
   align-items: center;
+  gap: 12px;
 }
 
 .header-game-logo {
-  height: 44px;
-  max-width: 200px;
+  height: 48px;
+  width: auto;
   object-fit: contain;
   cursor: pointer;
   transition: transform 0.2s ease;
@@ -130,7 +128,7 @@ h1, h2, h3, h4, h5, h6 {
   transform: scale(1.02);
 }
 
-/* Centro: Avatar Prof. Memmo Perfettamente Centrato */
+/* Centro: Avatar Prof. Memmo Perfettamente Centrato (Stile L'Oratore) */
 .header-center-logo {
   position: absolute;
   left: 50%;
@@ -143,39 +141,40 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .header-prof-logo-wrapper {
-  width: 44px;
-  height: 44px;
-  border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  border: 2px solid var(--accent-green);
-  background: var(--bg-card);
-  overflow: hidden;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-  pointer-events: auto;
   cursor: pointer;
+  pointer-events: auto;
+  transition: transform 0.25s ease;
 }
 
 .header-prof-logo-wrapper:hover {
   transform: scale(1.08);
-  box-shadow: 0 0 14px rgba(5, 150, 105, 0.4);
 }
 
 .header-prof-logo {
-  width: 100%;
-  height: 100%;
-  max-width: 100%;
-  max-height: 100%;
-  object-fit: cover;
-  aspect-ratio: 1/1;
+  height: 48px;
+  width: auto;
+  object-fit: contain;
+  opacity: 0.95;
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  border-radius: 0;
+  pointer-events: auto;
+  transition: opacity 0.2s ease;
+}
+
+.header-prof-logo:hover {
+  opacity: 1;
 }
 
 /* Destra: Pillola Classe & Profilo SSO */
 .header-right {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 16px;
 }
 
 .room-pill {
@@ -1378,25 +1377,46 @@ h1, h2, h3, h4, h5, h6 {
 /* ================= VIEW FOOTER COPYRIGHT (ECOSISTEMA STANDARD) ================= */
 .view-footer-copyright {
   margin-top: 35px;
-  padding: 16px 0 20px 0;
+  padding: 18px 0 22px 0;
   border-top: 1px solid rgba(5, 150, 105, 0.2);
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 10px;
+  gap: 14px;
   width: 100%;
   flex-shrink: 0;
   box-sizing: border-box;
 }
 
+.footer-legal-links {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 20px;
+  font-size: 0.85rem;
+  width: 100%;
+}
+
+.footer-legal-links a {
+  color: var(--accent-green);
+  text-decoration: underline;
+  font-weight: 600;
+  transition: opacity 0.2s ease;
+}
+
+.footer-legal-links a:hover {
+  opacity: 0.8;
+}
+
 .footer-badge-text-row {
   display: flex;
+  flex-direction: row;
   align-items: center;
-  justify-content: center;
-  gap: 16px;
+  justify-content: flex-start;
+  gap: 20px;
   width: 100%;
-  max-width: 900px;
+  box-sizing: border-box;
 }
 
 .view-footer-copyright .footer-copy {

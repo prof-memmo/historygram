@@ -39,103 +39,99 @@
 
   <div id="app-root">
 
-    <!-- HEADER DELL'ECOSISTEMA (BRAND UNIFORME - Art. 4) -->
+    <!-- HEADER DELL'ECOSISTEMA (BRAND UNIFORME - Stile L'Oratore) -->
     <header class="app-header" id="main-app-header">
-      <div class="header-container">
-        
-        <!-- Sinistra: Logo HistoryGram Header -->
-        <div class="header-left">
-          <img src="assets/branding/historygram-header.png" alt="Logo HistoryGram" class="header-game-logo" id="btnLogoHome" onclick="HistoryGramApp.showView('view-welcome')">
-        </div>
+      <!-- Sinistra: Logo HistoryGram Header -->
+      <div class="header-left">
+        <img src="assets/branding/historygram-header.png" alt="Logo HistoryGram" class="header-game-logo" id="btnLogoHome" onclick="HistoryGramApp.showView('view-welcome')">
+      </div>
 
-        <!-- Centro: Logo Avatar Prof. Memmo -->
-        <div class="header-center-logo">
-          <div class="header-prof-logo-wrapper" onclick="HistoryGramApp.showView('view-welcome')">
-            <img src="https://prof-memmo.github.io/prof-memmo-gestione-siti/shared/assets/branding/prof-memmo/prof-memmo-avatar.png" class="header-prof-logo" alt="Prof. Memmo Logo">
+      <!-- Centro: Logo Avatar Prof. Memmo Perfettamente Centrato -->
+      <div class="header-center-logo">
+        <div class="header-prof-logo-wrapper" onclick="HistoryGramApp.showView('view-welcome')">
+          <img src="https://prof-memmo.github.io/prof-memmo-gestione-siti/shared/assets/branding/prof-memmo/prof-memmo-avatar.png" class="header-prof-logo" alt="Prof. Memmo Logo">
+        </div>
+      </div>
+
+      <!-- Destra: Pillola Profilo Utente & Accesso Docente SSO (Standard Ecosistema) -->
+      <div class="header-right">
+        <div class="user-menu-container">
+          <!-- Trigger Pill -->
+          <div class="user-menu-trigger" id="user-menu-trigger" onclick="HistoryGramApp.toggleUserDropdown(event)">
+            <div class="user-avatar-circle">
+              <img id="header-user-avatar" src="https://prof-memmo.github.io/prof-memmo-gestione-siti/shared/assets/branding/prof-memmo/prof-memmo-avatar.png" alt="Avatar" onerror="this.src='https://prof-memmo.github.io/prof-memmo-gestione-siti/shared/assets/branding/prof-memmo/prof-memmo-avatar.png'">
+            </div>
+            <div class="user-trigger-text">
+              <span class="user-trigger-name" id="header-user-name">PROF. MEMMO</span>
+              <span class="user-trigger-role" id="header-user-role">AMMINISTRATORE</span>
+            </div>
+            <span class="user-trigger-chevron"><i class="fa-solid fa-chevron-down"></i></span>
           </div>
-        </div>
 
-        <!-- Destra: Pillola Profilo Utente & Accesso Docente SSO (Standard Ecosistema) -->
-        <div class="header-right">
-          <div class="user-menu-container">
-            <!-- Trigger Pill -->
-            <div class="user-menu-trigger" id="user-menu-trigger" onclick="HistoryGramApp.toggleUserDropdown(event)">
-              <div class="user-avatar-circle">
-                <img id="header-user-avatar" src="https://prof-memmo.github.io/prof-memmo-gestione-siti/shared/assets/branding/prof-memmo/prof-memmo-avatar.png" alt="Avatar" onerror="this.src='https://prof-memmo.github.io/prof-memmo-gestione-siti/shared/assets/branding/prof-memmo/prof-memmo-avatar.png'">
-              </div>
-              <div class="user-trigger-text">
-                <span class="user-trigger-name" id="header-user-name">PROF. MEMMO</span>
-                <span class="user-trigger-role" id="header-user-role">AMMINISTRATORE</span>
-              </div>
-              <span class="user-trigger-chevron"><i class="fa-solid fa-chevron-down"></i></span>
+          <!-- Dropdown Card Integrata -->
+          <div class="user-dropdown hidden" id="user-dropdown">
+            <div class="dropdown-user-header">
+              <div class="dropdown-user-title" id="dropdown-user-name">PROF. MEMMO</div>
+              <div class="dropdown-user-subtitle" id="dropdown-user-role-sub">AMMINISTRATORE</div>
             </div>
 
-            <!-- Dropdown Card Integrata -->
-            <div class="user-dropdown hidden" id="user-dropdown">
-              <div class="dropdown-user-header">
-                <div class="dropdown-user-title" id="dropdown-user-name">PROF. MEMMO</div>
-                <div class="dropdown-user-subtitle" id="dropdown-user-role-sub">AMMINISTRATORE</div>
+            <!-- Sottofondo Music Player Widget -->
+            <div class="dropdown-music-box">
+              <div class="music-header">
+                <span class="music-label"><i class="fa-solid fa-music"></i> SOTTOFONDO</span>
+                <a href="https://freetouse.com/music" target="_blank" class="music-link">FREETOUSE.COM/MUSIC</a>
               </div>
-
-              <!-- Sottofondo Music Player Widget -->
-              <div class="dropdown-music-box">
-                <div class="music-header">
-                  <span class="music-label"><i class="fa-solid fa-music"></i> SOTTOFONDO</span>
-                  <a href="https://freetouse.com/music" target="_blank" class="music-link">FREETOUSE.COM/MUSIC</a>
-                </div>
-                <div class="music-capsule">
-                  <span class="music-track-title" id="music-track-title">Aventure - Close Friends</span>
-                  <div class="music-btns">
-                    <button class="music-btn-icon" onclick="AudioEngine.prevTrack()" title="Precedente"><i class="fa-solid fa-backward-step"></i></button>
-                    <button class="music-play-btn" id="music-play-btn" onclick="AudioEngine.togglePlay()" title="Play/Pausa"><i class="fa-solid fa-play"></i></button>
-                    <button class="music-btn-icon" onclick="AudioEngine.nextTrack()" title="Successiva"><i class="fa-solid fa-forward-step"></i></button>
-                  </div>
+              <div class="music-capsule">
+                <span class="music-track-title" id="music-track-title">Aventure - Close Friends</span>
+                <div class="music-btns">
+                  <button class="music-btn-icon" onclick="AudioEngine.prevTrack()" title="Precedente"><i class="fa-solid fa-backward-step"></i></button>
+                  <button class="music-play-btn" id="music-play-btn" onclick="AudioEngine.togglePlay()" title="Play/Pausa"><i class="fa-solid fa-play"></i></button>
+                  <button class="music-btn-icon" onclick="AudioEngine.nextTrack()" title="Successiva"><i class="fa-solid fa-forward-step"></i></button>
                 </div>
               </div>
-
-              <!-- Golden Pill Action Buttons -->
-              <button class="dropdown-pill-btn" id="btn-login-hub-dropdown" style="background: linear-gradient(135deg, var(--accent-green) 0%, var(--accent-green-dark) 100%); color: #fff; font-weight: 800; display: none;" onclick="HistoryGramApp.goToUnifiedLogin()">
-                <i class="fa-solid fa-right-to-bracket"></i> Accedi tramite Hub
-              </button>
-
-              <button class="dropdown-pill-btn" onclick="HistoryGramApp.showView('view-docente'); HistoryGramApp.toggleUserDropdown(event);">
-                <i class="fa-solid fa-chalkboard-user"></i> Cattedra Docente
-              </button>
-
-              <button class="dropdown-pill-btn" id="btn-profile-dropdown" onclick="if(window.Modals && Modals.openProfileModal) Modals.openProfileModal();">
-                <i class="fa-solid fa-user-gear"></i> Modifica Profilo
-              </button>
-
-              <button class="dropdown-pill-btn" onclick="if(window.openSharedModal) window.openSharedModal('invita'); else if(window.Modals) Modals.openLegalModal('invita');">
-                <i class="fa-solid fa-paper-plane"></i> Invita un Collega
-              </button>
-
-              <div class="dropdown-split-row">
-                <button class="dropdown-pill-btn" onclick="if(window.openSharedModal) window.openSharedModal('privacy'); else if(window.Modals) Modals.openLegalModal('privacy');">
-                  <i class="fa-solid fa-shield"></i> Privacy
-                </button>
-                <button class="dropdown-pill-btn" onclick="if(window.openSharedModal) window.openSharedModal('termini'); else if(window.Modals) Modals.openLegalModal('termini');">
-                  <i class="fa-solid fa-scroll"></i> Termini
-                </button>
-              </div>
-
-              <button class="dropdown-pill-btn" onclick="if(window.openSharedModal) window.openSharedModal('contatti'); else if(window.Modals) Modals.openLegalModal('contatti');">
-                <i class="fa-solid fa-envelope"></i> Contatti
-              </button>
-
-              <div class="dropdown-bottom-row">
-                <button class="dropdown-pill-btn btn-disattiva-musica" id="music-mute-toggle-btn" onclick="AudioEngine.toggleMute()">
-                  <i class="fa-solid fa-volume-high"></i> Disattiva Musica
-                </button>
-                <button class="dropdown-pill-btn btn-esci-red" onclick="HistoryGramApp.confirmLogout()">
-                  <i class="fa-solid fa-power-off"></i> Esci
-                </button>
-              </div>
-
             </div>
+
+            <!-- Golden Pill Action Buttons -->
+            <button class="dropdown-pill-btn" id="btn-login-hub-dropdown" style="background: linear-gradient(135deg, var(--accent-green) 0%, var(--accent-green-dark) 100%); color: #fff; font-weight: 800; display: none;" onclick="HistoryGramApp.goToUnifiedLogin()">
+              <i class="fa-solid fa-right-to-bracket"></i> Accedi tramite Hub
+            </button>
+
+            <button class="dropdown-pill-btn" onclick="HistoryGramApp.showView('view-docente'); HistoryGramApp.toggleUserDropdown(event);">
+              <i class="fa-solid fa-chalkboard-user"></i> Cattedra Docente
+            </button>
+
+            <button class="dropdown-pill-btn" id="btn-profile-dropdown" onclick="if(window.Modals && Modals.openProfileModal) Modals.openProfileModal();">
+              <i class="fa-solid fa-user-gear"></i> Modifica Profilo
+            </button>
+
+            <button class="dropdown-pill-btn" onclick="if(window.openSharedModal) window.openSharedModal('invita'); else if(window.Modals) Modals.openLegalModal('invita');">
+              <i class="fa-solid fa-paper-plane"></i> Invita un Collega
+            </button>
+
+            <div class="dropdown-split-row">
+              <button class="dropdown-pill-btn" onclick="if(window.openSharedModal) window.openSharedModal('privacy'); else if(window.Modals) Modals.openLegalModal('privacy');">
+                <i class="fa-solid fa-shield"></i> Privacy
+              </button>
+              <button class="dropdown-pill-btn" onclick="if(window.openSharedModal) window.openSharedModal('termini'); else if(window.Modals) Modals.openLegalModal('termini');">
+                <i class="fa-solid fa-scroll"></i> Termini
+              </button>
+            </div>
+
+            <button class="dropdown-pill-btn" onclick="if(window.openSharedModal) window.openSharedModal('contatti'); else if(window.Modals) Modals.openLegalModal('contatti');">
+              <i class="fa-solid fa-envelope"></i> Contatti
+            </button>
+
+            <div class="dropdown-bottom-row">
+              <button class="dropdown-pill-btn btn-disattiva-musica" id="music-mute-toggle-btn" onclick="AudioEngine.toggleMute()">
+                <i class="fa-solid fa-volume-high"></i> Disattiva Musica
+              </button>
+              <button class="dropdown-pill-btn btn-esci-red" onclick="HistoryGramApp.confirmLogout()">
+                <i class="fa-solid fa-power-off"></i> Esci
+              </button>
+            </div>
+
           </div>
         </div>
-
       </div>
     </header>
 
@@ -171,13 +167,13 @@
         </div>
 
         <footer class="view-footer-copyright">
-          <div class="footer-legal-links" style="display: flex; justify-content: center; gap: 20px; font-size: 0.85rem; margin-bottom: 10px; width: 100%;">
-            <a href="javascript:void(0)" onclick="if(window.openSharedModal) window.openSharedModal('privacy'); else if(window.Modals) Modals.openLegalModal('privacy');" style="color: var(--accent-green); text-decoration: underline; font-weight: 600;">Privacy Policy</a>
-            <a href="javascript:void(0)" onclick="if(window.openSharedModal) window.openSharedModal('termini'); else if(window.Modals) Modals.openLegalModal('termini');" style="color: var(--accent-green); text-decoration: underline; font-weight: 600;">Termini e Condizioni</a>
+          <div class="footer-legal-links">
+            <a href="javascript:void(0)" onclick="if(window.openSharedModal) window.openSharedModal('privacy'); else if(window.Modals) Modals.openLegalModal('privacy');">Privacy Policy</a>
+            <a href="javascript:void(0)" onclick="if(window.openSharedModal) window.openSharedModal('termini'); else if(window.Modals) Modals.openLegalModal('termini');">Termini e Condizioni</a>
           </div>
-          <div class="footer-badge-text-row" style="display: flex; align-items: center; justify-content: center; gap: 16px; width: 100%;">
-            <img src="https://prof-memmo.github.io/prof-memmo-gestione-siti/shared/assets/legal/patamu-badge.png" alt="Patamu" class="patamu-footer-badge" style="height: 52px; object-fit: contain; flex-shrink: 0;">
-            <p class="footer-copy" style="text-align: left; font-size: 0.78rem; line-height: 1.4; margin: 0; color: var(--text-muted); max-width: 780px;">
+          <div class="footer-badge-text-row">
+            <img src="https://prof-memmo.github.io/prof-memmo-gestione-siti/shared/assets/legal/patamu-badge.png" alt="Patamu" class="patamu-footer-badge">
+            <p class="footer-copy">
               &copy; 2026 Guglielmo Piersanti. Tutti i contenuti presenti su questo sito sono di proprietà dell'autore e sono protetti tramite deposito e marcatura temporale presso Patamu. I contenuti sono inoltre distribuiti con licenza Creative Commons Attribuzione - Non commerciale - Non opere derivate 4.0 Internazionale (CC BY-NC-ND 4.0).
             </p>
           </div>
@@ -516,13 +512,13 @@
         </div>
 
         <footer class="view-footer-copyright">
-          <div class="footer-legal-links" style="display: flex; justify-content: center; gap: 20px; font-size: 0.85rem; margin-bottom: 10px; width: 100%;">
-            <a href="javascript:void(0)" onclick="if(window.openSharedModal) window.openSharedModal('privacy'); else if(window.Modals) Modals.openLegalModal('privacy');" style="color: var(--accent-green); text-decoration: underline; font-weight: 600;">Privacy Policy</a>
-            <a href="javascript:void(0)" onclick="if(window.openSharedModal) window.openSharedModal('termini'); else if(window.Modals) Modals.openLegalModal('termini');" style="color: var(--accent-green); text-decoration: underline; font-weight: 600;">Termini e Condizioni</a>
+          <div class="footer-legal-links">
+            <a href="javascript:void(0)" onclick="if(window.openSharedModal) window.openSharedModal('privacy'); else if(window.Modals) Modals.openLegalModal('privacy');">Privacy Policy</a>
+            <a href="javascript:void(0)" onclick="if(window.openSharedModal) window.openSharedModal('termini'); else if(window.Modals) Modals.openLegalModal('termini');">Termini e Condizioni</a>
           </div>
-          <div class="footer-badge-text-row" style="display: flex; align-items: center; justify-content: center; gap: 16px; width: 100%;">
-            <img src="https://prof-memmo.github.io/prof-memmo-gestione-siti/shared/assets/legal/patamu-badge.png" alt="Patamu" class="patamu-footer-badge" style="height: 52px; object-fit: contain; flex-shrink: 0;">
-            <p class="footer-copy" style="text-align: left; font-size: 0.78rem; line-height: 1.4; margin: 0; color: var(--text-muted); max-width: 780px;">
+          <div class="footer-badge-text-row">
+            <img src="https://prof-memmo.github.io/prof-memmo-gestione-siti/shared/assets/legal/patamu-badge.png" alt="Patamu" class="patamu-footer-badge">
+            <p class="footer-copy">
               &copy; 2026 Guglielmo Piersanti. Tutti i contenuti sono protetti tramite deposito e marcatura temporale digitale su Patamu.com (CC BY-NC-ND 4.0).
             </p>
           </div>

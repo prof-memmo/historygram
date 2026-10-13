@@ -383,6 +383,9 @@
         if (DOM.headerUserRole) DOM.headerUserRole.textContent = roleLabel;
         if (DOM.dropdownUserRoleSub) DOM.dropdownUserRoleSub.textContent = roleLabel;
         if (ssoRole === 'docente' || ssoRole === 'admin') AppState.isTeacherUnlocked = true;
+      } else {
+        if (DOM.headerUserRole) DOM.headerUserRole.textContent = 'AMMINISTRATORE';
+        if (DOM.dropdownUserRoleSub) DOM.dropdownUserRoleSub.textContent = 'AMMINISTRATORE';
       }
       if (ssoAvatar && DOM.headerUserAvatar) {
         DOM.headerUserAvatar.src = ssoAvatar;
