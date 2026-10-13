@@ -371,20 +371,19 @@
       return `
         <div class="pawn-card ${isSelected ? 'selected' : ''}" 
              data-char-id="${c.id}"
-             onclick="HistoryGramApp.selectPawnFaction('${c.id}', true)">
-          <div class="pawn-card-title">${escapeHtml(c.name)}</div>
+             onclick="HistoryGramApp.selectPawnFaction('${c.id}')"
+             title="${escapeHtml(c.name)}">
+          <span class="pawn-card-avatar">${c.avatar}</span>
+          <span class="pawn-card-title">${escapeHtml(c.name)}</span>
         </div>
       `;
     }).join('');
   }
 
-  function selectPawnFaction(charId, openPopup = false) {
+  function selectPawnFaction(charId) {
     AppState.selectedSetupFactionId = charId;
     renderPawnsGrid();
     renderFactionWorkbench(charId);
-    if (openPopup) {
-      openCharDetailModal(charId);
-    }
   }
 
   function renderFactionWorkbench(charId) {
@@ -392,11 +391,7 @@
     const chars = HISTORY_MODES[AppState.currentMode].characters;
     const c = chars.find(item => item.id === charId);
     if (!c) {
-      DOM.setupActiveFactionWorkbench.innerHTML = `
-        <p style="text-align: center; color: var(--text-muted); font-size: 0.95rem; padding: 24px 0;">
-          <i class="fa-solid fa-chess-pawn"></i> Clicca su una delle schede in alto per visualizzarne la descrizione e assegnare gli studenti.
-        </p>
-      `;
+      DOM.setupActiveFactionWorkbench.innerHTML = '';
       return;
     }
 
@@ -415,7 +410,7 @@
 
     let chipsHtml = '';
     if (allStudents.length === 0) {
-      chipsHtml = `<span style="font-size: 0.85rem; color: var(--text-muted);">Nessuno studente presente nel registro. Aggiungi i nomi tramite il campo sottostante.</span>`;
+      chipsHtml = `<span style="font-size: 0.85rem; color: var(--text-muted);">Nessuno studente presente nel registro.</span>`;
     } else {
       chipsHtml = allStudents.map(stName => {
         const isHere = currentAssigned.includes(stName);
@@ -439,7 +434,7 @@
           `;
         } else {
           return `
-            <button type="button" class="student-chip available" data-student="${escapeHtml(stName)}" data-char-id="${c.id}" onclick="HistoryGramApp.handleStudentChipClick(this, event)" title="Disponibile. Clicca per aggiungere a ${escapeHtml(c.name)}">
+            <button type="button" class="student-chip available" data-student="${escapeHtml(stName)}" data-char-id="${c.id}" onclick="HistoryGramApp.handleStudentChipClick(this, event)" title="Clicca per aggiungere a ${escapeHtml(c.name)}">
               <i class="fa-solid fa-plus"></i>
               <span>${escapeHtml(stName)}</span>
             </button>
@@ -457,43 +452,15 @@
             <span class="members-active-tag">${escapeHtml(c.faction)}</span>
           </div>
         </div>
-        <button type="button" class="btn btn-secondary-action btn-sm" onclick="HistoryGramApp.openCharDetailModal('${c.id}')" title="Riapri la scheda storica dettagliata">
-          <i class="fa-solid fa-book-open"></i> Scheda Storica
+        <button type="button" class="btn btn-secondary-action btn-sm" onclick="HistoryGramApp.openCharDetailModal('${c.id}')" title="Scopri la loro storia">
+          <i class="fa-solid fa-book-open"></i> Scopri la loro storia
         </button>
       </div>
 
       <div class="members-chips-section">
-        <div class="members-chips-header">
-          <h4 class="members-chips-title">
-            <i class="fa-solid fa-users" style="color: var(--accent-green);"></i> 
-            Studenti Assegnati a ${escapeHtml(c.name)}
-          </h4>
-          <span class="members-chips-subtitle">
-            Clicca su uno studente per inserirlo o rimuoverlo da questa squadra.
-          </span>
-        </div>
-
         <div class="members-chips-grid">
           ${chipsHtml}
         </div>
-
-        <!-- Inserimento rapido studente extra -->
-        <div class="workbench-add-custom-box" style="margin-top: 6px; max-width: 440px;">
-          <input type="text" id="inputCustomStudentName" class="form-input form-input-sm" placeholder="Aggiungi studente extra..." onkeydown="if(event.key==='Enter'){ event.preventDefault(); HistoryGramApp.addCustomStudent(); }">
-          <button type="button" class="btn btn-secondary-action btn-sm" onclick="HistoryGramApp.addCustomStudent()" style="white-space: nowrap;">
-            <i class="fa-solid fa-user-plus"></i> Aggiungi
-          </button>
-        </div>
-      </div>
-
-      <div class="members-actions-bar">
-        <div class="members-team-count-pill">
-          <i class="fa-solid fa-user-check" style="color: var(--accent-green);"></i>
-          <span><strong>${currentAssigned.length}</strong> studenti in ${escapeHtml(c.name)}</span>
-        </div>
-        <button type="button" class="btn-primary-action btn-sm" onclick="HistoryGramApp.saveCurrentFactionTeam('${c.id}')" style="min-width: 150px;">
-          <i class="fa-solid fa-floppy-disk"></i> Salva Squadra
-        </button>
       </div>
     `;
   }
@@ -1347,8 +1314,7 @@
 
     if (DOM.mCharBody) {
       DOM.mCharBody.innerHTML = `
-        <h4 style="color:var(--accent-gold); margin-top:0; font-family:var(--font-heading);">📖 Inquadramento Storiografico:</h4>
-        <p style="font-size:0.96rem; color:var(--text-main); line-height: 1.7; margin-bottom: 12px;">${escapeHtml(char.context || '')}</p>
+        <p style="font-size:1.02rem; color:var(--text-main); line-height: 1.75; margin-bottom: 14px;">${escapeHtml(char.context || '')}</p>
 
         ${thesesHtml}
       `;
