@@ -405,8 +405,8 @@
       <section id="view-docente" class="view">
         <div class="setup-header-box">
           <span class="setup-step-badge" style="background: rgba(59, 130, 246, 0.2); border-color: #3b82f6; color: #60a5fa;">SALA DI REGIA</span>
-          <h2 class="setup-title">Pannello Approvazione (Imprimatur Docente)</h2>
-          <p class="setup-subtitle">Supervisiona i post delle squadre prima della proiezione sulla LIM e gestisci la classe.</p>
+          <h2 class="setup-title">Pannello Docente</h2>
+          <p class="setup-subtitle">Supervisiona i post delle squadre prima della proiezione sulla LIM e concedi l'imprimatur.</p>
         </div>
 
         <div class="glass-card" style="max-width: 1000px; margin: 0 auto; padding: 25px; border-radius: 20px; border: 1px solid var(--border-color); background: var(--bg-card);">
@@ -415,7 +415,7 @@
           <div class="pin-gate-wrap" id="viewTeacherPinAuth">
             <i class="fa-solid fa-lock pin-gate-icon" style="font-size: 3rem; color: var(--accent-purple-light); margin-bottom: 12px;"></i>
             <h3>Accesso Riservato al Docente</h3>
-            <p>Inserisci il PIN per accedere alla Coda di Imprimatur e alla gestione delle squadre.</p>
+            <p>Inserisci il PIN per accedere alla Coda di Imprimatur e alla supervisione dei post.</p>
             <div class="pin-form-row">
               <input type="password" id="inputViewTeacherPin" class="form-input pin-box" placeholder="PIN (es. 1848)" maxlength="6">
               <button class="btn-primary-action" onclick="HistoryGramApp.unlockTeacherFromView()">Sblocca Cattedra</button>
@@ -428,9 +428,6 @@
             <div class="teacher-nav-tabs" style="display: flex; gap: 10px; border-bottom: 1px solid var(--border-color); padding-bottom: 12px; margin-bottom: 20px; flex-wrap: wrap;">
               <button class="t-nav-btn active" id="btnTabQueue" onclick="HistoryGramApp.switchTeacherTab('queue')">
                 <i class="fa-solid fa-inbox"></i> Coda Imprimatur (<span id="viewTQueueCount">0</span>)
-              </button>
-              <button class="t-nav-btn" id="btnTabTeams" onclick="HistoryGramApp.switchTeacherTab('teams')">
-                <i class="fa-solid fa-users-gear"></i> Gestione Squadre
               </button>
               <button class="t-nav-btn" id="btnTabSettings" onclick="HistoryGramApp.switchTeacherTab('settings')">
                 <i class="fa-solid fa-sliders"></i> Sessione &amp; Reset
@@ -447,34 +444,9 @@
               <div class="queue-cards-list" id="viewTeacherQueueList"></div>
             </div>
 
-            <!-- Tab 2: Gestione Squadre Storiche -->
-            <div id="tabDocenteTeams" class="hidden">
-              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 10px;">
-                <h4 style="margin: 0; color: var(--text-main);"><i class="fa-solid fa-users"></i> Ripartizione Studenti nelle Squadre</h4>
-                <button class="btn-secondary-action" onclick="HistoryGramApp.autoDistributeTeams()">
-                  <i class="fa-solid fa-wand-magic-sparkles"></i> Ridistribuisci Automaticamente
-                </button>
-              </div>
-              <div id="viewTeacherTeamsGrid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 14px; margin-bottom: 20px;"></div>
-              <div style="text-align: right;">
-                <button class="btn-primary-action" onclick="HistoryGramApp.saveTeamsFromView()">
-                  <i class="fa-solid fa-floppy-disk"></i> Salva Modifiche Squadre
-                </button>
-              </div>
-            </div>
-
-            <!-- Tab 3: Impostazioni & Reset -->
+            <!-- Tab 2: Impostazioni & Reset Partita -->
             <div id="tabDocenteSettings" class="hidden">
-              <div class="settings-grid-layout">
-                <div class="setting-card">
-                  <h4><i class="fa-solid fa-school"></i> Codice Stanza Attivo</h4>
-                  <p>Cambia o sincronizza il codice classe per la connessione degli studenti.</p>
-                  <div class="input-btn-row">
-                    <input type="text" id="viewSettingClassCode" class="form-input" value="3B">
-                    <button class="btn-refresh" onclick="HistoryGramApp.saveClassCodeFromView()">Salva</button>
-                  </div>
-                </div>
-
+              <div class="settings-grid-layout" style="grid-template-columns: 1fr; max-width: 500px; margin: 0 auto;">
                 <div class="setting-card danger-zone">
                   <h4><i class="fa-solid fa-triangle-exclamation"></i> Azzera Partita</h4>
                   <p>Cancella tutti i post pubblicati e azzera i follower della classe corrente.</p>
@@ -603,9 +575,9 @@
         <i class="fa-solid fa-trophy"></i>
         <span>Classifica</span>
       </a>
-      <a href="#" class="tab-item hidden" id="nav-item-approvazione" data-view="view-docente" onclick="HistoryGramApp.showView('view-docente'); return false;" title="Pannello Approvazione Docente (Imprimatur)">
-        <i class="fa-solid fa-clipboard-check"></i>
-        <span>Approvazione</span>
+      <a href="#" class="tab-item hidden" id="nav-item-approvazione" data-view="view-docente" onclick="HistoryGramApp.showView('view-docente'); return false;" title="Pannello Docente">
+        <i class="fa-solid fa-chalkboard-user"></i>
+        <span>Pannello Docente</span>
       </a>
     </nav>
 
