@@ -2548,8 +2548,8 @@ h1, h2, h3, h4, h5, h6 {
   background: #ffffff;
   border: 1.5px solid var(--border-color);
   border-radius: var(--radius-sm);
-  padding: 8px 10px;
-  min-height: 40px;
+  padding: 6px 10px;
+  min-height: 48px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -2589,16 +2589,17 @@ h1, h2, h3, h4, h5, h6 {
 
 .pawn-card-title {
   font-family: var(--font-heading);
-  font-size: 0.78rem;
+  font-size: 0.80rem;
   font-weight: 800;
   color: var(--text-main);
   text-transform: uppercase;
   letter-spacing: 0.2px;
-  line-height: 1.15;
+  line-height: 1.2;
   margin: 0;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  white-space: normal;
+  overflow: visible;
+  text-overflow: clip;
+  word-break: normal;
 }
 
 /* SEZIONE 2: ASSEGNAZIONE MEMBRI SQUADRA ATTIVA */

@@ -22,7 +22,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700;900&family=Inter:wght@400;500;600;700;800&family=Julius+Sans+One&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,600;1,6..72,400&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
-  <link rel="stylesheet" href="css/style.css?v=preview_3.6">
+  <link rel="stylesheet" href="css/style.css?v=preview_3.7">
 
   <!-- Identità Gioco & Guardie Ecosistema Prof. Memmo -->
   <script>window.HUB_GAME_ID = "historygram";</script>
@@ -405,7 +405,7 @@
       <section id="view-docente" class="view">
         <div class="setup-header-box">
           <span class="setup-step-badge" style="background: rgba(59, 130, 246, 0.2); border-color: #3b82f6; color: #60a5fa;">SALA DI REGIA</span>
-          <h2 class="setup-title">Cattedra Docente &amp; Imprimatur</h2>
+          <h2 class="setup-title">Pannello Approvazione (Imprimatur Docente)</h2>
           <p class="setup-subtitle">Supervisiona i post delle squadre prima della proiezione sulla LIM e gestisci la classe.</p>
         </div>
 
@@ -602,6 +602,10 @@
       <a href="#" class="tab-item" data-view="view-leaderboard" onclick="HistoryGramApp.showView('view-leaderboard'); return false;">
         <i class="fa-solid fa-trophy"></i>
         <span>Classifica</span>
+      </a>
+      <a href="#" class="tab-item hidden" id="nav-item-approvazione" data-view="view-docente" onclick="HistoryGramApp.showView('view-docente'); return false;" title="Pannello Approvazione Docente (Imprimatur)">
+        <i class="fa-solid fa-clipboard-check"></i>
+        <span>Approvazione</span>
       </a>
     </nav>
 
@@ -822,9 +826,9 @@
   <div class="toast-container" id="toastContainer"></div>
 
   <!-- Script di logica -->
-  <script src="js/characters.js?v=preview_3.6"></script>
-  <script src="js/historygram-service.js?v=preview_3.6"></script>
-  <script src="js/music.js?v=preview_3.6"></script>
-  <script src="js/app.js?v=preview_3.6"></script>
+  <script src="js/characters.js?v=preview_3.7"></script>
+  <script src="js/historygram-service.js?v=preview_3.7"></script>
+  <script src="js/music.js?v=preview_3.7"></script>
+  <script src="js/app.js?v=preview_3.7"></script>
 </body>
 </html>

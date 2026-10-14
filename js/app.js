@@ -48,6 +48,7 @@
     views: document.querySelectorAll('.view'),
     bottomNav: document.querySelector('.bottom-bar'),
     tabItems: document.querySelectorAll('.bottom-bar .tab-item'),
+    navItemApprovazione: document.getElementById('nav-item-approvazione'),
 
     // Setup Flow
     setupSelectClass: document.getElementById('setupSelectClass'),
@@ -184,9 +185,37 @@
     console.log("HistoryGram v2.0 inizializzato con successo: Multi-View SPA & Flusso Fantaletteratura.");
   }
 
+  /* ================= RUOLO DOCENTE & VISIBILITA APPROVAZIONE ================= */
+  function isTeacherUser() {
+    if (AppState.isTeacherUnlocked) return true;
+    const ssoRole = (localStorage.getItem('hub_user_role') || '').toLowerCase();
+    if (ssoRole === 'docente' || ssoRole === 'admin') return true;
+    if (ssoRole === 'studente') return false;
+    if (AppState.teacherUser) return true;
+    const headerRole = (DOM.headerUserRole ? DOM.headerUserRole.textContent : '').toUpperCase();
+    if (headerRole.includes('AMMINISTRATORE') || headerRole.includes('DOCENTE')) return true;
+    return false;
+  }
+
+  function updateTeacherNavVisibility() {
+    const navItem = DOM.navItemApprovazione || document.getElementById('nav-item-approvazione');
+    if (!navItem) return;
+    if (isTeacherUser()) {
+      navItem.classList.remove('hidden');
+    } else {
+      navItem.classList.add('hidden');
+    }
+  }
+
   /* ================= GESTIONE VISTE (MULTI-VIEW SPA) ================= */
   function showView(viewId, pushHistory = true) {
     if (!document.getElementById(viewId)) return;
+
+    // Guardia di accesso: il pannello Approvazione/Docente è riservato esclusivamente al docente
+    if (viewId === 'view-docente' && !isTeacherUser()) {
+      showToast("⛔ Accesso riservato esclusivamente al docente.", "toast-danger");
+      return;
+    }
 
     // Nascondi tutte le viste
     document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
@@ -207,7 +236,7 @@
       }
     });
 
-    // Se entriamo nella Cattedra Docente, aggiorna i dati
+    // Se entriamo nella Cattedra Docente / Approvazione, aggiorna i dati
     if (viewId === 'view-docente') {
       renderTeacherView();
     }
@@ -732,6 +761,14 @@
   /* ================= CONTROLLO SSO UTENTE ================= */
   function checkSSOUser() {
     try {
+      try {
+        const urlParams = new URLSearchParams(window.location.search);
+        const queryRole = urlParams.get('role');
+        if (queryRole) {
+          localStorage.setItem('hub_user_role', queryRole.toLowerCase());
+        }
+      } catch (e) {}
+
       const ssoName = localStorage.getItem('hub_user_name') || localStorage.getItem('fanta_user_name') || localStorage.getItem('loratore_user_name');
       let ssoAvatar = localStorage.getItem('hub_user_avatar') || localStorage.getItem('fanta_user_avatar') || localStorage.getItem('loratore_user_avatar');
       const ssoRole = localStorage.getItem('hub_user_role') || 'docente';
@@ -751,15 +788,27 @@
         const roleLabel = (ssoRole === 'docente' || ssoRole === 'admin') ? 'AMMINISTRATORE' : 'STUDENTE';
         if (DOM.headerUserRole) DOM.headerUserRole.textContent = roleLabel;
         if (DOM.dropdownUserRoleSub) DOM.dropdownUserRoleSub.textContent = roleLabel;
-        if (ssoRole === 'docente' || ssoRole === 'admin') AppState.isTeacherUnlocked = true;
+        if (ssoRole === 'docente' || ssoRole === 'admin') {
+          AppState.isTeacherUnlocked = true;
+        } else if (ssoRole === 'studente') {
+          AppState.isTeacherUnlocked = false;
+        }
       } else {
-        if (DOM.headerUserRole) DOM.headerUserRole.textContent = 'AMMINISTRATORE';
-        if (DOM.dropdownUserRoleSub) DOM.dropdownUserRoleSub.textContent = 'AMMINISTRATORE';
+        const isStudent = (ssoRole === 'studente');
+        if (DOM.headerUserRole) DOM.headerUserRole.textContent = isStudent ? 'STUDENTE' : 'AMMINISTRATORE';
+        if (DOM.dropdownUserRoleSub) DOM.dropdownUserRoleSub.textContent = isStudent ? 'STUDENTE' : 'AMMINISTRATORE';
+        if (isStudent) {
+          AppState.isTeacherUnlocked = false;
+        } else {
+          AppState.isTeacherUnlocked = true;
+        }
       }
       if (ssoAvatar && DOM.headerUserAvatar) {
         DOM.headerUserAvatar.src = ssoAvatar;
       }
     } catch (e) {}
+
+    updateTeacherNavVisibility();
 
     if (window.fbAuth) {
       window.fbAuth.onAuthStateChanged(async user => {
@@ -788,6 +837,7 @@
           }
 
           AppState.isTeacherUnlocked = true;
+          updateTeacherNavVisibility();
           if (DOM.headerUserName) DOM.headerUserName.textContent = displayName;
           if (DOM.dropdownUserName) DOM.dropdownUserName.textContent = displayName;
           if (DOM.headerUserRole) DOM.headerUserRole.textContent = userRole;
@@ -804,6 +854,8 @@
           if (AppState.currentView === 'view-setup-class') {
             await renderSetupClassView();
           }
+        } else {
+          updateTeacherNavVisibility();
         }
       });
     }
@@ -1238,6 +1290,8 @@
     const pin = (DOM.inputViewTeacherPin ? DOM.inputViewTeacherPin.value : '').trim();
     if (pin === '1848' || pin === '1517' || pin === '1234' || pin === '0000') {
       AppState.isTeacherUnlocked = true;
+      localStorage.setItem('hub_user_role', 'docente');
+      updateTeacherNavVisibility();
       renderTeacherView();
       showToast("🔓 Cattedra sbloccata con successo!", "toast-success");
     } else {
@@ -1822,7 +1876,9 @@
     ratePost,
     openFlameModal,
     openCharDetailModal,
-    closeCharDetailModal
+    closeCharDetailModal,
+    isTeacherUser,
+    updateTeacherNavVisibility
   };
 
   window.addEventListener('DOMContentLoaded', init);
