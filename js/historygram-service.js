@@ -6,19 +6,88 @@
 class HistoryGramService {
   constructor() {
     this.collectionName = 'historygram_sessions';
-    this.classesCollection = 'classes';
+    this.classesCollection = 'hub_classes';
     this.localKeyPrefix = 'historygram_session_';
   }
 
-  // Recupera le classi create dal docente nell'Hub
-  async getTeacherClasses(teacherId) {
-    if (window.fbDb && teacherId) {
+  // Recupera le classi create dal docente nell'Hub (multi-query robusta su hub_classes e classes)
+  async getTeacherClasses(teacherUser) {
+    let uid = null;
+    let email = '';
+    if (teacherUser) {
+      uid = typeof teacherUser === 'string' ? teacherUser : (teacherUser.uid || null);
+      email = (typeof teacherUser === 'object' && teacherUser.email) ? teacherUser.email.toLowerCase() : '';
+    } else if (window.fbAuth && window.fbAuth.currentUser) {
+      uid = window.fbAuth.currentUser.uid;
+      email = (window.fbAuth.currentUser.email || '').toLowerCase();
+    }
+
+    if (window.fbDb && (uid || email)) {
       try {
-        const snap = await window.fbDb.collection(this.classesCollection)
-          .where('teacherId', '==', teacherId)
-          .get();
-        if (!snap.empty) {
-          return snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        const queries = [];
+        if (uid) {
+          queries.push(window.fbDb.collection('hub_classes').where('teacherId', '==', uid).get().catch(() => ({ docs: [] })));
+          queries.push(window.fbDb.collection('hub_classes').where('teacherIds', 'array-contains', uid).get().catch(() => ({ docs: [] })));
+          queries.push(window.fbDb.collection('classes').where('teacherId', '==', uid).get().catch(() => ({ docs: [] })));
+          queries.push(window.fbDb.collection('classes').where('teacherIds', 'array-contains', uid).get().catch(() => ({ docs: [] })));
+        }
+        if (email) {
+          queries.push(window.fbDb.collection('hub_classes').where('teacherEmail', '==', email).get().catch(() => ({ docs: [] })));
+          queries.push(window.fbDb.collection('hub_classes').where('collaboratori', 'array-contains', email).get().catch(() => ({ docs: [] })));
+          queries.push(window.fbDb.collection('classes').where('teacherEmail', '==', email).get().catch(() => ({ docs: [] })));
+          queries.push(window.fbDb.collection('classes').where('collaboratori', 'array-contains', email).get().catch(() => ({ docs: [] })));
+        }
+
+        const results = await Promise.all(queries);
+        const classMap = new Map();
+        results.forEach(snap => {
+          if (snap && snap.docs) {
+            snap.docs.forEach(doc => {
+              classMap.set(doc.id, { id: doc.id, ...doc.data() });
+            });
+          }
+        });
+
+        if (classMap.size > 0) {
+          const classList = Array.from(classMap.values());
+          // Per ciascuna classe, se gli studenti non sono salvati direttamente nell'oggetto, recuperali da hub_users per classCode
+          for (let cls of classList) {
+            const hasDirectStudents = (Array.isArray(cls.students) && cls.students.length > 0) ||
+                                      (Array.isArray(cls.studenti) && cls.studenti.length > 0) ||
+                                      (Array.isArray(cls.studentNames) && cls.studentNames.length > 0);
+            if (!hasDirectStudents) {
+              const code = (cls.code || cls.classCode || '').toUpperCase();
+              if (code) {
+                try {
+                  const uSnap = await window.fbDb.collection('hub_users').where('classCode', '==', code).get();
+                  if (!uSnap.empty) {
+                    cls.students = uSnap.docs
+                      .map(d => ({ uid: d.id, ...d.data() }))
+                      .filter(u => {
+                        const r = (u.role || '').toLowerCase();
+                        return r !== 'docente' && r !== 'admin' && r !== 'insegnante';
+                      })
+                      .map(u => {
+                        if (u.anagrafica) {
+                          const full = `${u.anagrafica.nome || ''} ${u.anagrafica.cognome || ''}`.trim();
+                          if (full) return full;
+                        }
+                        if (u.nome || u.cognome) {
+                          const full = `${u.nome || ''} ${u.cognome || ''}`.trim();
+                          if (full) return full;
+                        }
+                        return u.displayName || u.name || (u.email ? u.email.split('@')[0] : '') || u.nickname || 'Studente';
+                      });
+                  }
+                } catch(e) {}
+              }
+            }
+          }
+
+          try {
+            localStorage.setItem('hub_teacher_classes', JSON.stringify(classList));
+          } catch (e) {}
+          return classList;
         }
       } catch (e) {
         console.warn("⚠️ Recupero classi docente da Firestore fallito, uso classi locali:", e);
@@ -42,9 +111,14 @@ class HistoryGramService {
     const code = String(rawCode || '').trim().toUpperCase();
     if (window.fbDb) {
       try {
-        const snap = await window.fbDb.collection(this.classesCollection)
+        let snap = await window.fbDb.collection('hub_classes')
           .where('code', '==', code)
           .get();
+        if (snap.empty) {
+          snap = await window.fbDb.collection('classes')
+            .where('code', '==', code)
+            .get();
+        }
         if (!snap.empty) {
           const doc = snap.docs[0];
           return { id: doc.id, ...doc.data() };
@@ -57,25 +131,45 @@ class HistoryGramService {
     return { id: 'classe_' + code.toLowerCase(), code: code, name: 'Classe ' + code, school: 'Scuola Secondaria' };
   }
 
-  // Ascolta gli aggiornamenti in tempo reale della sessione
+  // Ascolta gli aggiornamenti in tempo reale della sessione (Firestore con fallback LocalStorage)
   subscribeSession(classId, modeId, callback) {
     const sessionId = `${classId}_${modeId}`;
+    let activeCleanup = null;
+    let isCleanedUp = false;
     
     if (window.fbDb) {
       try {
         const docRef = window.fbDb.collection(this.collectionName).doc(sessionId);
-        const unsubscribe = docRef.onSnapshot(doc => {
+        const unsubscribeFirestore = docRef.onSnapshot(doc => {
           if (doc.exists) {
             callback(doc.data());
           } else {
+            // Se non esiste ancora su Firestore, verifica se c'è un backup locale salvato
+            const localRaw = localStorage.getItem(`${this.localKeyPrefix}${sessionId}`);
+            if (localRaw) {
+              try {
+                const localData = JSON.parse(localRaw);
+                callback(localData);
+                // Prova a sincronizzare verso Firestore
+                docRef.set(localData, { merge: true }).catch(() => {});
+                return;
+              } catch (e) {}
+            }
             const initial = this.getDefaultSessionState(classId, modeId);
             callback(initial);
           }
         }, err => {
-          console.warn("⚠️ Errore listener Firestore, passaggio a LocalStorage:", err);
-          this.listenLocalStorage(sessionId, callback);
+          console.warn("⚠️ Listener Firestore (passaggio a LocalStorage):", err && err.message);
+          if (!isCleanedUp) {
+            activeCleanup = this.listenLocalStorage(sessionId, callback);
+          }
         });
-        return unsubscribe;
+
+        return () => {
+          isCleanedUp = true;
+          try { unsubscribeFirestore(); } catch(e) {}
+          if (typeof activeCleanup === 'function') activeCleanup();
+        };
       } catch (e) {
         console.warn("⚠️ Firestore onSnapshot non disponibile:", e);
       }
@@ -86,17 +180,25 @@ class HistoryGramService {
 
   listenLocalStorage(sessionId, callback) {
     const key = `${this.localKeyPrefix}${sessionId}`;
-    const read = () => {
+    let lastRaw = null;
+
+    const checkUpdate = () => {
       try {
         const raw = localStorage.getItem(key);
-        return raw ? JSON.parse(raw) : this.getDefaultSessionState();
+        if (raw === lastRaw) return;
+        lastRaw = raw;
+        if (raw) {
+          try {
+            callback(JSON.parse(raw));
+          } catch(e) {}
+        }
       } catch (e) {
-        return this.getDefaultSessionState();
+        console.warn("⚠️ Errore lettura sessione locale:", e);
       }
     };
 
-    callback(read());
-    const interval = setInterval(() => callback(read()), 1200);
+    checkUpdate();
+    const interval = setInterval(checkUpdate, 1500);
     return () => clearInterval(interval);
   }
 
@@ -138,11 +240,16 @@ class HistoryGramService {
     return this.getDefaultSessionState(classId, modeId);
   }
 
-  // Gestione Squadre (Fantaletteratura style): assegna studenti ai personaggi
+  // Gestione Squadre: assegna studenti ai personaggi storici
   async updateTeamAssignments(classId, modeId, teamAssignments) {
     const state = await this.getSession(classId, modeId);
     state.teamAssignments = teamAssignments; // { characterId: ["Marco", "Sara", "Luca"] }
     await this.saveSession(classId, modeId, state);
+  }
+
+  // Alias compatibile per assegnazione massiva squadre
+  async bulkAssignTeams(classId, modeId, teamAssignments) {
+    return this.updateTeamAssignments(classId, modeId, teamAssignments);
   }
 
   // Invia post alla coda di approvazione

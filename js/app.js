@@ -15,6 +15,12 @@
     isTeacherUnlocked: false,
     teacherUser: null,
     unsubscribeSession: null,
+    currentClassStudents: [
+      "Sara", "Marco", "Luca", "Giulia", "Matteo", "Chiara",
+      "Andrea", "Francesca", "Davide", "Elena", "Federico", "Sofia",
+      "Simone", "Martina", "Lorenzo", "Alessia", "Gabriele", "Valentina"
+    ],
+    selectedSetupFactionId: null,
     sessionData: {
       teamAssignments: {},
       pendingPosts: [],
@@ -42,11 +48,15 @@
     views: document.querySelectorAll('.view'),
     bottomNav: document.querySelector('.bottom-bar'),
     tabItems: document.querySelectorAll('.bottom-bar .tab-item'),
+    navItemApprovazione: document.getElementById('nav-item-approvazione'),
 
     // Setup Flow
     setupSelectClass: document.getElementById('setupSelectClass'),
-    setupTeamsRosterGrid: document.getElementById('setupTeamsRosterGrid'),
     setupSelectedModeLabel: document.getElementById('setupSelectedModeLabel'),
+    pawnsGridContainer: document.getElementById('pawnsGridContainer'),
+    setupActiveFactionWorkbench: document.getElementById('setupActiveFactionWorkbench'),
+    setupRosterSummaryStatus: document.getElementById('setupRosterSummaryStatus'),
+    btnLaunchGame: document.getElementById('btnLaunchGame'),
 
     // Game View - Banner & Stats
     bannerSubtag: document.getElementById('bannerSubtag'),
@@ -175,9 +185,37 @@
     console.log("HistoryGram v2.0 inizializzato con successo: Multi-View SPA & Flusso Fantaletteratura.");
   }
 
+  /* ================= RUOLO DOCENTE & VISIBILITA APPROVAZIONE ================= */
+  function isTeacherUser() {
+    if (AppState.isTeacherUnlocked) return true;
+    const ssoRole = (localStorage.getItem('hub_user_role') || '').toLowerCase();
+    if (ssoRole === 'docente' || ssoRole === 'admin') return true;
+    if (ssoRole === 'studente') return false;
+    if (AppState.teacherUser) return true;
+    const headerRole = (DOM.headerUserRole ? DOM.headerUserRole.textContent : '').toUpperCase();
+    if (headerRole.includes('AMMINISTRATORE') || headerRole.includes('DOCENTE')) return true;
+    return false;
+  }
+
+  function updateTeacherNavVisibility() {
+    const navItem = DOM.navItemApprovazione || document.getElementById('nav-item-approvazione');
+    if (!navItem) return;
+    if (isTeacherUser()) {
+      navItem.classList.remove('hidden');
+    } else {
+      navItem.classList.add('hidden');
+    }
+  }
+
   /* ================= GESTIONE VISTE (MULTI-VIEW SPA) ================= */
   function showView(viewId, pushHistory = true) {
     if (!document.getElementById(viewId)) return;
+
+    // Guardia di accesso: il pannello Approvazione/Docente è riservato esclusivamente al docente
+    if (viewId === 'view-docente' && !isTeacherUser()) {
+      showToast("⛔ Accesso riservato esclusivamente al docente.", "toast-danger");
+      return;
+    }
 
     // Nascondi tutte le viste
     document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
@@ -198,9 +236,15 @@
       }
     });
 
-    // Se entriamo nella Cattedra Docente, aggiorna i dati
+    // Se entriamo nella Cattedra Docente / Approvazione, aggiorna i dati
     if (viewId === 'view-docente') {
       renderTeacherView();
+    }
+    if (viewId === 'view-setup-class') {
+      document.body.classList.add('view-no-scroll');
+      renderSetupClassView();
+    } else {
+      document.body.classList.remove('view-no-scroll');
     }
 
     // Scroll verso l'alto
@@ -218,28 +262,74 @@
     showView('view-setup-mode');
   }
 
-  function selectSetupMode(modeId) {
+  async function persistSessionAsync() {
+    if (!AppState.sessionData) {
+      AppState.sessionData = {};
+    }
+    AppState.sessionData.classId = AppState.currentClassId;
+    AppState.sessionData.modeId = AppState.currentMode;
+    AppState.sessionData.updatedAt = new Date().toISOString();
+
+    if (window.HistoryGramService) {
+      try {
+        await window.HistoryGramService.saveSession(
+          AppState.currentClassId,
+          AppState.currentMode,
+          AppState.sessionData
+        );
+      } catch (err) {
+        console.warn("⚠️ Salvataggio persistente non riuscito:", err);
+      }
+    }
+  }
+
+  async function selectSetupMode(modeId) {
     if (!HISTORY_MODES[modeId]) return;
     AppState.currentMode = modeId;
     renderModeUI();
 
     // Aggiorna etichetta modalità nel passo 2
     if (DOM.setupSelectedModeLabel) {
-      DOM.setupSelectedModeLabel.textContent = HISTORY_MODES[modeId].title + " (" + HISTORY_MODES[modeId].targetClass + ")";
+      DOM.setupSelectedModeLabel.textContent = HISTORY_MODES[modeId].title;
     }
 
-    renderSetupClassView();
+    const characters = HISTORY_MODES[modeId].characters;
+    AppState.selectedSetupFactionId = characters[0] ? characters[0].id : null;
+
+    // Disconnette eventuali listener attivi durante il setup: il docente ha controllo esclusivo e reattivo
+    if (AppState.unsubscribeSession) {
+      AppState.unsubscribeSession();
+      AppState.unsubscribeSession = null;
+    }
+
+    await renderSetupClassView();
     showView('view-setup-class');
   }
 
   async function renderSetupClassView() {
-    if (!DOM.setupSelectClass || !DOM.setupTeamsRosterGrid) return;
+    if (!DOM.setupSelectClass || !DOM.pawnsGridContainer) return;
+
+    // Assicura subito la selezione fazione e renderizza immediatamente le card per zero latenza
+    const charsInit = HISTORY_MODES[AppState.currentMode].characters;
+    if (!AppState.selectedSetupFactionId || !charsInit.some(c => c.id === AppState.selectedSetupFactionId)) {
+      AppState.selectedSetupFactionId = charsInit[0] ? charsInit[0].id : null;
+    }
+    renderPawnsGrid();
+    renderFactionWorkbench(AppState.selectedSetupFactionId);
 
     // Carica classi del docente
     DOM.setupSelectClass.innerHTML = '<option value="">Caricamento classi...</option>';
     let classes = [];
     if (window.HistoryGramService) {
-      classes = await window.HistoryGramService.getTeacherClasses(AppState.teacherUser ? AppState.teacherUser.uid : null);
+      classes = await window.HistoryGramService.getTeacherClasses(AppState.teacherUser || (window.fbAuth && window.fbAuth.currentUser));
+    }
+
+    if (classes && classes.length > 0) {
+      const hasCurrent = classes.some(c => c.id === AppState.currentClassId || (c.code && c.code === AppState.currentClassCode));
+      if (!hasCurrent && classes[0]) {
+        AppState.currentClassId = classes[0].id;
+        AppState.currentClassCode = (classes[0].code || classes[0].classCode || classes[0].id).toUpperCase();
+      }
     }
 
     DOM.setupSelectClass.innerHTML = '';
@@ -259,7 +349,371 @@
     optCustom.textContent = '➕ Inserisci un nuovo codice classe...';
     DOM.setupSelectClass.appendChild(optCustom);
 
-    renderSetupTeamsRoster();
+    // Carica eventuale sessione esistente da Firestore o LocalStorage
+    if (window.HistoryGramService) {
+      try {
+        const existingSession = await window.HistoryGramService.getSession(AppState.currentClassId, AppState.currentMode);
+        if (existingSession && existingSession.teamAssignments && Object.keys(existingSession.teamAssignments).length > 0) {
+          AppState.sessionData = existingSession;
+        }
+      } catch (e) {}
+    }
+
+    // Carica studenti della classe selezionata
+    loadStudentsForCurrentClass(classes);
+
+    // Assicura che una fazione sia attiva
+    const chars = HISTORY_MODES[AppState.currentMode].characters;
+    if (!AppState.selectedSetupFactionId || !chars.some(c => c.id === AppState.selectedSetupFactionId)) {
+      AppState.selectedSetupFactionId = chars[0] ? chars[0].id : null;
+    }
+
+    renderPawnsGrid();
+    renderFactionWorkbench(AppState.selectedSetupFactionId);
+    updateSetupSummary();
+  }
+
+  function loadStudentsForCurrentClass(classes) {
+    if (!Array.isArray(classes)) return;
+    const currentCls = classes.find(c => c.id === AppState.currentClassId || c.code === AppState.currentClassCode);
+    if (currentCls) {
+      const extractName = s => {
+        if (typeof s === 'string') return s;
+        if (!s) return 'Studente';
+        if (s.anagrafica) {
+          const n = s.anagrafica.nome || '';
+          const c = s.anagrafica.cognome || '';
+          const full = `${n} ${c}`.trim();
+          if (full) return full;
+        }
+        if (s.nome || s.cognome) {
+          const full = `${s.nome || ''} ${s.cognome || ''}`.trim();
+          if (full) return full;
+        }
+        return s.displayName || s.name || s.nickname || (s.email ? s.email.split('@')[0] : '') || s.id || 'Studente';
+      };
+
+      if (Array.isArray(currentCls.students) && currentCls.students.length > 0) {
+        AppState.currentClassStudents = currentCls.students.map(extractName);
+        return;
+      }
+      if (Array.isArray(currentCls.studenti) && currentCls.studenti.length > 0) {
+        AppState.currentClassStudents = currentCls.studenti.map(extractName);
+        return;
+      }
+      if (Array.isArray(currentCls.studentNames) && currentCls.studentNames.length > 0) {
+        AppState.currentClassStudents = currentCls.studentNames.map(extractName);
+        return;
+      }
+      if (Array.isArray(currentCls.members) && currentCls.members.length > 0) {
+        AppState.currentClassStudents = currentCls.members.map(extractName);
+        return;
+      }
+    }
+
+    // Se la classe non ha un elenco salvato, mantiene il roster predefinito ricco
+    if (!AppState.currentClassStudents || AppState.currentClassStudents.length === 0) {
+      AppState.currentClassStudents = [
+        "Sara", "Marco", "Luca", "Giulia", "Matteo", "Chiara",
+        "Andrea", "Francesca", "Davide", "Elena", "Federico", "Sofia",
+        "Simone", "Martina", "Lorenzo", "Alessia", "Gabriele", "Valentina"
+      ];
+    }
+  }
+
+  function renderPawnsGrid() {
+    if (!DOM.pawnsGridContainer) return;
+    const chars = HISTORY_MODES[AppState.currentMode].characters;
+
+    DOM.pawnsGridContainer.innerHTML = chars.map(c => {
+      const isSelected = (c.id === AppState.selectedSetupFactionId);
+
+      return `
+        <div class="pawn-card ${isSelected ? 'selected' : ''}" 
+             data-char-id="${c.id}"
+             onclick="HistoryGramApp.selectPawnFaction('${c.id}')"
+             title="${escapeHtml(c.name)}">
+          <span class="pawn-card-avatar">${c.avatar}</span>
+          <span class="pawn-card-title">${escapeHtml(c.name)}</span>
+        </div>
+      `;
+    }).join('');
+  }
+
+  function selectPawnFaction(charId) {
+    AppState.selectedSetupFactionId = charId;
+    renderPawnsGrid();
+    renderFactionWorkbench(charId);
+  }
+
+  function renderFactionWorkbench(charId) {
+    if (!DOM.setupActiveFactionWorkbench) return;
+    const chars = HISTORY_MODES[AppState.currentMode].characters;
+    const c = chars.find(item => item.id === charId);
+    if (!c) {
+      DOM.setupActiveFactionWorkbench.innerHTML = '';
+      return;
+    }
+
+    const assignments = (AppState.sessionData && AppState.sessionData.teamAssignments) || {};
+    const currentAssigned = assignments[c.id] || [];
+    const allStudents = AppState.currentClassStudents || [];
+
+    // Mappa per sapere in quale squadra si trova ogni studente
+    const studentTeamMap = {};
+    chars.forEach(faction => {
+      const roster = assignments[faction.id] || [];
+      roster.forEach(stName => {
+        studentTeamMap[stName] = faction;
+      });
+    });
+
+    let chipsHtml = '';
+    if (allStudents.length === 0) {
+      chipsHtml = `<span style="font-size: 0.85rem; color: var(--text-muted);">Nessuno studente presente nel registro.</span>`;
+    } else {
+      chipsHtml = allStudents.map(stName => {
+        const isHere = currentAssigned.includes(stName);
+        const otherFaction = (!isHere && studentTeamMap[stName]) ? studentTeamMap[stName] : null;
+
+        if (isHere) {
+          return `
+            <button type="button" class="student-chip in-this-team" data-student="${escapeHtml(stName)}" data-char-id="${c.id}" onclick="HistoryGramApp.handleStudentChipClick(this, event)" title="Clicca per rimuovere da ${escapeHtml(c.name)}">
+              <i class="fa-solid fa-check"></i>
+              <span>${escapeHtml(stName)}</span>
+              <i class="fa-solid fa-xmark" style="font-size: 0.72rem; margin-left: 4px; opacity: 0.85;"></i>
+            </button>
+          `;
+        } else if (otherFaction) {
+          return `
+            <button type="button" class="student-chip in-other-team" data-student="${escapeHtml(stName)}" data-char-id="${c.id}" onclick="HistoryGramApp.handleStudentChipClick(this, event)" title="Attualmente in ${escapeHtml(otherFaction.name)}. Clicca per spostare in ${escapeHtml(c.name)}.">
+              <i class="fa-solid fa-arrow-right-arrow-left"></i>
+              <span>${escapeHtml(stName)}</span>
+              <span class="chip-team-tag">${escapeHtml(otherFaction.name)}</span>
+            </button>
+          `;
+        } else {
+          return `
+            <button type="button" class="student-chip available" data-student="${escapeHtml(stName)}" data-char-id="${c.id}" onclick="HistoryGramApp.handleStudentChipClick(this, event)" title="Clicca per aggiungere a ${escapeHtml(c.name)}">
+              <i class="fa-solid fa-plus"></i>
+              <span>${escapeHtml(stName)}</span>
+            </button>
+          `;
+        }
+      }).join('');
+    }
+
+    DOM.setupActiveFactionWorkbench.innerHTML = `
+      <div class="members-workbench-header">
+        <div class="members-active-team-info">
+          <div class="members-active-avatar">${c.avatar}</div>
+          <div class="members-active-text-col">
+            <div class="members-active-title-row">
+              <h3 class="members-active-name">${escapeHtml(c.name)}</h3>
+              <span class="members-active-tag">${escapeHtml(c.faction)}</span>
+            </div>
+            <div class="members-team-status-line">
+              <span class="members-team-count-pill ${currentAssigned.length > 0 ? 'has-members' : ''}">
+                <i class="fa-solid ${currentAssigned.length > 0 ? 'fa-user-check' : 'fa-users'}"></i>
+                <strong>${currentAssigned.length}</strong> ${currentAssigned.length === 1 ? 'studente' : 'studenti'}
+              </span>
+              ${currentAssigned.length > 0 ? `
+                <span class="members-team-list-preview" title="${escapeHtml(currentAssigned.join(', '))}">
+                  : <strong>${escapeHtml(currentAssigned.join(', '))}</strong>
+                </span>
+              ` : `
+                <span class="members-team-empty-hint">Nessun componente assegnato (clicca sui nomi sotto per aggiungerli)</span>
+              `}
+            </div>
+          </div>
+        </div>
+        <button type="button" class="btn btn-secondary-action btn-sm" onclick="HistoryGramApp.openCharDetailModal('${c.id}')" title="Scopri la loro storia">
+          <i class="fa-solid fa-book-open"></i> Scopri la loro storia
+        </button>
+      </div>
+
+      <div class="members-chips-section">
+        <div class="members-chips-grid">
+          ${chipsHtml}
+        </div>
+      </div>
+    `;
+  }
+
+  function handleStudentChipClick(buttonEl, event) {
+    if (event) {
+      if (typeof event.preventDefault === 'function') event.preventDefault();
+      if (typeof event.stopPropagation === 'function') event.stopPropagation();
+    }
+    if (!buttonEl) return;
+    const student = buttonEl.getAttribute('data-student') || (buttonEl.dataset && buttonEl.dataset.student);
+    const charId = buttonEl.getAttribute('data-char-id') || (buttonEl.dataset && buttonEl.dataset.charId) || AppState.selectedSetupFactionId;
+    if (!student) {
+      console.warn("⚠️ handleStudentChipClick: studente mancante", buttonEl);
+      return;
+    }
+    toggleStudentAssignment(student.trim(), charId);
+  }
+
+  function toggleStudentAssignment(studentName, targetCharId) {
+    if (!studentName) return;
+    const charId = targetCharId || AppState.selectedSetupFactionId;
+    if (!charId) return;
+
+    if (!AppState.sessionData) {
+      AppState.sessionData = {};
+    }
+    if (!AppState.sessionData.teamAssignments || typeof AppState.sessionData.teamAssignments !== 'object') {
+      AppState.sessionData.teamAssignments = {};
+    }
+
+    const assignments = AppState.sessionData.teamAssignments;
+    if (!Array.isArray(assignments[charId])) {
+      assignments[charId] = [];
+    }
+
+    const isAlreadyInTarget = assignments[charId].includes(studentName);
+
+    if (isAlreadyInTarget) {
+      // Rimuove da questa squadra
+      assignments[charId] = assignments[charId].filter(st => st !== studentName);
+    } else {
+      // Rimuove da tutte le squadre per evitare doppioni
+      Object.keys(assignments).forEach(cid => {
+        if (Array.isArray(assignments[cid])) {
+          assignments[cid] = assignments[cid].filter(st => st !== studentName);
+        }
+      });
+      // Aggiunge direttamente alla squadra target
+      assignments[charId].push(studentName);
+    }
+
+    // Mantiene attiva la fazione selezionata
+    AppState.selectedSetupFactionId = charId;
+    AppState.sessionData.updatedAt = new Date().toISOString();
+
+    // Suono click per feedback tattile se disponibile
+    if (window.AudioEngine && typeof window.AudioEngine.play === 'function') {
+      try { window.AudioEngine.play('click'); } catch(e) {}
+    }
+
+    // Persiste immediatamente nello storage locale
+    try {
+      const sessionId = `${AppState.currentClassId}_${AppState.currentMode}`;
+      localStorage.setItem(`historygram_session_${sessionId}`, JSON.stringify(AppState.sessionData));
+    } catch(e) {}
+
+    renderPawnsGrid();
+    renderFactionWorkbench(charId);
+    updateSetupSummary();
+    persistSessionAsync();
+  }
+
+  async function saveCurrentFactionTeam(charId) {
+    const cid = charId || AppState.selectedSetupFactionId;
+    const chars = HISTORY_MODES[AppState.currentMode].characters;
+    const c = chars.find(item => item.id === cid);
+    const assignments = (AppState.sessionData && AppState.sessionData.teamAssignments) || {};
+    const count = (assignments[cid] || []).length;
+    
+    await persistSessionAsync();
+    renderPawnsGrid();
+    renderFactionWorkbench(cid);
+    updateSetupSummary();
+    showToast(`✅ Squadra ${c ? c.name : ''} salvata (${count} studenti)!`, "toast-success");
+  }
+
+  function addCustomStudent() {
+    const inp = document.getElementById('inputCustomStudentName');
+    if (!inp) return;
+    const val = inp.value.trim();
+    if (!val) return;
+
+    if (!AppState.currentClassStudents.includes(val)) {
+      AppState.currentClassStudents.push(val);
+    }
+
+    if (AppState.selectedSetupFactionId) {
+      toggleStudentAssignment(val, AppState.selectedSetupFactionId);
+    }
+    inp.value = '';
+    showToast(`👤 Studente "${val}" aggiunto alla rosa!`, "toast-success");
+  }
+
+  async function autoDistributeTeams() {
+    const chars = HISTORY_MODES[AppState.currentMode].characters;
+    const students = AppState.currentClassStudents || [];
+
+    if (students.length === 0) {
+      showToast("⚠️ Nessuno studente presente da distribuire.", "toast-warning");
+      return;
+    }
+
+    const assignments = {};
+    chars.forEach(c => {
+      assignments[c.id] = [];
+    });
+
+    students.forEach((stud, idx) => {
+      const charId = chars[idx % chars.length].id;
+      assignments[charId].push(stud);
+    });
+
+    AppState.sessionData.teamAssignments = assignments;
+    await persistSessionAsync();
+    renderPawnsGrid();
+    if (AppState.selectedSetupFactionId) {
+      renderFactionWorkbench(AppState.selectedSetupFactionId);
+    }
+    updateSetupSummary();
+    showToast("✨ Studenti distribuiti in modo equilibrato nelle fazioni!", "toast-success");
+  }
+
+  async function resetTeamAssignments() {
+    AppState.sessionData.teamAssignments = {};
+    await persistSessionAsync();
+    renderPawnsGrid();
+    if (AppState.selectedSetupFactionId) {
+      renderFactionWorkbench(AppState.selectedSetupFactionId);
+    }
+    updateSetupSummary();
+    showToast("🔄 Assegnazioni delle squadre azzerate.", "toast-info");
+  }
+
+  function updateSetupSummary() {
+    if (!DOM.setupRosterSummaryStatus) return;
+    const chars = HISTORY_MODES[AppState.currentMode].characters;
+    const assignments = AppState.sessionData.teamAssignments || {};
+    const allStudents = AppState.currentClassStudents || [];
+
+    let totalAssigned = 0;
+    let activeTeams = 0;
+
+    chars.forEach(c => {
+      const count = (assignments[c.id] || []).length;
+      if (count > 0) {
+        totalAssigned += count;
+        activeTeams++;
+      }
+    });
+
+    DOM.setupRosterSummaryStatus.innerHTML = `
+      <span><strong>${totalAssigned}</strong> su <strong>${allStudents.length}</strong> studenti smistati &bull; <strong>${activeTeams}</strong> squadre attive</span>
+    `;
+
+    if (DOM.btnLaunchGame) {
+      if (totalAssigned > 0) {
+        DOM.btnLaunchGame.removeAttribute('disabled');
+        DOM.btnLaunchGame.style.opacity = '1';
+        DOM.btnLaunchGame.style.cursor = 'pointer';
+        DOM.btnLaunchGame.style.pointerEvents = 'auto';
+      } else {
+        DOM.btnLaunchGame.removeAttribute('disabled');
+        DOM.btnLaunchGame.style.opacity = '0.7';
+        DOM.btnLaunchGame.style.cursor = 'pointer';
+        DOM.btnLaunchGame.style.pointerEvents = 'auto';
+      }
+    }
   }
 
   function onSetupClassChange(val) {
@@ -276,108 +730,132 @@
     const parts = val.replace('classe_', '').toUpperCase();
     AppState.currentClassCode = parts || '3B';
     connectSession();
-    renderSetupTeamsRoster();
-  }
-
-  function renderSetupTeamsRoster() {
-    if (!DOM.setupTeamsRosterGrid) return;
-    const chars = HISTORY_MODES[AppState.currentMode].characters;
-    const assignments = AppState.sessionData.teamAssignments || {};
-
-    DOM.setupTeamsRosterGrid.innerHTML = '';
-    chars.forEach(c => {
-      const card = document.createElement('div');
-      card.style.cssText = `background: var(--bg-secondary); border: 1.5px solid var(--border-color); border-radius: 12px; padding: 14px; display: flex; flex-direction: column; gap: 8px;`;
-
-      const currentStudents = assignments[c.id] || [];
-
-      card.innerHTML = `
-        <div style="display: flex; align-items: center; gap: 10px;">
-          <span style="font-size: 1.8rem;">${c.avatar}</span>
-          <div style="flex: 1;">
-            <strong style="color: var(--text-main); font-size: 0.95rem;">${escapeHtml(c.name)}</strong>
-            <small style="display: block; color: var(--text-muted); font-size: 0.75rem;">${escapeHtml(c.faction)}</small>
-          </div>
-        </div>
-        <div>
-          <label style="font-size: 0.78rem; font-weight: 700; color: var(--text-muted); display: block; margin-bottom: 4px;">Studenti assegnati (separati da virgola):</label>
-          <input type="text" class="form-input setup-team-input" data-char-id="${c.id}" value="${escapeHtml(currentStudents.join(', '))}" placeholder="Es. Marco, Elena, Davide" style="font-size: 0.82rem; padding: 6px 10px;">
-        </div>
-      `;
-      DOM.setupTeamsRosterGrid.appendChild(card);
-    });
-  }
-
-  function autoDistributeTeams() {
-    const chars = HISTORY_MODES[AppState.currentMode].characters;
-    const defaultRoster = [
-      "Sara", "Marco", "Luca", "Giulia", "Matteo", "Chiara",
-      "Andrea", "Francesca", "Davide", "Elena", "Federico", "Sofia",
-      "Simone", "Martina", "Lorenzo", "Alessia", "Gabriele", "Valentina"
-    ];
-
-    const assignments = {};
-    chars.forEach((c, idx) => {
-      assignments[c.id] = [];
-    });
-
-    defaultRoster.forEach((stud, idx) => {
-      const charId = chars[idx % chars.length].id;
-      assignments[charId].push(stud);
-    });
-
-    AppState.sessionData.teamAssignments = assignments;
-    renderSetupTeamsRoster();
-    showToast("✨ Studenti distribuiti in modo equilibrato nelle squadre!", "toast-success");
+    renderSetupClassView();
   }
 
   async function launchGameFromSetup() {
-    // Raccoglie gli input delle squadre
-    const inputs = document.querySelectorAll('.setup-team-input');
-    const assignments = {};
-    inputs.forEach(inp => {
-      const cid = inp.getAttribute('data-char-id');
-      const val = inp.value.trim();
-      assignments[cid] = val ? val.split(',').map(s => s.trim()).filter(Boolean) : [];
-    });
+    try {
+      const assignments = AppState.sessionData.teamAssignments || {};
+      const chars = HISTORY_MODES[AppState.currentMode].characters;
+      const activeTeams = chars.filter(c => (assignments[c.id] || []).length > 0);
 
-    AppState.sessionData.teamAssignments = assignments;
+      if (activeTeams.length === 0) {
+        showToast("⚠️ Assegna almeno uno studente prima di avviare la sfida sul Muro!", "toast-warning");
+        return;
+      }
 
-    if (window.HistoryGramService) {
-      await window.HistoryGramService.bulkAssignTeams(AppState.currentClassId, AppState.currentMode, assignments);
+      await persistSessionAsync();
+
+      connectSession();
+      renderAll();
+      showToast("🚀 Partita avviata con successo! Benvenuti sul Muro.", "toast-success");
+      showView('view-game');
+    } catch (err) {
+      console.error("Errore launchGameFromSetup:", err);
+      connectSession();
+      renderAll();
+      showView('view-game');
     }
-
-    connectSession();
-    renderAll();
-    showToast("🚀 Partita avviata con successo! Benvenuti sulla LIM.", "toast-success");
-    showView('view-game');
   }
 
   /* ================= CONTROLLO SSO UTENTE ================= */
   function checkSSOUser() {
     try {
-      const ssoName = localStorage.getItem('hub_user_name') || localStorage.getItem('fanta_user_name');
-      const ssoAvatar = localStorage.getItem('hub_user_avatar') || localStorage.getItem('fanta_user_avatar');
+      try {
+        const urlParams = new URLSearchParams(window.location.search);
+        const queryRole = urlParams.get('role');
+        if (queryRole) {
+          localStorage.setItem('hub_user_role', queryRole.toLowerCase());
+        }
+      } catch (e) {}
+
+      const ssoName = localStorage.getItem('hub_user_name') || localStorage.getItem('fanta_user_name') || localStorage.getItem('loratore_user_name');
+      let ssoAvatar = localStorage.getItem('hub_user_avatar') || localStorage.getItem('fanta_user_avatar') || localStorage.getItem('loratore_user_avatar');
       const ssoRole = localStorage.getItem('hub_user_role') || 'docente';
 
+      try {
+        const pmUser = JSON.parse(localStorage.getItem('pm_oratore_user') || '{}');
+        if (pmUser.avatar && !ssoAvatar) ssoAvatar = pmUser.avatar;
+        if (pmUser.name && !ssoName) {
+          if (DOM.headerUserName) DOM.headerUserName.textContent = pmUser.name.toUpperCase();
+          if (DOM.dropdownUserName) DOM.dropdownUserName.textContent = pmUser.name.toUpperCase();
+        }
+      } catch (e) {}
+
       if (ssoName) {
-        if (DOM.headerUserName) DOM.headerUserName.textContent = ssoName;
-        if (DOM.dropdownUserName) DOM.dropdownUserName.textContent = ssoName;
-        if (DOM.dropdownUserRoleSub) DOM.dropdownUserRoleSub.textContent = ssoRole === 'docente' ? 'DOCENTE ECOSISTEMA' : 'STUDENTE';
-        if (ssoRole === 'docente') AppState.isTeacherUnlocked = true;
+        if (DOM.headerUserName) DOM.headerUserName.textContent = ssoName.toUpperCase();
+        if (DOM.dropdownUserName) DOM.dropdownUserName.textContent = ssoName.toUpperCase();
+        const roleLabel = (ssoRole === 'docente' || ssoRole === 'admin') ? 'AMMINISTRATORE' : 'STUDENTE';
+        if (DOM.headerUserRole) DOM.headerUserRole.textContent = roleLabel;
+        if (DOM.dropdownUserRoleSub) DOM.dropdownUserRoleSub.textContent = roleLabel;
+        if (ssoRole === 'docente' || ssoRole === 'admin') {
+          AppState.isTeacherUnlocked = true;
+        } else if (ssoRole === 'studente') {
+          AppState.isTeacherUnlocked = false;
+        }
+      } else {
+        const isStudent = (ssoRole === 'studente');
+        if (DOM.headerUserRole) DOM.headerUserRole.textContent = isStudent ? 'STUDENTE' : 'AMMINISTRATORE';
+        if (DOM.dropdownUserRoleSub) DOM.dropdownUserRoleSub.textContent = isStudent ? 'STUDENTE' : 'AMMINISTRATORE';
+        if (isStudent) {
+          AppState.isTeacherUnlocked = false;
+        } else {
+          AppState.isTeacherUnlocked = true;
+        }
       }
       if (ssoAvatar && DOM.headerUserAvatar) {
         DOM.headerUserAvatar.src = ssoAvatar;
       }
     } catch (e) {}
 
+    updateTeacherNavVisibility();
+
     if (window.fbAuth) {
-      window.fbAuth.onAuthStateChanged(user => {
+      window.fbAuth.onAuthStateChanged(async user => {
         if (user) {
           AppState.teacherUser = user;
+          const isSuperAdmin = (user.email && user.email.toLowerCase() === 'prof.memmo@gmail.com');
+          let displayName = isSuperAdmin ? 'PROF. MEMMO' : (user.displayName || user.email.split('@')[0]).toUpperCase();
+          let userAvatar = user.photoURL || '';
+          let userRole = isSuperAdmin ? 'AMMINISTRATORE' : 'DOCENTE';
+
+          if (window.fbDb) {
+            try {
+              const doc = await window.fbDb.collection('hub_users').doc(user.uid).get();
+              if (doc.exists) {
+                const data = doc.data() || {};
+                if (data.anagrafica && data.anagrafica.nome) {
+                  displayName = data.anagrafica.nome.toUpperCase();
+                }
+                const rawAvatar = data.avatar || (data.anagrafica && data.anagrafica.avatar) || '';
+                if (rawAvatar) userAvatar = rawAvatar;
+                if (data.role === 'admin' || isSuperAdmin) userRole = 'AMMINISTRATORE';
+              }
+            } catch (err) {
+              console.warn("Lettura hub_users Firestore:", err);
+            }
+          }
+
           AppState.isTeacherUnlocked = true;
-          if (DOM.headerUserName) DOM.headerUserName.textContent = user.displayName || user.email.split('@')[0];
-          if (DOM.dropdownUserName) DOM.dropdownUserName.textContent = user.displayName || user.email.split('@')[0];
+          updateTeacherNavVisibility();
+          if (DOM.headerUserName) DOM.headerUserName.textContent = displayName;
+          if (DOM.dropdownUserName) DOM.dropdownUserName.textContent = displayName;
+          if (DOM.headerUserRole) DOM.headerUserRole.textContent = userRole;
+          if (DOM.dropdownUserRoleSub) DOM.dropdownUserRoleSub.textContent = userRole;
+          if (userAvatar && DOM.headerUserAvatar) {
+            DOM.headerUserAvatar.src = userAvatar;
+          }
+          try {
+            localStorage.setItem('hub_user_name', displayName);
+            if (userAvatar) localStorage.setItem('hub_user_avatar', userAvatar);
+          } catch(e) {}
+
+          // Se ci troviamo nella vista di configurazione classe, ricarica subito le classi del docente autenticato
+          if (AppState.currentView === 'view-setup-class') {
+            await renderSetupClassView();
+          }
+        } else {
+          updateTeacherNavVisibility();
         }
       });
     }
@@ -402,8 +880,32 @@
         AppState.currentMode,
         (data) => {
           if (data) {
+            // Se abbiamo già assegnazioni attive in locale, non sovrascriverle con un payload vuoto
+            const localHasAssignments = AppState.sessionData && 
+              AppState.sessionData.teamAssignments && 
+              Object.values(AppState.sessionData.teamAssignments).some(arr => Array.isArray(arr) && arr.length > 0);
+            const incomingHasAssignments = data.teamAssignments && 
+              Object.values(data.teamAssignments).some(arr => Array.isArray(arr) && arr.length > 0);
+
+            if (localHasAssignments && !incomingHasAssignments) {
+              return;
+            }
+
+            // Ignora snapshot obsoleti se lo stato locale è più recente (evita race conditions)
+            if (AppState.sessionData && AppState.sessionData.updatedAt && data.updatedAt) {
+              if (new Date(data.updatedAt).getTime() < new Date(AppState.sessionData.updatedAt).getTime()) {
+                return;
+              }
+            }
             AppState.sessionData = data;
             renderAll();
+            if (AppState.currentView === 'view-setup-class') {
+              renderPawnsGrid();
+              if (AppState.selectedSetupFactionId) {
+                renderFactionWorkbench(AppState.selectedSetupFactionId);
+              }
+              updateSetupSummary();
+            }
           }
         }
       );
@@ -630,25 +1132,74 @@
     }
 
     // Render Tabella
-    DOM.leaderboardTableBody.innerHTML = '';
-    ranking.forEach((team, idx) => {
-      const tr = document.createElement('tr');
-      tr.innerHTML = `
-        <td style="font-weight: 800; color: ${idx === 0 ? 'var(--accent-gold)' : 'var(--text-muted)'};">#${idx + 1}</td>
-        <td>
-          <div style="display: flex; align-items: center; gap: 8px;">
-            <span>${team.avatar}</span>
-            <div>
-              <strong>${escapeHtml(team.name)}</strong>
-              <small style="display: block; color: var(--text-muted); font-size: 0.72rem;">${escapeHtml(team.faction)}</small>
+    if (DOM.leaderboardTableBody) {
+      DOM.leaderboardTableBody.innerHTML = '';
+      ranking.forEach((team, idx) => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td style="font-weight: 800; color: ${idx === 0 ? 'var(--accent-gold)' : 'var(--text-muted)'};">#${idx + 1}</td>
+          <td>
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <span>${team.avatar}</span>
+              <div>
+                <strong>${escapeHtml(team.name)}</strong>
+                <small style="display: block; color: var(--text-muted); font-size: 0.72rem;">${escapeHtml(team.faction)}</small>
+              </div>
             </div>
+          </td>
+          <td>${team.postsCount}</td>
+          <td class="text-right font-bold" style="color: var(--accent-gold); font-size: 1.05rem;">${team.followers}</td>
+        `;
+        DOM.leaderboardTableBody.appendChild(tr);
+      });
+    }
+
+    // Render Tabella Vista Dedicata "Classifica"
+    const fullTableBody = document.getElementById('leaderboardFullTableBody');
+    if (fullTableBody) {
+      fullTableBody.innerHTML = '';
+      ranking.forEach((team, idx) => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td style="font-weight: 800; text-align: center; color: ${idx === 0 ? 'var(--accent-gold)' : 'var(--text-muted)'}; font-size: 1.1rem;">#${idx + 1}</td>
+          <td>
+            <div style="display: flex; align-items: center; gap: 10px;">
+              <span style="font-size: 1.3rem;">${team.avatar}</span>
+              <div>
+                <strong style="font-size: 1rem; color: var(--text-main);">${escapeHtml(team.name)}</strong>
+                <small style="display: block; color: var(--text-muted); font-size: 0.75rem;">${escapeHtml(team.faction)}</small>
+              </div>
+            </div>
+          </td>
+          <td style="text-align: center; font-weight: 600;">${team.postsCount}</td>
+          <td style="text-align: center; color: var(--accent-red); font-weight: 700;">${team.likes || 0}</td>
+          <td style="text-align: center; color: var(--accent-blue); font-weight: 700;">${team.commentsCount || 0}</td>
+          <td style="text-align: right; font-weight: 800; color: var(--accent-green); font-size: 1.15rem;">${team.followers}</td>
+        `;
+        fullTableBody.appendChild(tr);
+      });
+    }
+
+    // Render Podio Vista Dedicata
+    const fullPodium = document.getElementById('leaderboardFullPodiumWrap');
+    if (fullPodium) {
+      fullPodium.innerHTML = '';
+      const top3 = ranking.slice(0, 3);
+      top3.forEach((team, idx) => {
+        const place = idx + 1;
+        const col = document.createElement('div');
+        col.className = `podium-col place-${place}`;
+        col.innerHTML = `
+          <div class="podium-avatar-ring" style="font-size: 1.8rem;">${team.avatar}</div>
+          <span class="podium-name">${escapeHtml(team.name)}</span>
+          <div class="podium-pillar">
+            <span class="podium-rank-badge">#${place}</span>
+            <span class="podium-score">${team.followers} Follower</span>
           </div>
-        </td>
-        <td>${team.postsCount}</td>
-        <td class="text-right font-bold" style="color: var(--accent-gold); font-size: 1.05rem;">${team.followers}</td>
-      `;
-      DOM.leaderboardTableBody.appendChild(tr);
-    });
+        `;
+        fullPodium.appendChild(col);
+      });
+    }
   }
 
   /* ================= CATTEDRA DOCENTE DEDICATA ================= */
@@ -739,6 +1290,8 @@
     const pin = (DOM.inputViewTeacherPin ? DOM.inputViewTeacherPin.value : '').trim();
     if (pin === '1848' || pin === '1517' || pin === '1234' || pin === '0000') {
       AppState.isTeacherUnlocked = true;
+      localStorage.setItem('hub_user_role', 'docente');
+      updateTeacherNavVisibility();
       renderTeacherView();
       showToast("🔓 Cattedra sbloccata con successo!", "toast-success");
     } else {
@@ -859,44 +1412,105 @@
     if (DOM.mCharFaction) DOM.mCharFaction.textContent = char.faction;
 
     let thesesHtml = '';
-    if (char.mainTheses) {
+    const thesesList = char.theses || char.mainTheses;
+    if (Array.isArray(thesesList) && thesesList.length > 0) {
       thesesHtml = `
-        <h4 style="color:var(--accent-gold); margin-top:14px;">📜 Tesi Teologiche &amp; Dottrinali:</h4>
-        <ul style="padding-left:18px; font-size:0.9rem;">
-          ${char.mainTheses.map(t => `<li>${escapeHtml(t)}</li>`).join('')}
+        <h4 style="color:var(--accent-gold); margin-top:16px; font-family:var(--font-heading);">📜 Tesi Teologiche &amp; Dottrinali:</h4>
+        <ul style="padding-left:20px; font-size:0.92rem; line-height: 1.6; color: var(--text-main);">
+          ${thesesList.map(t => `<li style="margin-bottom: 6px;">${escapeHtml(t)}</li>`).join('')}
         </ul>
       `;
     }
 
     if (DOM.mCharBody) {
       DOM.mCharBody.innerHTML = `
-        <h4 style="color:var(--accent-gold); margin-top:0;">🎯 Obiettivo Storico:</h4>
-        <p style="font-size:0.9rem;">${escapeHtml(char.objective)}</p>
-
-        <h4 style="color:var(--accent-gold); margin-top:14px;">🛠️ Strumenti di Diffusione:</h4>
-        <p style="font-size:0.9rem;">${escapeHtml(char.tools)}</p>
+        <p style="font-size:1.02rem; color:var(--text-main); line-height: 1.75; margin-bottom: 14px;">${escapeHtml(char.context || '')}</p>
 
         ${thesesHtml}
-
-        <h4 style="color:var(--accent-gold); margin-top:14px;">📢 Slogan Consigliati:</h4>
-        <ul style="padding-left:18px; font-size:0.9rem;">
-          ${(char.slogans || []).map(s => `<li><em>"${escapeHtml(s)}"</em></li>`).join('')}
-        </ul>
-
-        <h4 style="color:var(--accent-gold); margin-top:14px;">📖 Contesto Storico:</h4>
-        <p style="font-size:0.9rem; color:var(--text-muted);">${escapeHtml(char.context || '')}</p>
       `;
     }
 
     DOM.modalCharDetail.classList.remove('hidden');
   }
 
+  function closeCharDetailModal() {
+    if (DOM.modalCharDetail) {
+      DOM.modalCharDetail.classList.add('hidden');
+    }
+    if (DOM.setupActiveFactionWorkbench) {
+      DOM.setupActiveFactionWorkbench.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+  }
+
+  /* ================= MINIGUIDA MODAL LOGIC (Stile L'Oratore) ================= */
+  const guideSteps = [
+    {
+      icon: "👥",
+      title: "1. Forma le Squadre e Scegli l'Epoca",
+      desc: "Il docente seleziona la classe dall'Hub e la modalità storica (Ottocento: Moti Rivoluzionari o Cinquecento: Riforma vs Controriforma), assegnando gli studenti alle fazioni e ai protagonisti storici."
+    },
+    {
+      icon: "✍️",
+      title: "2. Componi Proclami e Slogan d'Epoca",
+      desc: "Ogni squadra cala le tesi storiche nei linguaggi della comunicazione social: argomenta ideali e riforme, cita fonti autentiche, inventa slogan virali e sceglie la cornice visiva d'epoca."
+    },
+    {
+      icon: "🛡️",
+      title: "3. Imprimatur del Docente sulla LIM",
+      desc: "I post vengono inviati alla Cattedra. Il docente verifica l'accuratezza storica, assegna follower bonus per merito e convalida l'imprimatur per proiettare i post in tempo reale sulla LIM."
+    },
+    {
+      icon: "🔥",
+      title: "4. Repliche, Dibattito e Like alla Libertà",
+      desc: "La classe vota i proclami più persuasivi con Like ❤️ e scatena repliche o sfide dottrinali per far trionfare la propria tesi storica sul tabellone finale!"
+    }
+  ];
+
+  let currentGuideStepIndex = 0;
+
+  function renderGuideStep() {
+    const s = guideSteps[currentGuideStepIndex];
+    const iconEl = document.getElementById('guide-step-icon');
+    const titleEl = document.getElementById('guide-step-title');
+    const descEl = document.getElementById('guide-step-desc');
+    const numEl = document.getElementById('guide-step-num');
+    const prevBtn = document.getElementById('guide-prev-btn');
+    const nextBtn = document.getElementById('guide-next-btn');
+
+    if (iconEl) iconEl.textContent = s.icon;
+    if (titleEl) titleEl.textContent = s.title;
+    if (descEl) descEl.textContent = s.desc;
+    if (numEl) numEl.textContent = `Passo ${currentGuideStepIndex + 1} di ${guideSteps.length}`;
+    if (prevBtn) prevBtn.style.visibility = currentGuideStepIndex === 0 ? 'hidden' : 'visible';
+    if (nextBtn) nextBtn.textContent = currentGuideStepIndex === guideSteps.length - 1 ? 'Chiudi ✓' : 'Avanti ➔';
+  }
+
+  function nextGuideStep() {
+    if (currentGuideStepIndex < guideSteps.length - 1) {
+      currentGuideStepIndex++;
+      renderGuideStep();
+    } else {
+      closeMiniguidaModal();
+    }
+  }
+
+  function prevGuideStep() {
+    if (currentGuideStepIndex > 0) {
+      currentGuideStepIndex--;
+      renderGuideStep();
+    }
+  }
+
   function openMiniguidaModal() {
-    if (DOM.modalMiniguida) DOM.modalMiniguida.classList.remove('hidden');
+    currentGuideStepIndex = 0;
+    renderGuideStep();
+    const m = document.getElementById('modalMiniguida');
+    if (m) m.classList.remove('hidden');
   }
 
   function closeMiniguidaModal() {
-    if (DOM.modalMiniguida) DOM.modalMiniguida.classList.add('hidden');
+    const m = document.getElementById('modalMiniguida');
+    if (m) m.classList.add('hidden');
   }
 
   /* ================= BIND EVENTI ================= */
@@ -1053,21 +1667,9 @@
     if (DOM.prevAvatar) DOM.prevAvatar.textContent = char.avatar;
     if (DOM.prevCharName) DOM.prevCharName.textContent = char.name;
 
-    // Genera chips per slogan e hashtag
+    // Gli slogan/motti vengono inventati liberamente dagli studenti
     if (DOM.slogansChips) {
       DOM.slogansChips.innerHTML = '';
-      (char.slogans || []).forEach(s => {
-        const chip = document.createElement('span');
-        chip.className = 'chip-slogan';
-        chip.textContent = `"${s}"`;
-        chip.onclick = () => {
-          if (DOM.inputSlogan) {
-            DOM.inputSlogan.value = s;
-            if (DOM.prevSlogan) DOM.prevSlogan.textContent = s;
-          }
-        };
-        DOM.slogansChips.appendChild(chip);
-      });
     }
 
     if (DOM.hashtagsChips) {
@@ -1144,17 +1746,123 @@
     }
   }
 
+  /* ================= GESTIONE MODALE RIPRENDI PARTITA (Stile L'Oratore) ================= */
+  function openSavedGamesModal() {
+    renderSavedGamesList();
+    const modal = document.getElementById('savedGamesModal');
+    if (modal) modal.classList.remove('hidden');
+  }
+
+  function closeSavedGamesModal() {
+    const modal = document.getElementById('savedGamesModal');
+    if (modal) modal.classList.add('hidden');
+  }
+
+  function renderSavedGamesList() {
+    const listEl = document.getElementById('savedGamesList');
+    if (!listEl) return;
+
+    const sessions = [];
+
+    // Sessione corrente in memoria
+    const currentModeName = AppState.currentMode === 'revolution_1800' ? "Ottocento: Revolution Influencer" : "Cinquecento: Riforma vs Controriforma";
+    const currentPostCount = (AppState.sessionData.approvedPosts || []).length;
+    sessions.push({
+      id: `${AppState.currentClassId}_${AppState.currentMode}`,
+      classId: AppState.currentClassId,
+      mode: AppState.currentMode,
+      title: `Sessione Attiva (${AppState.currentClassId})`,
+      modeName: currentModeName,
+      postsCount: currentPostCount,
+      isCurrent: true,
+      updatedAt: new Date().toLocaleDateString('it-IT')
+    });
+
+    // Cerca altre sessioni in LocalStorage
+    try {
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key && key.startsWith('historygram_session_') && !key.endsWith(`${AppState.currentClassId}_${AppState.currentMode}`)) {
+          const raw = localStorage.getItem(key);
+          if (raw) {
+            const data = JSON.parse(raw);
+            const parts = key.replace('historygram_session_', '').split('_');
+            const cId = parts[0] || 'Classe';
+            const mId = parts.slice(1).join('_') || 'revolution_1800';
+            const mName = mId === 'revolution_1800' ? "Ottocento: Revolution Influencer" : "Cinquecento: Riforma vs Controriforma";
+            sessions.push({
+              id: `${cId}_${mId}`,
+              classId: cId,
+              mode: mId,
+              title: `Sessione (${cId})`,
+              modeName: mName,
+              postsCount: (data.approvedPosts || []).length,
+              isCurrent: false,
+              updatedAt: data.updatedAt || 'Precedente'
+            });
+          }
+        }
+      }
+    } catch (e) {}
+
+    let html = '';
+    sessions.forEach(sess => {
+      html += `
+        <div class="saved-game-item" style="display: flex; align-items: center; justify-content: space-between; padding: 14px 18px; background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 12px; margin-bottom: 10px; gap: 12px;">
+          <div style="flex: 1;">
+            <div style="font-weight: 800; color: var(--text-main); font-size: 0.95rem; font-family: var(--font-heading); display: flex; align-items: center; gap: 8px;">
+              <i class="fa-solid fa-graduation-cap" style="color: var(--accent-green);"></i>
+              ${sess.title}
+              ${sess.isCurrent ? '<span style="font-size: 0.7rem; background: rgba(5,150,105,0.15); color: var(--accent-green); padding: 2px 8px; border-radius: 20px; font-weight: 700;">IN CORSO</span>' : ''}
+            </div>
+            <div style="font-size: 0.82rem; color: var(--text-muted); margin-top: 4px;">
+              ${sess.modeName} &bull; <strong>${sess.postsCount}</strong> post pubblicati
+            </div>
+          </div>
+          <div>
+            <button class="btn-primary-action" style="padding: 8px 16px; font-size: 0.85rem;" onclick="HistoryGramApp.resumeSavedSession('${sess.classId}', '${sess.mode}')">
+              <i class="fa-solid fa-play"></i> Riprendi
+            </button>
+          </div>
+        </div>
+      `;
+    });
+
+    listEl.innerHTML = html;
+  }
+
+  function resumeSavedSession(classId, mode) {
+    AppState.currentClassId = classId;
+    AppState.currentMode = mode;
+    closeSavedGamesModal();
+    connectSession();
+    renderAll();
+    showToast("📂 Sessione ripresa con successo! Feed aggiornato.", "toast-success");
+    showView('view-game');
+  }
+
   /* ================= EXPORT API GLOBALE ================= */
   window.HistoryGramApp = {
     showView,
     startSetupFlow,
     selectSetupMode,
     onSetupClassChange,
+    selectPawnFaction,
+    handleStudentChipClick,
+    toggleStudentAssignment,
+    saveCurrentFactionTeam,
+    addCustomStudent,
+    resetTeamAssignments,
     autoDistributeTeams,
     launchGameFromSetup,
     toggleUserDropdown,
     openMiniguidaModal,
     closeMiniguidaModal,
+    nextGuideStep,
+    prevGuideStep,
+    openSavedGamesModal,
+    closeSavedGamesModal,
+    resumeSavedSession,
     unlockTeacherFromView,
     switchTeacherTab,
     saveTeamsFromView,
@@ -1167,7 +1875,10 @@
     toggleLike,
     ratePost,
     openFlameModal,
-    openCharDetailModal
+    openCharDetailModal,
+    closeCharDetailModal,
+    isTeacherUser,
+    updateTeacherNavVisibility
   };
 
   window.addEventListener('DOMContentLoaded', init);
