@@ -22,7 +22,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700;900&family=Inter:wght@400;500;600;700;800&family=Julius+Sans+One&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,600;1,6..72,400&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
-  <link rel="stylesheet" href="css/style.css?v=preview_3.7">
+  <link rel="stylesheet" href="css/style.css?v=preview_3.8">
 
   <!-- Identità Gioco & Guardie Ecosistema Prof. Memmo -->
   <script>window.HUB_GAME_ID = "historygram";</script>
@@ -284,44 +284,14 @@
         <!-- Banner Didattico della Modalità -->
         <section class="game-banner">
           <div class="game-banner-container">
-            <div class="banner-text">
-              <span class="banner-subtag" id="bannerSubtag">■ Sec. 1° Grado (Classi Terze) • Moti Rivoluzionari dell'Ottocento</span>
-              <h1 class="banner-heading" id="bannerHeading">Revolution Influencer – Like alla Libertà!</h1>
-              <p class="banner-description" id="bannerDescription">
-                Ogni gruppo rappresenta un team influencer dell'Ottocento. Trasforma i proclami storici in slogan e hashtag virali: 
-                ogni like vale 1 follower. Conquista il consenso pubblico e guida la rivoluzione!
-              </p>
-            </div>
-            <div class="banner-status-box">
-              <div class="status-stat">
-                <span class="stat-number" id="statFollowersTotal">0</span>
-                <span class="stat-label">Follower Distribuiti</span>
-              </div>
-              <div class="status-stat">
-                <span class="stat-number" id="statApprovedPostsTotal">0</span>
-                <span class="stat-label">Post Pubblicati</span>
-              </div>
-            </div>
+            <h1 class="banner-heading" id="bannerHeading">Revolution Influencer – Like alla Libertà!</h1>
           </div>
         </section>
 
-        <!-- Barra Storie & Profili Storici / Squadre -->
-        <section class="stories-bar-section">
-          <div class="stories-bar-container">
-            <div class="stories-bar-header">
-              <span>SQUADRE &amp; PROFILI IN GIOCO</span>
-              <small>Clicca su una squadra per consultare la scheda storica e le fonti</small>
-            </div>
-            <div class="stories-list" id="storiesList">
-              <!-- Inseriti da JS -->
-            </div>
-          </div>
-        </section>
-
-        <!-- Layout a Due Colonne: Feed Live + Tabellone Punti -->
+        <!-- Layout Feed Live LIM (Pulito e focalizzato) -->
         <div class="main-content-grid">
 
-          <!-- Colonna Sinistra: Feed Live LIM -->
+          <!-- Colonna Feed Live LIM -->
           <div class="feed-column">
             <div class="feed-controls-bar">
               <div class="feed-live-indicator">
@@ -350,51 +320,6 @@
               </div>
             </div>
           </div>
-
-          <!-- Colonna Destra: Classifica Follower & Podio -->
-          <aside class="sidebar-column">
-            <div class="leaderboard-card">
-              <div class="card-header-styled">
-                <div class="ch-left">
-                  <i class="fa-solid fa-trophy" style="color: #ffd700;"></i>
-                  <h3>Tabellone Follower &amp; Like</h3>
-                </div>
-                <span class="badge-live">LIVE</span>
-              </div>
-
-              <p class="card-intro-text" id="leaderboardMetricInfo">
-                Ogni like ❤️ vale 1 follower. Il docente assegna follower bonus per accuratezza e citazione di fonti!
-              </p>
-
-              <!-- Podio Visivo 1°, 2°, 3° -->
-              <div class="podium-wrap" id="podiumWrap"></div>
-
-              <!-- Tabella Squadre -->
-              <div class="table-responsive">
-                <table class="leaderboard-table">
-                  <thead>
-                    <tr>
-                      <th>Pos</th>
-                      <th>Squadra / Personaggio</th>
-                      <th>Post</th>
-                      <th class="text-right" id="lbMetricColumnTitle">Follower</th>
-                    </tr>
-                  </thead>
-                  <tbody id="leaderboardTableBody"></tbody>
-                </table>
-              </div>
-
-              <!-- Box Criteri di Valutazione -->
-              <div class="evaluation-rules-box">
-                <h4><i class="fa-solid fa-lightbulb"></i> Criteri Didattici</h4>
-                <ul id="evaluationRulesList">
-                  <li><strong>Accuratezza Storica:</strong> Idee, date e territori coerenti con la scheda.</li>
-                  <li><strong>Linguaggio Social:</strong> Slogan sintetici, hashtag persuasivi.</li>
-                  <li><strong>Zero Anacronismi:</strong> Rispetta la tecnologia e i costumi dell'epoca!</li>
-                </ul>
-              </div>
-            </div>
-          </aside>
 
         </div>
       </section>

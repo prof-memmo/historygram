@@ -636,17 +636,16 @@ h1, h2, h3, h4, h5, h6 {
   background: radial-gradient(circle at 10% 20%, rgba(5, 150, 105, 0.08) 0%, transparent 45%),
               radial-gradient(circle at 90% 80%, rgba(16, 185, 129, 0.06) 0%, transparent 45%),
               #ffffff;
-  padding: 24px 20px;
+  padding: 18px 20px;
 }
 
 .game-banner-container {
-  max-width: 1400px;
+  max-width: 860px;
   margin: 0 auto;
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 30px;
-  flex-wrap: wrap;
+  justify-content: center;
+  text-align: center;
 }
 
 .banner-subtag {
@@ -805,16 +804,15 @@ h1, h2, h3, h4, h5, h6 {
 
 /* ================= GRID PRINCIPALE ================= */
 .main-content-grid {
-  max-width: 1400px;
+  max-width: 860px;
   margin: 24px auto;
   padding: 0 20px;
-  display: grid;
-  grid-template-columns: 1fr 380px;
-  gap: 28px;
+  display: block;
   flex: 1;
 }
 
 .feed-column {
+  width: 100%;
   min-width: 0;
 }
 
