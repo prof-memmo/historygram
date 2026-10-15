@@ -49,6 +49,7 @@
     bottomNav: document.querySelector('.bottom-bar'),
     tabItems: document.querySelectorAll('.bottom-bar .tab-item'),
     navItemApprovazione: document.getElementById('nav-item-approvazione'),
+    navItemAdmin: document.getElementById('nav-item-admin'),
 
     // Setup Flow
     setupSelectClass: document.getElementById('setupSelectClass'),
@@ -238,12 +239,12 @@
       }
     }
 
-    const adminBtn = document.getElementById('btn-admin-dashboard-dropdown');
-    if (adminBtn) {
+    const adminNav = (DOM && DOM.navItemAdmin) || document.getElementById('nav-item-admin');
+    if (adminNav) {
       if (isSuperAdminUser()) {
-        adminBtn.classList.remove('hidden');
+        adminNav.classList.remove('hidden');
       } else {
-        adminBtn.classList.add('hidden');
+        adminNav.classList.add('hidden');
       }
     }
   }

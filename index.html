@@ -96,14 +96,7 @@
               <i class="fa-solid fa-right-to-bracket"></i> Accedi tramite Hub
             </button>
 
-            <button class="dropdown-pill-btn" onclick="HistoryGramApp.showView('view-docente'); HistoryGramApp.toggleUserDropdown(event);">
-              <i class="fa-solid fa-chalkboard-user"></i> Cattedra Docente
-            </button>
 
-            <!-- Super-Admin Exclusive Action Button (visibile solo a prof.memmo@gmail.com) -->
-            <button class="dropdown-pill-btn hidden" id="btn-admin-dashboard-dropdown" style="background: linear-gradient(135deg, #d4af37 0%, #aa820a 100%); color: #000; font-weight: 800;" onclick="HistoryGramApp.showView('view-admin'); HistoryGramApp.toggleUserDropdown(event);">
-              <i class="fa-solid fa-crown"></i> Pannello Super-Admin
-            </button>
 
             <button class="dropdown-pill-btn" id="btn-profile-dropdown" onclick="if(window.Modals && Modals.openProfileModal) Modals.openProfileModal();">
               <i class="fa-solid fa-user-gear"></i> Modifica Profilo
@@ -527,6 +520,10 @@
       <a href="#" class="tab-item hidden" id="nav-item-approvazione" data-view="view-docente" onclick="HistoryGramApp.showView('view-docente'); return false;" title="Pannello Docente">
         <i class="fa-solid fa-chalkboard-user"></i>
         <span>Pannello Docente</span>
+      </a>
+      <a href="#" class="tab-item hidden" id="nav-item-admin" data-view="view-admin" onclick="HistoryGramApp.showView('view-admin'); return false;" title="Pannello Admin">
+        <i class="fa-solid fa-crown"></i>
+        <span>Pannello Admin</span>
       </a>
     </nav>
 
