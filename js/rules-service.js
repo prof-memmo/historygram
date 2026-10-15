@@ -297,13 +297,10 @@ I partecipanti si impegnano al rispetto reciproco, al contrasto di linguaggi d'o
 
             container.innerHTML = `
                 <div class="glass-card" style="max-width: 900px; margin: 0 auto; padding: 32px; border-radius: 20px; border: 1px solid var(--border-color); background: var(--bg-card); line-height: 1.7; box-shadow: var(--shadow-md);">
-                    <div style="border-bottom: 2px solid var(--border-subtle); padding-bottom: 18px; margin-bottom: 24px;">
-                        <h2 style="font-size: 1.6rem; color: var(--accent-green); margin-bottom: 6px; display: flex; align-items: center; gap: 10px;">
-                            <i class="fa-solid fa-scroll"></i> Regolamento Didattico HistoryGram
+                    <div style="border-bottom: 2px solid var(--border-subtle); padding-bottom: 16px; margin-bottom: 24px;">
+                        <h2 style="font-size: 1.6rem; color: var(--accent-green); margin: 0; display: flex; align-items: center; gap: 10px;">
+                            <i class="fa-solid fa-scroll"></i> Regolamento
                         </h2>
-                        <p style="font-size: 0.88rem; color: var(--text-muted); margin: 0;">
-                            Criteri pedagogici, meccaniche social e regole di condotta per l'attività in classe.
-                        </p>
                     </div>
 
                     <div style="display: flex; flex-direction: column; gap: 24px;">
