@@ -215,17 +215,23 @@
       return true;
     }
     try {
-      const candidates = ['currentUser', 'user', 'eroi_user_profile', 'userProfile'];
+      const candidates = ['currentUser', 'user', 'teacherUser', 'hub_user', 'eroi_user_profile', 'userProfile'];
       for (const k of candidates) {
         const raw = localStorage.getItem(k);
         if (raw) {
           const parsed = JSON.parse(raw);
-          if (parsed && typeof parsed.email === 'string' && parsed.email.toLowerCase() === 'prof.memmo@gmail.com') {
-            return true;
+          if (parsed) {
+            if (typeof parsed.email === 'string' && parsed.email.toLowerCase() === 'prof.memmo@gmail.com') {
+              return true;
+            }
+            if (parsed.role === 'admin' || parsed.name === 'Prof. Memmo') {
+              return true;
+            }
           }
         }
       }
     } catch(e) {}
+    if (localStorage.getItem('adminLoggedIn') === 'true') return true;
     return false;
   }
 
