@@ -171,6 +171,10 @@
     connectSession();
 
     // 5. Imposta Vista Iniziale
+    const initHash = window.location.hash ? window.location.hash.replace(/^#/, '') : '';
+    if (initHash && document.getElementById('view-' + initHash)) {
+      AppState.currentView = 'view-' + initHash;
+    }
     showView(AppState.currentView, false);
 
     // Gestione popstate (tasto indietro/avanti)
@@ -178,7 +182,12 @@
       if (e.state && e.state.view) {
         showView(e.state.view, false);
       } else {
-        showView('view-welcome', false);
+        const hash = window.location.hash ? window.location.hash.replace(/^#/, '') : '';
+        if (hash && document.getElementById('view-' + hash)) {
+          showView('view-' + hash, false);
+        } else {
+          showView('view-welcome', false);
+        }
       }
     });
 
@@ -197,19 +206,57 @@
     return false;
   }
 
+  function isSuperAdminUser() {
+    if (window.HistoryGramRulesService && typeof window.HistoryGramRulesService.isSuperAdmin === 'function') {
+      if (window.HistoryGramRulesService.isSuperAdmin()) return true;
+    }
+    if (AppState.teacherUser && AppState.teacherUser.email && AppState.teacherUser.email.toLowerCase() === 'prof.memmo@gmail.com') {
+      return true;
+    }
+    try {
+      const candidates = ['currentUser', 'user', 'eroi_user_profile', 'userProfile'];
+      for (const k of candidates) {
+        const raw = localStorage.getItem(k);
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          if (parsed && typeof parsed.email === 'string' && parsed.email.toLowerCase() === 'prof.memmo@gmail.com') {
+            return true;
+          }
+        }
+      }
+    } catch(e) {}
+    return false;
+  }
+
   function updateTeacherNavVisibility() {
     const navItem = DOM.navItemApprovazione || document.getElementById('nav-item-approvazione');
-    if (!navItem) return;
-    if (isTeacherUser()) {
-      navItem.classList.remove('hidden');
-    } else {
-      navItem.classList.add('hidden');
+    if (navItem) {
+      if (isTeacherUser()) {
+        navItem.classList.remove('hidden');
+      } else {
+        navItem.classList.add('hidden');
+      }
+    }
+
+    const adminBtn = document.getElementById('btn-admin-dashboard-dropdown');
+    if (adminBtn) {
+      if (isSuperAdminUser()) {
+        adminBtn.classList.remove('hidden');
+      } else {
+        adminBtn.classList.add('hidden');
+      }
     }
   }
 
   /* ================= GESTIONE VISTE (MULTI-VIEW SPA) ================= */
   function showView(viewId, pushHistory = true) {
     if (!document.getElementById(viewId)) return;
+
+    // Guardia di accesso: Pannello Super-Admin riservato esclusivamente a prof.memmo@gmail.com
+    if (viewId === 'view-admin' && !isSuperAdminUser()) {
+      showToast("⛔ Accesso riservato esclusivamente al Super-Admin (prof.memmo@gmail.com).", "toast-danger");
+      return;
+    }
 
     // Guardia di accesso: il pannello Approvazione/Docente è riservato esclusivamente al docente
     if (viewId === 'view-docente' && !isTeacherUser()) {
@@ -245,6 +292,18 @@
       renderSetupClassView();
     } else {
       document.body.classList.remove('view-no-scroll');
+    }
+
+    // Rendering dinamico per Regolamento e Super-Admin
+    if (viewId === 'view-regolamento') {
+      if (window.HistoryGramRulesService) {
+        window.HistoryGramRulesService.renderPublicView('view-regolamento-container');
+      }
+    }
+    if (viewId === 'view-admin') {
+      if (window.HistoryGramRulesService) {
+        window.HistoryGramRulesService.renderAdminEditor('historygram-rules-editor-container');
+      }
     }
 
     // Scroll verso l'alto
@@ -1878,6 +1937,7 @@
     openCharDetailModal,
     closeCharDetailModal,
     isTeacherUser,
+    isSuperAdminUser,
     updateTeacherNavVisibility
   };
 

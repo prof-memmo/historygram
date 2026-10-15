@@ -100,6 +100,11 @@
               <i class="fa-solid fa-chalkboard-user"></i> Cattedra Docente
             </button>
 
+            <!-- Super-Admin Exclusive Action Button (visibile solo a prof.memmo@gmail.com) -->
+            <button class="dropdown-pill-btn hidden" id="btn-admin-dashboard-dropdown" style="background: linear-gradient(135deg, #d4af37 0%, #aa820a 100%); color: #000; font-weight: 800;" onclick="HistoryGramApp.showView('view-admin'); HistoryGramApp.toggleUserDropdown(event);">
+              <i class="fa-solid fa-crown"></i> Pannello Super-Admin
+            </button>
+
             <button class="dropdown-pill-btn" id="btn-profile-dropdown" onclick="if(window.Modals && Modals.openProfileModal) Modals.openProfileModal();">
               <i class="fa-solid fa-user-gear"></i> Modifica Profilo
             </button>
@@ -390,20 +395,8 @@
           <p class="setup-subtitle">Come condurre l'attività in classe, criteri di valutazione e meccaniche social.</p>
         </div>
 
-        <div class="glass-card" style="max-width: 900px; margin: 0 auto; padding: 30px; border-radius: 20px; border: 1px solid var(--border-color); background: var(--bg-card); line-height: 1.7;">
-          <h3 style="color: var(--accent-purple-light);"><i class="fa-solid fa-circle-info"></i> 1. Obiettivi Didattici</h3>
-          <p>HistoryGram è progettato per sviluppare il pensiero critico, la comprensione delle fonti e la capacità di sintesi persuasiva nella scuola secondaria di primo grado. Gli studenti calano le grandi questioni del passato nei linguaggi della comunicazione contemporanea, distinguendo tra fatti storici e propaganda.</p>
-
-          <h3 style="color: var(--accent-gold); margin-top: 25px;"><i class="fa-solid fa-star"></i> 2. Meccaniche di Voto e Follower</h3>
-          <ul style="padding-left: 20px;">
-            <li><strong>1 Like = 1 Follower:</strong> Ogni studente può votare i post avversari per premiare le tesi più convincenti.</li>
-            <li><strong>Imprimatur del Docente:</strong> Nessun post appare sulla LIM prima della convalida del docente, garantendo zero contenuti inappropriati.</li>
-            <li><strong>Bonus Cattedra (+10 Follower):</strong> Il docente può premiare la citazione corretta di date, fonti o l'eccellenza dello slogan storico.</li>
-            <li><strong>Flame del XVI Secolo:</strong> Nella modalità Riforma vs Controriforma, ogni replica a un post dottrinale riceve una valutazione a 3 stelle: <em>Accuratezza</em> ⭐, <em>Creatività</em> 💡, <em>Chiarezza</em> 🗣️.</li>
-          </ul>
-
-          <h3 style="color: #38bdf8; margin-top: 25px;"><i class="fa-solid fa-ban"></i> 3. Divieto di Anacronismi</h3>
-          <p>I post devono rispettare la cultura materiale e gli orizzonti dell'epoca rappresentata. È vietato citare tecnologie o concetti posteriori alla data storica di ambientazione.</p>
+        <div id="view-regolamento-container">
+          <!-- Popolato dinamicamente da RulesService.renderPublicView('view-regolamento-container') -->
         </div>
 
         <footer class="view-footer-copyright">
@@ -415,6 +408,45 @@
             <img src="https://prof-memmo.github.io/prof-memmo-gestione-siti/shared/assets/legal/patamu-badge.png" alt="Patamu" class="patamu-footer-badge">
             <p class="footer-copy">
               &copy; 2026 Guglielmo Piersanti. Tutti i contenuti sono protetti tramite deposito e marcatura temporale digitale su Patamu.com (CC BY-NC-ND 4.0).
+            </p>
+          </div>
+        </footer>
+      </section>
+
+      <!-- ========================================
+           7. VIEW: PANNELLO SUPER-ADMIN (DASHBOARD)
+           ======================================== -->
+      <section id="view-admin" class="view">
+        <div class="setup-header-box" style="border-bottom: 2px solid var(--accent-gold); padding-bottom: 15px; margin-bottom: 25px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px;">
+            <div>
+              <span class="setup-step-badge" style="background: rgba(212, 175, 55, 0.15); color: var(--accent-gold); border: 1px solid rgba(212, 175, 55, 0.3);">
+                <i class="fa-solid fa-crown"></i> SUPER-ADMIN CONSOLE
+              </span>
+              <h2 class="setup-title" style="color: var(--accent-gold); margin: 6px 0 0 0;">Pannello di Amministrazione HistoryGram</h2>
+              <p class="setup-subtitle" style="margin: 4px 0 0 0;">Gestione e sincronizzazione in tempo reale del Regolamento Ufficiale su Firestore (prof.memmo@gmail.com).</p>
+            </div>
+            <div>
+              <button class="btn-secondary-action" onclick="HistoryGramApp.showView('view-welcome')" style="background: var(--bg-card); border: 1.5px solid var(--accent-gold); color: var(--accent-gold); border-radius: 50px; padding: 8px 20px; font-weight: 700; cursor: pointer;">
+                <i class="fa-solid fa-house"></i> Torna alla Home
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div id="historygram-rules-editor-container">
+          <!-- Popolato dinamicamente da RulesService.renderAdminEditor('historygram-rules-editor-container') -->
+        </div>
+
+        <footer class="view-footer-copyright" style="margin-top: 40px;">
+          <div class="footer-legal-links">
+            <a href="javascript:void(0)" onclick="if(window.openSharedModal) window.openSharedModal('privacy'); else if(window.Modals) Modals.openLegalModal('privacy');">Privacy Policy</a>
+            <a href="javascript:void(0)" onclick="if(window.openSharedModal) window.openSharedModal('termini'); else if(window.Modals) Modals.openLegalModal('termini');">Termini e Condizioni</a>
+          </div>
+          <div class="footer-badge-text-row">
+            <img src="https://prof-memmo.github.io/prof-memmo-gestione-siti/shared/assets/legal/patamu-badge.png" alt="Patamu" class="patamu-footer-badge">
+            <p class="footer-copy">
+              &copy; 2026 Guglielmo Piersanti. Riservato al Super-Admin.
             </p>
           </div>
         </footer>
@@ -720,6 +752,7 @@
   <script src="js/characters.js?v=preview_3.7"></script>
   <script src="js/historygram-service.js?v=preview_3.7"></script>
   <script src="js/music.js?v=preview_3.7"></script>
+  <script src="js/rules-service.js?v=preview_3.8"></script>
   <script src="js/app.js?v=preview_3.7"></script>
 </body>
 </html>
