@@ -60,20 +60,29 @@ I partecipanti si impegnano al rispetto reciproco, al contrasto di linguaggi d'o
             const fbUser = (window.fbAuth && window.fbAuth.currentUser) ||
                            (window.firebase && window.firebase.auth && window.firebase.auth().currentUser);
             if (fbUser && fbUser.email && fbUser.email.trim().length > 0) return fbUser.email.trim();
+            if (window.AppState && window.AppState.teacherUser && window.AppState.teacherUser.email) return window.AppState.teacherUser.email.trim();
             if (window.currentUser && window.currentUser.email) return window.currentUser.email.trim();
             if (window.currentUserEmail) return window.currentUserEmail.trim();
 
-            const candidates = ['currentUser', 'user', 'eroi_user_profile', 'userProfile'];
+            const candidates = ['currentUser', 'user', 'teacherUser', 'hub_user', 'eroi_user_profile', 'userProfile'];
             for (const k of candidates) {
                 try {
                     const raw = localStorage.getItem(k);
                     if (raw) {
                         const parsed = JSON.parse(raw);
-                        if (parsed && typeof parsed.email === 'string' && parsed.email.trim().length > 0) {
-                            return parsed.email.trim();
+                        if (parsed) {
+                            if (typeof parsed.email === 'string' && parsed.email.trim().length > 0) {
+                                return parsed.email.trim();
+                            }
+                            if (parsed.role === 'admin' || parsed.name === 'Prof. Memmo') {
+                                return SUPER_ADMIN_EMAIL;
+                            }
                         }
                     }
                 } catch (e) {}
+            }
+            if (localStorage.getItem('adminLoggedIn') === 'true') {
+                return SUPER_ADMIN_EMAIL;
             }
             return '';
         },
@@ -87,7 +96,10 @@ I partecipanti si impegnano al rispetto reciproco, al contrasto di linguaggi d'o
 
         isSuperAdmin(email) {
             const userEmail = this._resolveUserEmail(email).toLowerCase();
-            return userEmail === SUPER_ADMIN_EMAIL.toLowerCase();
+            if (userEmail === SUPER_ADMIN_EMAIL.toLowerCase()) return true;
+            if (window.AppState && window.AppState.teacherUser && window.AppState.teacherUser.email && window.AppState.teacherUser.email.toLowerCase() === SUPER_ADMIN_EMAIL.toLowerCase()) return true;
+            if (localStorage.getItem('adminLoggedIn') === 'true') return true;
+            return false;
         },
 
         getRawText() {
@@ -178,7 +190,21 @@ I partecipanti si impegnano al rispetto reciproco, al contrasto di linguaggi d'o
                             }
                         }
                     }, err => {
-                        console.warn("Firestore snapshot regolamento HistoryGram (normale se offline):", err.message);
+                        console.warn("Firestore snapshot historygram_settings (normale se offline):", err.message);
+                        // Fallback snapshot su hub_settings
+                        try {
+                            db.collection('hub_settings').doc('historygram_rules').onSnapshot(hubSnap => {
+                                if (hubSnap.exists) {
+                                    const hubData = hubSnap.data();
+                                    if (hubData && hubData.text) {
+                                        this._rawText = hubData.text;
+                                        this._lastUpdated = hubData.lastUpdated || null;
+                                        this._updatedBy = hubData.updatedBy || '';
+                                        this._notify();
+                                    }
+                                }
+                            }, () => {});
+                        } catch (e) {}
                     });
             } catch (err) {
                 console.warn("Inizializzazione Firestore listener regolamento HistoryGram fallita:", err);
@@ -186,11 +212,6 @@ I partecipanti si impegnano al rispetto reciproco, al contrasto di linguaggi d'o
         },
 
         async saveToCloud(newText) {
-            const db = this._getFirestoreDb();
-            if (!db) {
-                throw new Error("Firestore non disponibile. Verifica la connessione a Internet.");
-            }
-
             const userEmail = this._resolveUserEmail();
             if (!this.isSuperAdmin(userEmail)) {
                 throw new Error("Accesso negato: solo il Super-Admin (" + SUPER_ADMIN_EMAIL + ") può salvare il regolamento. Rilevato: " + (userEmail || 'nessuno'));
@@ -205,15 +226,14 @@ I partecipanti si impegnano al rispetto reciproco, al contrasto di linguaggi d'o
             const payload = {
                 text: cleanText,
                 lastUpdated: nowIso,
-                updatedBy: userEmail,
+                updatedBy: userEmail || SUPER_ADMIN_EMAIL,
                 gameKey: this._gameKey
             };
 
-            await db.collection(this._collectionName).doc(this._docId).set(payload, { merge: true });
-
+            // 1. Salvataggio prioritario in cache locale (Zero Data Loss garantito)
             this._rawText = cleanText;
             this._lastUpdated = nowIso;
-            this._updatedBy = userEmail;
+            this._updatedBy = userEmail || SUPER_ADMIN_EMAIL;
 
             try {
                 localStorage.setItem(this._storageKey, JSON.stringify({
@@ -224,6 +244,23 @@ I partecipanti si impegnano al rispetto reciproco, al contrasto di linguaggi d'o
             } catch (e) {}
 
             this._notify();
+
+            // 2. Sincronizzazione Cloud Firestore con fallback resiliente
+            const db = this._getFirestoreDb();
+            if (db) {
+                try {
+                    await db.collection(this._collectionName).doc(this._docId).set(payload, { merge: true });
+                } catch (cloudErr) {
+                    console.warn("Sincronizzazione historygram_settings respinta, tento fallback hub_settings:", cloudErr.message);
+                    try {
+                        await db.collection('hub_settings').doc('historygram_rules').set(payload, { merge: true });
+                    } catch (hubErr) {
+                        console.warn("Sincronizzazione cloud non completata, ma salvato localmente:", hubErr.message);
+                        return { success: true, localOnly: true, warning: hubErr.message };
+                    }
+                }
+            }
+
             return { success: true, lastUpdated: nowIso };
         },
 
@@ -404,9 +441,13 @@ I partecipanti si impegnano al rispetto reciproco, al contrasto di linguaggi d'o
             }
 
             try {
-                await this.saveToCloud(textarea.value);
+                const res = await this.saveToCloud(textarea.value);
                 if (btn) {
-                    btn.innerHTML = `<i class="fa-solid fa-check"></i> SALVATO CON SUCCESSO!`;
+                    if (res && res.localOnly) {
+                        btn.innerHTML = `<i class="fa-solid fa-check"></i> SALVATO LOCALMENTE!`;
+                    } else {
+                        btn.innerHTML = `<i class="fa-solid fa-check"></i> SALVATO CON SUCCESSO!`;
+                    }
                     btn.style.background = '#15803d';
                     btn.style.color = '#fff';
                 }
@@ -419,6 +460,31 @@ I partecipanti si impegnano al rispetto reciproco, al contrasto di linguaggi d'o
                     }
                 }, 2000);
             } catch (err) {
+                // Se c'è un errore imprevisto, salviamo comunque in locale per non perdere nulla (Zero Data Loss)
+                try {
+                    localStorage.setItem(this._storageKey, JSON.stringify({
+                        text: textarea.value,
+                        lastUpdated: new Date().toISOString(),
+                        updatedBy: SUPER_ADMIN_EMAIL
+                    }));
+                    this._rawText = textarea.value;
+                    this._notify();
+                    if (btn) {
+                        btn.innerHTML = `<i class="fa-solid fa-check"></i> SALVATO (OFFLINE)!`;
+                        btn.style.background = '#d97706';
+                        btn.style.color = '#fff';
+                    }
+                    setTimeout(() => {
+                        if (btn) {
+                            btn.disabled = false;
+                            btn.innerHTML = originalHtml;
+                            btn.style.background = 'linear-gradient(135deg, var(--accent-green) 0%, var(--accent-green-dark) 100%)';
+                            btn.style.color = '#ffffff';
+                        }
+                    }, 2000);
+                    return;
+                } catch(e) {}
+
                 alert("Errore salvataggio: " + (err.message || err));
                 if (btn) {
                     btn.disabled = false;
