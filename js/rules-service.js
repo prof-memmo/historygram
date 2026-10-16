@@ -300,6 +300,26 @@ I partecipanti si impegnano al rispetto reciproco, al contrasto di linguaggi d'o
             return { success: true, lastUpdated: nowIso };
         },
 
+        _formatLinks(str, linkColor = '#059669') {
+            if (!str || typeof str !== 'string') return '';
+            // 1. Markdown link: [Label](https://url)
+            let res = str.replace(/\[([^\]]+)\]\((https?:\/\/[^\s\)]+)\)/g, (m, label, url) => {
+                return `<a href="${url}" target="_blank" rel="noopener noreferrer" style="color: ${linkColor}; text-decoration: underline; font-weight: 700; word-break: break-all;">${label} <span style="font-size: 0.8em; margin-left: 2px;">↗</span></a>`;
+            });
+            // 2. Plain URL: https://...
+            res = res.replace(/(^|[\s(>])(https?:\/\/[^\s<]+)/g, (m, prefix, url) => {
+                let cleanUrl = url;
+                let trailing = '';
+                const trailMatch = url.match(/([.,;:!?)]+)$/);
+                if (trailMatch) {
+                    trailing = trailMatch[1];
+                    cleanUrl = url.substring(0, url.length - trailing.length);
+                }
+                return `${prefix}<a href="${cleanUrl}" target="_blank" rel="noopener noreferrer" style="color: ${linkColor}; text-decoration: underline; font-weight: 700; word-break: break-all;">${cleanUrl} <span style="font-size: 0.8em; margin-left: 2px;">↗</span></a>${trailing}`;
+            });
+            return res;
+        },
+
         // Parsing automatico in sezioni numerate
         parseTextToItems(text) {
             const src = (text || this.getRawText()).trim();
@@ -316,8 +336,10 @@ I partecipanti si impegnano al rispetto reciproco, al contrasto di linguaggi d'o
                 let title = '';
                 let content = '';
 
-                const matchNumbered = firstLine.match(/^(\d+[\.\)]\s*)(.*)$/);
+                let detectedNumber = null;
+                const matchNumbered = firstLine.match(/^(\d+)[\.\)]\s*(.*)$/);
                 if (matchNumbered) {
+                    detectedNumber = parseInt(matchNumbered[1], 10);
                     firstLine = matchNumbered[2].trim();
                 }
 
@@ -339,7 +361,7 @@ I partecipanti si impegnano al rispetto reciproco, al contrasto di linguaggi d'o
                 }
 
                 items.push({
-                    index: index + 1,
+                    index: detectedNumber !== null ? detectedNumber : index + 1,
                     title: title,
                     text: content || title,
                     fullText: block
@@ -378,7 +400,7 @@ I partecipanti si impegnano al rispetto reciproco, al contrasto di linguaggi d'o
 
                     <div style="display: flex; flex-direction: column; gap: 24px;">
                         ${items.map(item => {
-                            const color = badgeColors[(item.index - 1) % badgeColors.length];
+                            const color = badgeColors[(item.index - 1) % badgeColors.length] || badgeColors[0];
                             return `
                                 <div style="display: flex; gap: 16px; align-items: flex-start; background: #fafafa; border: 1px solid var(--border-color); border-radius: 16px; padding: 20px;">
                                     <div style="width: 36px; height: 36px; border-radius: 50%; background: ${color.bg}; color: ${color.text}; border: 1.5px solid ${color.border}; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 1rem; shrink: 0; margin-top: 2px;">
@@ -397,11 +419,11 @@ I partecipanti si impegnano al rispetto reciproco, al contrasto di linguaggi d'o
                                                     if (colonIdx !== -1) {
                                                         const label = clean.substring(0, colonIdx).trim();
                                                         const val = clean.substring(colonIdx + 1).trim();
-                                                        return `<div style="padding-left: 12px; margin-bottom: 6px;"><strong style="color: var(--text-main);">${label}:</strong> ${val}</div>`;
+                                                        return `<div style="padding-left: 12px; margin-bottom: 6px;"><strong style="color: var(--text-main);">${label}:</strong> ${this._formatLinks(val, '#059669')}</div>`;
                                                     }
-                                                    return `<div style="padding-left: 12px; margin-bottom: 6px;">• ${clean}</div>`;
+                                                    return `<div style="padding-left: 12px; margin-bottom: 6px;">• ${this._formatLinks(clean, '#059669')}</div>`;
                                                 }
-                                                return `<p style="margin: 0 0 10px 0;">${trimmed}</p>`;
+                                                return `<p style="margin: 0 0 10px 0;">${this._formatLinks(trimmed, '#059669')}</p>`;
                                             }).join('')}
                                         </div>
                                     </div>
