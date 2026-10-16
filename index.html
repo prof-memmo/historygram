@@ -697,16 +697,16 @@
       <div style="flex: 1; padding: 30px 40px; display: flex; flex-direction: column; position: relative; min-height: 450px;">
         <button onclick="HistoryGramApp.closeMiniguidaModal()" style="position: absolute; top: 15px; right: 15px; width: 36px; height: 36px; border-radius: 50%; border: none; background: #f1f5f9; color: #475569; font-size: 1.2rem; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background 0.2s;"><i class="fa-solid fa-xmark"></i></button>
         
-        <h2 id="guide-modal-title" style="font-size: 1.85rem; font-weight: 900; color: var(--accent-green); margin-bottom: 25px; text-align: center; text-transform: uppercase; border-bottom: 4px solid rgba(5, 150, 105, 0.2); padding-bottom: 10px; display: inline-block; margin-left: auto; margin-right: auto; font-family: var(--font-heading);">Come si gioca?</h2>
+        <h2 id="guide-modal-title" style="font-size: 1.85rem; font-weight: 900; color: var(--accent-green); margin-bottom: 25px; text-align: center; text-transform: uppercase; border-bottom: 4px solid rgba(5, 150, 105, 0.2); padding-bottom: 10px; display: inline-block; margin-left: auto; margin-right: auto; font-family: var(--font-heading);">Miniguida</h2>
         
         <div style="flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; animation: fadeIn 0.3s ease-out;">
-          <div id="guide-step-icon" style="font-size: 4.5rem; margin-bottom: 15px;">👥</div>
-          <h3 id="guide-step-title" style="font-size: 1.25rem; font-weight: 800; color: #1e293b; margin-bottom: 10px; font-family: var(--font-heading);">1. Forma le Squadre e Scegli l'Epoca</h3>
-          <p id="guide-step-desc" style="font-size: 1.15rem; color: #475569; line-height: 1.6; font-weight: 500; max-width: 520px;">Il docente seleziona la classe e la modalità didattica (Ottocento: Moti Rivoluzionari o Cinquecento: Riforma vs Controriforma), assegnando gli studenti alle fazioni e ai protagonisti storici.</p>
+          <div id="guide-step-icon" style="font-size: 4.5rem; margin-bottom: 15px;">🎯</div>
+          <h3 id="guide-step-title" style="display: none;"></h3>
+          <p id="guide-step-desc" style="font-size: 1.15rem; color: #475569; line-height: 1.6; font-weight: 500; max-width: 520px;">Lo scopo del gioco è calarsi nei panni di un protagonista del passato, raccontare i grandi eventi storici con i post e conquistare il consenso e i like della classe.</p>
         </div>
         
         <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 20px;">
-          <div style="font-size: 0.85rem; font-weight: 700; color: #94a3b8;" id="guide-step-num">Passo 1 di 4</div>
+          <div style="font-size: 0.85rem; font-weight: 700; color: #94a3b8;" id="guide-step-num">Passo 1 di 5</div>
           <div style="display: flex; gap: 10px;">
             <button id="guide-prev-btn" onclick="HistoryGramApp.prevGuideStep()" style="background: #f1f5f9; color: #475569; border: none; padding: 10px 20px; border-radius: 12px; font-weight: 800; font-size: 0.95rem; cursor: pointer; font-family: var(--font-heading); visibility: hidden;">Indietro</button>
             <button id="guide-next-btn" onclick="HistoryGramApp.nextGuideStep()" style="background: var(--accent-green); color: #fff; border: none; padding: 10px 26px; border-radius: 12px; font-weight: 900; font-size: 0.95rem; cursor: pointer; box-shadow: 0 4px 6px rgba(0,0,0,0.1); font-family: var(--font-heading);">Avanti ➔</button>

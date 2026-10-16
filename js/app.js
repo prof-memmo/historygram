@@ -1511,24 +1511,29 @@
   /* ================= MINIGUIDA MODAL LOGIC (Stile L'Oratore) ================= */
   const guideSteps = [
     {
-      icon: "👥",
-      title: "1. Forma le Squadre e Scegli l'Epoca",
-      desc: "Il docente seleziona la classe dall'Hub e la modalità storica (Ottocento: Moti Rivoluzionari o Cinquecento: Riforma vs Controriforma), assegnando gli studenti alle fazioni e ai protagonisti storici."
+      icon: "🎯",
+      title: "",
+      desc: "Lo scopo del gioco è calarsi nei panni di un protagonista del passato, raccontare i grandi eventi storici con i post e conquistare il consenso e i like della classe."
+    },
+    {
+      icon: "📱",
+      title: "",
+      desc: "Si gioca pubblicando post storicamente coerenti con il proprio personaggio, aggiungendo immagini e riflessioni, e interagendo con commenti e like nel feed di classe."
+    },
+    {
+      icon: "🏠",
+      title: "",
+      desc: "Nella <strong>Home</strong> scegli la tua epoca storica e il tuo personaggio per esplorare il feed e scoprire gli aggiornamenti del giorno."
     },
     {
       icon: "✍️",
-      title: "2. Componi Proclami e Slogan d'Epoca",
-      desc: "Ogni squadra cala le tesi storiche nei linguaggi della comunicazione social: argomenta ideali e riforme, cita fonti autentiche, inventa slogan virali e sceglie la cornice visiva d'epoca."
+      title: "",
+      desc: "Clicca su <strong>Crea Post</strong> per pubblicare contenuti coerenti con il tuo personaggio e interagire con i like dei compagni."
     },
     {
-      icon: "🛡️",
-      title: "3. Imprimatur del Docente sulla LIM",
-      desc: "I post vengono inviati alla Cattedra. Il docente verifica l'accuratezza storica, assegna follower bonus per merito e convalida l'imprimatur per proiettare i post in tempo reale sulla LIM."
-    },
-    {
-      icon: "🔥",
-      title: "4. Repliche, Dibattito e Like alla Libertà",
-      desc: "La classe vota i proclami più persuasivi con Like ❤️ e scatena repliche o sfide dottrinali per far trionfare la propria tesi storica sul tabellone finale!"
+      icon: "🏆",
+      title: "",
+      desc: "Vai su <strong>Classifica</strong> per scoprire i profili storici più seguiti e i post più popolari della classe.<br><br><em>Consulta il regolamento per saperne di più.</em>"
     }
   ];
 
@@ -1544,8 +1549,8 @@
     const nextBtn = document.getElementById('guide-next-btn');
 
     if (iconEl) iconEl.textContent = s.icon;
-    if (titleEl) titleEl.textContent = s.title;
-    if (descEl) descEl.textContent = s.desc;
+    if (titleEl) titleEl.style.display = 'none';
+    if (descEl) descEl.innerHTML = s.desc;
     if (numEl) numEl.textContent = `Passo ${currentGuideStepIndex + 1} di ${guideSteps.length}`;
     if (prevBtn) prevBtn.style.visibility = currentGuideStepIndex === 0 ? 'hidden' : 'visible';
     if (nextBtn) nextBtn.textContent = currentGuideStepIndex === guideSteps.length - 1 ? 'Chiudi ✓' : 'Avanti ➔';
