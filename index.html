@@ -501,29 +501,29 @@
          BOTTOM DOCK NAVIGATION BAR (Stile L'Oratore)
          ========================================== -->
     <nav class="bottom-bar">
-      <a href="#" class="tab-item active" data-view="view-welcome" onclick="HistoryGramApp.showView('view-welcome'); return false;">
+      <a href="#" class="tab-item active" data-view="view-welcome" onclick="HistoryGramApp.showView('view-welcome'); return false;" data-tooltip="Home">
         <i class="fa-solid fa-house"></i>
         <span>Home</span>
       </a>
-      <a href="#" class="tab-item" data-view="view-regolamento" onclick="HistoryGramApp.showView('view-regolamento'); return false;">
-        <i class="fa-solid fa-scale-balanced"></i>
-        <span>Regole</span>
-      </a>
-      <a href="#" class="tab-item" onclick="HistoryGramApp.openMiniguidaModal(); return false;">
+      <a href="#" class="tab-item" onclick="HistoryGramApp.openMiniguidaModal(); return false;" data-tooltip="Miniguida">
         <i class="fa-solid fa-circle-question"></i>
         <span>Miniguida</span>
       </a>
-      <a href="#" class="tab-item" data-view="view-leaderboard" onclick="HistoryGramApp.showView('view-leaderboard'); return false;">
+      <a href="#" class="tab-item" data-view="view-regolamento" onclick="HistoryGramApp.showView('view-regolamento'); return false;" data-tooltip="Regolamento">
+        <i class="fa-solid fa-scale-balanced"></i>
+        <span>Regolamento</span>
+      </a>
+      <a href="#" class="tab-item" data-view="view-leaderboard" onclick="HistoryGramApp.showView('view-leaderboard'); return false;" data-tooltip="Classifica">
         <i class="fa-solid fa-trophy"></i>
         <span>Classifica</span>
       </a>
-      <a href="#" class="tab-item hidden" id="nav-item-approvazione" data-view="view-docente" onclick="HistoryGramApp.showView('view-docente'); return false;" title="Pannello Docente">
+      <a href="#" class="tab-item hidden" id="nav-item-approvazione" data-view="view-docente" onclick="HistoryGramApp.showView('view-docente'); return false;" title="Docente" data-tooltip="Docente">
         <i class="fa-solid fa-chalkboard-user"></i>
-        <span>Pannello Docente</span>
+        <span>Docente</span>
       </a>
-      <a href="#" class="tab-item hidden" id="nav-item-admin" data-view="view-admin" onclick="HistoryGramApp.showView('view-admin'); return false;" title="Pannello Admin">
+      <a href="#" class="tab-item hidden" id="nav-item-admin" data-view="view-admin" onclick="HistoryGramApp.showView('view-admin'); return false;" title="Admin" data-tooltip="Admin">
         <i class="fa-solid fa-crown"></i>
-        <span>Pannello Admin</span>
+        <span>Admin</span>
       </a>
     </nav>
 

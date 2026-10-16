@@ -3216,6 +3216,74 @@ h1, h2, h3, h4, h5, h6 {
   color: var(--accent-green);
 }
 
+/* Tooltips e Floating Dock (Desktop only - Standard Ecosistema) */
+@media screen and (min-width: 1024px) {
+  .bottom-bar {
+    width: max-content !important;
+    min-width: 420px;
+    max-width: 90vw;
+    height: 68px;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    border-radius: 40px;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.12);
+    padding: 0 24px;
+    gap: 12px;
+    overflow: visible !important;
+  }
+
+  .tab-item {
+    position: relative;
+    flex: 0 0 auto;
+    min-width: 60px;
+    padding: 8px 12px;
+  }
+
+  .tab-item span {
+    display: none; /* Nasconde le etichette statiche su desktop */
+  }
+
+  .tab-item i {
+    font-size: 1.45rem;
+  }
+
+  .tab-item::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    bottom: 115%;
+    left: 50%;
+    transform: translateX(-50%) translateY(8px);
+    background: var(--accent-green, #059669);
+    color: #ffffff;
+    padding: 7px 14px;
+    border-radius: 10px;
+    font-size: 0.85rem;
+    font-weight: 700;
+    white-space: nowrap;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    pointer-events: none;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+    z-index: 2000;
+    letter-spacing: 0.3px;
+    text-transform: none;
+  }
+
+  .tab-item:hover::after {
+    opacity: 1;
+    visibility: visible;
+    transform: translateX(-50%) translateY(0);
+  }
+
+  .tab-item:hover i {
+    transform: translateY(-4px);
+    color: var(--accent-green);
+  }
+}
+
 /* ================= DROPDOWN MUSIC CAPSULE ================= */
 .dropdown-music-box {
   background: var(--accent-green-bg);
