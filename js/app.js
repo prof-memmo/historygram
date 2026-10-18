@@ -409,11 +409,7 @@
       DOM.setupSelectClass.appendChild(opt);
     });
 
-    // Aggiungi opzione per nuova classe libera rapida
-    const optCustom = document.createElement('option');
-    optCustom.value = 'custom';
-    optCustom.textContent = '➕ Inserisci un nuovo codice classe...';
-    DOM.setupSelectClass.appendChild(optCustom);
+
 
     // Carica eventuale sessione esistente da Firestore o LocalStorage
     if (window.HistoryGramService) {
@@ -783,15 +779,7 @@
   }
 
   function onSetupClassChange(val) {
-    if (val === 'custom') {
-      const customCode = prompt("Inserisci il codice classe per questa sessione (es. 2C, 3A):", "3A");
-      if (customCode) {
-        AppState.currentClassCode = customCode.toUpperCase().replace(/[^A-Z0-9_-]/g, '');
-        AppState.currentClassId = 'classe_' + AppState.currentClassCode.toLowerCase();
-        renderSetupClassView();
-      }
-      return;
-    }
+    if (!val) return;
     AppState.currentClassId = val;
     const parts = val.replace('classe_', '').toUpperCase();
     AppState.currentClassCode = parts || '3B';

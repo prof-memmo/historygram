@@ -98,7 +98,7 @@
 
 
 
-            <button class="dropdown-pill-btn" id="btn-profile-dropdown" onclick="if(window.Modals && Modals.openProfileModal) Modals.openProfileModal();">
+            <button class="dropdown-pill-btn" id="btn-profile-dropdown" onclick="window.open('https://prof-memmo.github.io/games/profilo.html', '_blank');">
               <i class="fa-solid fa-user-gear"></i> Modifica Profilo
             </button>
 
@@ -231,7 +231,7 @@
               <span class="setup-step-badge" style="margin-bottom: 0;">Passo 2 di 2</span>
               <h2 style="font-family: var(--font-heading); font-size: 1.15rem; font-weight: 800; color: var(--text-main); margin: 0; text-transform: uppercase; letter-spacing: 0.5px;">Scegli quale influencer vuoi essere</h2>
             </div>
-            <!-- Toolbar Selezione Classe & Azzera -->
+            <!-- Toolbar Selezione Classe -->
             <div class="setup-class-toolbar-inline">
               <div class="toolbar-field-inline">
                 <label for="setupSelectClass"><i class="fa-solid fa-chalkboard-user"></i> Classe:</label>
@@ -239,9 +239,6 @@
                   <!-- Popolato da JS -->
                 </select>
               </div>
-              <button type="button" class="btn btn-secondary-action btn-sm" onclick="HistoryGramApp.resetTeamAssignments()" title="Azzera le assegnazioni per ricominciare">
-                <i class="fa-solid fa-arrow-rotate-left"></i> Azzera
-              </button>
             </div>
           </div>
         </div>
