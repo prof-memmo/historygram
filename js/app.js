@@ -311,6 +311,9 @@
       if (window.HistoryGramRulesService) {
         window.HistoryGramRulesService.renderAdminEditor('historygram-rules-editor-container');
       }
+      if (window.HistoryGramMiniguidaService) {
+        window.HistoryGramMiniguidaService.renderAdminEditor('historygram-miniguida-editor-container');
+      }
     }
 
     // Scroll verso l'alto
@@ -1527,8 +1530,24 @@
 
   let currentGuideStepIndex = 0;
 
+  function getActiveGuideSteps() {
+    if (window.HistoryGramMiniguidaService && typeof window.HistoryGramMiniguidaService.getData === 'function') {
+      const d = window.HistoryGramMiniguidaService.getData();
+      if (d && Array.isArray(d.steps) && d.steps.length > 0) {
+        return d.steps.map(s => ({
+          icon: s.icon || '🎯',
+          title: s.title || '',
+          desc: s.text || s.desc || ''
+        }));
+      }
+    }
+    return guideSteps;
+  }
+
   function renderGuideStep() {
-    const s = guideSteps[currentGuideStepIndex];
+    const activeSteps = getActiveGuideSteps();
+    if (currentGuideStepIndex >= activeSteps.length) currentGuideStepIndex = 0;
+    const s = activeSteps[currentGuideStepIndex] || activeSteps[0];
     const iconEl = document.getElementById('guide-step-icon');
     const titleEl = document.getElementById('guide-step-title');
     const descEl = document.getElementById('guide-step-desc');
@@ -1536,16 +1555,24 @@
     const prevBtn = document.getElementById('guide-prev-btn');
     const nextBtn = document.getElementById('guide-next-btn');
 
-    if (iconEl) iconEl.textContent = s.icon;
-    if (titleEl) titleEl.style.display = 'none';
+    if (iconEl) iconEl.innerHTML = s.icon;
+    if (titleEl) {
+      if (s.title) {
+        titleEl.textContent = s.title;
+        titleEl.style.display = 'block';
+      } else {
+        titleEl.style.display = 'none';
+      }
+    }
     if (descEl) descEl.innerHTML = s.desc;
-    if (numEl) numEl.textContent = `Passo ${currentGuideStepIndex + 1} di ${guideSteps.length}`;
+    if (numEl) numEl.textContent = `Passo ${currentGuideStepIndex + 1} di ${activeSteps.length}`;
     if (prevBtn) prevBtn.style.visibility = currentGuideStepIndex === 0 ? 'hidden' : 'visible';
-    if (nextBtn) nextBtn.textContent = currentGuideStepIndex === guideSteps.length - 1 ? 'Chiudi ✓' : 'Avanti ➔';
+    if (nextBtn) nextBtn.textContent = currentGuideStepIndex === activeSteps.length - 1 ? 'Chiudi ✓' : 'Avanti ➔';
   }
 
   function nextGuideStep() {
-    if (currentGuideStepIndex < guideSteps.length - 1) {
+    const activeSteps = getActiveGuideSteps();
+    if (currentGuideStepIndex < activeSteps.length - 1) {
       currentGuideStepIndex++;
       renderGuideStep();
     } else {
@@ -1557,6 +1584,51 @@
     if (currentGuideStepIndex > 0) {
       currentGuideStepIndex--;
       renderGuideStep();
+    }
+  }
+
+  function switchAdminTab(tab) {
+    const rulesBtn = document.getElementById('btn-tab-hg-rules');
+    const miniBtn = document.getElementById('btn-tab-hg-miniguida');
+    const rulesContent = document.getElementById('historygram-rules-tab-content');
+    const miniContent = document.getElementById('historygram-miniguida-tab-content');
+
+    if (tab === 'rules') {
+      if (rulesBtn) {
+        rulesBtn.classList.add('active');
+        rulesBtn.style.background = 'var(--accent-gold)';
+        rulesBtn.style.color = '#000';
+        rulesBtn.style.borderColor = 'var(--accent-gold)';
+      }
+      if (miniBtn) {
+        miniBtn.classList.remove('active');
+        miniBtn.style.background = 'rgba(255,255,255,0.06)';
+        miniBtn.style.color = 'var(--text-main)';
+        miniBtn.style.borderColor = 'transparent';
+      }
+      if (rulesContent) rulesContent.style.display = 'block';
+      if (miniContent) miniContent.style.display = 'none';
+      if (window.HistoryGramRulesService) {
+        window.HistoryGramRulesService.renderAdminEditor('historygram-rules-editor-container');
+      }
+    } else if (tab === 'miniguida') {
+      if (miniBtn) {
+        miniBtn.classList.add('active');
+        miniBtn.style.background = 'var(--accent-gold)';
+        miniBtn.style.color = '#000';
+        miniBtn.style.borderColor = 'var(--accent-gold)';
+      }
+      if (rulesBtn) {
+        rulesBtn.classList.remove('active');
+        rulesBtn.style.background = 'rgba(255,255,255,0.06)';
+        rulesBtn.style.color = 'var(--text-main)';
+        rulesBtn.style.borderColor = 'transparent';
+      }
+      if (rulesContent) rulesContent.style.display = 'none';
+      if (miniContent) miniContent.style.display = 'block';
+      if (window.HistoryGramMiniguidaService) {
+        window.HistoryGramMiniguidaService.renderAdminEditor('historygram-miniguida-editor-container');
+      }
     }
   }
 
@@ -1942,6 +2014,7 @@
     closeCharDetailModal,
     isTeacherUser,
     isSuperAdminUser,
+    switchAdminTab,
     updateTeacherNavVisibility
   };
 

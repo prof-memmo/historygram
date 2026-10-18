@@ -422,8 +422,26 @@
           </div>
         </div>
 
-        <div id="historygram-rules-editor-container">
-          <!-- Popolato dinamicamente da RulesService.renderAdminEditor('historygram-rules-editor-container') -->
+        <!-- Admin Tabs Standard (Ecosistema Prof. Memmo) -->
+        <div class="admin-tabs-nav" style="display: flex; gap: 10px; margin-bottom: 25px; flex-wrap: wrap; border-bottom: 1px solid var(--border-color); padding-bottom: 12px;">
+          <button type="button" class="admin-tab-btn active" id="btn-tab-hg-rules" onclick="HistoryGramApp.switchAdminTab('rules')" style="padding: 10px 20px; border-radius: 12px; font-weight: 700; font-size: 0.9rem; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; border: 1.5px solid var(--accent-gold); background: var(--accent-gold); color: #000; transition: all 0.2s;">
+            <i class="fa-solid fa-scale-balanced"></i> Regolamento
+          </button>
+          <button type="button" class="admin-tab-btn" id="btn-tab-hg-miniguida" onclick="HistoryGramApp.switchAdminTab('miniguida')" style="padding: 10px 20px; border-radius: 12px; font-weight: 700; font-size: 0.9rem; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; border: 1.5px solid transparent; background: rgba(255,255,255,0.06); color: var(--text-main); transition: all 0.2s;">
+            <i class="fa-solid fa-circle-question"></i> Miniguida
+          </button>
+        </div>
+
+        <div id="historygram-rules-tab-content">
+          <div id="historygram-rules-editor-container">
+            <!-- Popolato dinamicamente da RulesService.renderAdminEditor('historygram-rules-editor-container') -->
+          </div>
+        </div>
+
+        <div id="historygram-miniguida-tab-content" style="display: none;">
+          <div id="historygram-miniguida-editor-container">
+            <!-- Popolato dinamicamente da HistoryGramMiniguidaService.renderAdminEditor('historygram-miniguida-editor-container') -->
+          </div>
         </div>
 
         <footer class="view-footer-copyright" style="margin-top: 40px;">
@@ -744,6 +762,7 @@
   <script src="js/characters.js?v=preview_3.7"></script>
   <script src="js/historygram-service.js?v=preview_3.7"></script>
   <script src="js/music.js?v=preview_3.7"></script>
+  <script src="js/miniguida-service.js?v=preview_3.8"></script>
   <script src="js/rules-service.js?v=preview_3.8"></script>
   <script src="js/app.js?v=preview_3.7"></script>
 </body>
