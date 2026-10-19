@@ -62,17 +62,41 @@
               <img id="header-user-avatar" src="https://prof-memmo.github.io/prof-memmo-gestione-siti/shared/assets/avatars/6.png" alt="Avatar" onerror="this.src='https://prof-memmo.github.io/prof-memmo-gestione-siti/shared/assets/branding/prof-memmo/prof-memmo-avatar.png'">
             </div>
             <div class="user-trigger-text">
-              <span class="user-trigger-name" id="header-user-name">PROF. MEMMO</span>
-              <span class="user-trigger-role" id="header-user-role">AMMINISTRATORE</span>
+              <span class="user-trigger-name" id="header-user-name">ACCEDI</span>
+              <span class="user-trigger-role" id="header-user-role">OSPITE</span>
             </div>
+            <script>
+              (function() {
+                try {
+                  var nm = localStorage.getItem('hub_user_name') || localStorage.getItem('fanta_user_name') || localStorage.getItem('loratore_user_name');
+                  var av = localStorage.getItem('hub_user_avatar') || localStorage.getItem('fanta_user_avatar') || localStorage.getItem('loratore_user_avatar');
+                  var rl = localStorage.getItem('hub_user_role');
+                  if (nm) {
+                    var elN = document.getElementById('header-user-name');
+                    if (elN) elN.textContent = nm.toUpperCase();
+                    var elT = document.getElementById('dropdown-user-name');
+                    if (elT) elT.textContent = nm.toUpperCase();
+                    var roleLabel = (rl === 'docente' || rl === 'admin') ? 'AMMINISTRATORE' : (rl === 'studente' ? 'STUDENTE' : 'DOCENTE');
+                    var elR = document.getElementById('header-user-role');
+                    if (elR) elR.textContent = roleLabel;
+                    var elSub = document.getElementById('dropdown-user-role-sub');
+                    if (elSub) elSub.textContent = roleLabel;
+                  }
+                  if (av) {
+                    var elA = document.getElementById('header-user-avatar');
+                    if (elA) elA.src = av;
+                  }
+                } catch(e) {}
+              })();
+            </script>
             <span class="user-trigger-chevron"><i class="fa-solid fa-chevron-down"></i></span>
           </div>
 
           <!-- Dropdown Card Integrata -->
           <div class="user-dropdown hidden" id="user-dropdown">
             <div class="dropdown-user-header">
-              <div class="dropdown-user-title" id="dropdown-user-name">PROF. MEMMO</div>
-              <div class="dropdown-user-subtitle" id="dropdown-user-role-sub">AMMINISTRATORE</div>
+              <div class="dropdown-user-title" id="dropdown-user-name">ACCESSO DOCENTE</div>
+              <div class="dropdown-user-subtitle" id="dropdown-user-role-sub">ECOSISTEMA PROF. MEMMO</div>
             </div>
 
             <!-- Sottofondo Music Player Widget -->
