@@ -111,6 +111,7 @@
     prevAvatar: document.getElementById('prevAvatar'),
     prevCharName: document.getElementById('prevCharName'),
     prevGroupName: document.getElementById('prevGroupName'),
+    prevFactionName: document.getElementById('prevFactionName'),
     prevBanner: document.getElementById('prevBanner'),
     prevSlogan: document.getElementById('prevSlogan'),
     prevText: document.getElementById('prevText'),
@@ -1725,12 +1726,13 @@
     if (DOM.formCreatePost) {
       DOM.formCreatePost.onsubmit = async (e) => {
         e.preventDefault();
-        const charId = DOM.selectCharacter.value;
-        const groupName = DOM.inputGroupName.value.trim();
-        const slogan = DOM.inputSlogan.value.trim();
-        const text = DOM.inputText.value.trim();
-        const tagsRaw = DOM.inputHashtags.value.trim();
-        const style = document.querySelector('input[name="postStyle"]:checked')?.value || 'parchment';
+        const charId = DOM.selectCharacter ? DOM.selectCharacter.value : '';
+        const char = getCharacterById(charId);
+        const groupName = char ? (char.faction || char.name) : 'Squadra';
+        const slogan = DOM.inputSlogan ? DOM.inputSlogan.value.trim() : '';
+        const text = DOM.inputText ? DOM.inputText.value.trim() : '';
+        const tagsRaw = DOM.inputHashtags ? DOM.inputHashtags.value.trim() : '';
+        const style = 'parchment';
 
         const hashtags = tagsRaw ? tagsRaw.split(/\s+/).filter(t => t.startsWith('#') || t.length > 0).map(t => t.startsWith('#') ? t : '#' + t) : [];
 
@@ -1759,7 +1761,6 @@
 
     // Live preview form crea post
     if (DOM.selectCharacter) DOM.selectCharacter.onchange = updateCharacterPreview;
-    if (DOM.inputGroupName) DOM.inputGroupName.oninput = (e) => { if (DOM.prevGroupName) DOM.prevGroupName.textContent = e.target.value || 'Team Studenti'; };
     if (DOM.inputSlogan) DOM.inputSlogan.oninput = (e) => { if (DOM.prevSlogan) DOM.prevSlogan.textContent = e.target.value || 'Slogan virale...'; };
     if (DOM.inputText) DOM.inputText.oninput = (e) => {
       if (DOM.prevText) DOM.prevText.textContent = e.target.value || 'Testo del proclama...';
@@ -1768,17 +1769,6 @@
     if (DOM.inputHashtags) DOM.inputHashtags.oninput = (e) => {
       if (DOM.prevTags) DOM.prevTags.textContent = e.target.value || '#Hashtag';
     };
-
-    // Stili cornice
-    document.querySelectorAll('.style-card input[type="radio"]').forEach(radio => {
-      radio.onchange = () => {
-        document.querySelectorAll('.style-card').forEach(sc => sc.classList.remove('active'));
-        radio.closest('.style-card').classList.add('active');
-        if (DOM.prevBanner) {
-          DOM.prevBanner.className = `preview-banner-styled style-${radio.value}`;
-        }
-      };
-    });
 
     // Refresh Feed
     if (DOM.btnRefreshFeed) {
@@ -1797,6 +1787,8 @@
 
     if (DOM.prevAvatar) DOM.prevAvatar.textContent = char.avatar;
     if (DOM.prevCharName) DOM.prevCharName.textContent = char.name;
+    if (DOM.prevFactionName) DOM.prevFactionName.textContent = char.faction || '';
+    if (DOM.prevGroupName) DOM.prevGroupName.textContent = char.faction || '';
 
     // Gli slogan/motti vengono inventati liberamente dagli studenti
     if (DOM.slogansChips) {

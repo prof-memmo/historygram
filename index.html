@@ -320,7 +320,7 @@
               </div>
               <div style="display: flex; gap: 10px;">
                 <button class="btn-primary-action" id="btnOpenCreatePost">
-                  <i class="fa-solid fa-feather-pointed"></i> Pubblica Post Squadra
+                  <i class="fa-solid fa-feather-pointed"></i> Pubblica Post
                 </button>
                 <button class="btn-refresh" id="btnRefreshFeed" title="Aggiorna Feed">
                   <i class="fa-solid fa-arrows-rotate"></i> Aggiorna
@@ -575,7 +575,6 @@
     <div class="modal-box modal-xl">
       <div class="modal-header-styled">
         <div>
-          <span class="modal-category-tag">ATTIVITÀ DIDATTICA</span>
           <h2 class="modal-title-text">Crea il tuo Post da Influencer Storico</h2>
         </div>
         <button class="btn-close-styled" id="btnCloseCreateModal">&times;</button>
@@ -591,47 +590,19 @@
             </div>
 
             <div class="form-group">
-              <label for="inputGroupName">2. Nome del Gruppo o Componenti (Banco)</label>
-              <input type="text" id="inputGroupName" class="form-input" placeholder="Es. Team Garibaldi - Banco 3 (Sara, Matteo, Luca)" required>
-            </div>
-
-            <div class="form-group">
-              <label for="inputSlogan">3. Slogan / Motto Storico (Inventato dal tuo gruppo)</label>
+              <label for="inputSlogan">2. Slogan / Motto Storico (Inventato dal tuo gruppo)</label>
               <input type="text" id="inputSlogan" class="form-input" placeholder="Es. Nessun re senza Costituzione! Inventa il tuo motto originale..." maxlength="90" required>
             </div>
 
             <div class="form-group">
-              <label for="inputText">4. Proclama / Tesi Storica (Testo del post)</label>
+              <label for="inputText">3. Proclama / Tesi Storica (Testo del post)</label>
               <textarea id="inputText" class="form-input" rows="4" placeholder="Esponi le motivazioni storiche, i diritti rivendicati e gli ideali..." maxlength="450" required></textarea>
               <div class="char-count-text"><span id="charCounter">0</span>/450 caratteri</div>
             </div>
 
             <div class="form-group">
-              <label for="inputHashtags">5. Hashtag Storici</label>
+              <label for="inputHashtags">4. Hashtag Storici</label>
               <input type="text" id="inputHashtags" class="form-input" placeholder="#CostituzioneOra #UnitiperlaPatria">
-              <div class="chips-container" id="hashtagsChips"></div>
-            </div>
-
-            <div class="form-group">
-              <label>6. Cornice Visiva d'Epoca</label>
-              <div class="style-selector-grid" id="styleSelectorGrid">
-                <label class="style-card active" data-style="parchment">
-                  <input type="radio" name="postStyle" value="parchment" checked>
-                  <span>📜 Pergamena d'Epoca</span>
-                </label>
-                <label class="style-card" data-style="barricade">
-                  <input type="radio" name="postStyle" value="barricade">
-                  <span>🚩 Barricata &amp; Rivolta</span>
-                </label>
-                <label class="style-card" data-style="proclamation">
-                  <input type="radio" name="postStyle" value="proclamation">
-                  <span>📰 Torchio &amp; Manifesto</span>
-                </label>
-                <label class="style-card" data-style="cathedral">
-                  <input type="radio" name="postStyle" value="cathedral">
-                  <span>🏛️ Sigillo &amp; Cattedrale</span>
-                </label>
-              </div>
             </div>
 
             <button type="submit" class="btn-submit-post">
@@ -655,7 +626,7 @@
                   <span class="preview-avatar-icon" id="prevAvatar">🕯️</span>
                   <div>
                     <strong id="prevCharName">Il Carbonaro</strong>
-                    <small id="prevGroupName">Team Studenti</small>
+                    <small id="prevFactionName">Fazione Storica</small>
                   </div>
                 </div>
                 <div class="preview-banner-styled style-parchment" id="prevBanner">
