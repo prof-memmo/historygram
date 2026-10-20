@@ -26,8 +26,14 @@
 
   <!-- Identità Gioco & Guardie Ecosistema Prof. Memmo -->
   <script>window.HUB_GAME_ID = "historygram";</script>
-  <script src="https://prof-memmo.github.io/prof-memmo-gestione-siti/shared/hub-subscription-guard.js?v=20261009_historygram_guard"></script>
-  <script src="https://prof-memmo.github.io/prof-memmo-gestione-siti/shared/legal-modal.js?v=20261009_historygram_legal"></script>
+  <script>
+    (function() {
+      var isPrev = window.location.pathname.indexOf('/preview') !== -1;
+      var cdnBase = isPrev ? 'https://prof-memmo.github.io/prof-memmo-gestione-siti/preview/shared/' : 'https://prof-memmo.github.io/prof-memmo-gestione-siti/shared/';
+      document.write('<script src="' + cdnBase + 'hub-subscription-guard.js?v=20261020_historygram_guard"><\/script>');
+      document.write('<script src="' + cdnBase + 'legal-modal.js?v=20261020_historygram_legal"><\/script>');
+    })();
+  </script>
 
   <!-- Firebase SDKs Centralizzati (prof-memmo-hub) -->
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
@@ -759,5 +765,19 @@
   <script src="js/miniguida-service.js?v=preview_3.8"></script>
   <script src="js/rules-service.js?v=preview_3.8"></script>
   <script src="js/app.js?v=preview_3.7"></script>
+  <script>
+    (function() {
+      if (!window.MutationObserver) return;
+      document.querySelectorAll('.footer-legal-links').forEach(function(fl) {
+        var expected = fl.innerHTML;
+        var obs = new MutationObserver(function() {
+          if (!fl.querySelector('a[href*="condividi-esperienza"]')) {
+            fl.innerHTML = expected;
+          }
+        });
+        obs.observe(fl, { childList: true, subtree: true });
+      });
+    })();
+  </script>
 </body>
 </html>
