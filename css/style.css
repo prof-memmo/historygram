@@ -291,6 +291,8 @@ h1, h2, h3, h4, h5, h6 {
   top: calc(100% + 12px);
   right: 0;
   width: 310px;
+  max-height: calc(100vh - 85px);
+  overflow-y: auto;
   background: var(--bg-card);
   border: 2px solid var(--accent-green);
   border-radius: 18px;
@@ -300,6 +302,19 @@ h1, h2, h3, h4, h5, h6 {
   flex-direction: column;
   gap: 14px;
   z-index: 1001;
+}
+
+.badge-notif-pill {
+  background: #e63946;
+  color: #ffffff;
+  font-size: 0.65rem;
+  font-weight: 800;
+  padding: 2px 6px;
+  border-radius: 12px;
+  margin-left: 4px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .user-dropdown.hidden {
