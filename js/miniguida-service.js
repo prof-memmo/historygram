@@ -20,6 +20,11 @@
                 text: "Lo scopo del gioco è calarsi nei panni di un protagonista del passato, raccontare i grandi eventi storici con i post e conquistare il consenso e i like della classe."
             },
             {
+                icon: "🏫",
+                title: "Accesso e Classi",
+                text: "<strong>Per il Docente:</strong> crea le tue classi dal Profilo su <em>prof-memmo.github.io/games</em> per ottenere il <strong>Codice Classe</strong> da condividere con gli alunni.<br><br><strong>Per gli Studenti:</strong> nessun bisogno di email! Basta inserire il <strong>Codice Classe</strong> e selezionare il proprio nome per iniziare subito la sfida storica."
+            },
+            {
                 icon: "✍️",
                 title: "Crea e Pubblica",
                 text: "Clicca su <strong>Crea Post</strong> per pubblicare contenuti coerenti con il tuo personaggio e interagire con i commenti e i like dei compagni."
@@ -56,8 +61,22 @@
             return JSON.parse(JSON.stringify(DEFAULT_MINIGUIDA));
         },
 
+        ensureAccessStep(data) {
+            if (!data || !Array.isArray(data.steps)) return data;
+            const hasAccess = data.steps.some(s => 
+                (s.title && s.title.toLowerCase().includes('accesso')) ||
+                (s.text && s.text.toLowerCase().includes('accesso'))
+            );
+            if (!hasAccess && data.steps.length > 0) {
+                const accessStep = JSON.parse(JSON.stringify(DEFAULT_MINIGUIDA.steps[1]));
+                data.steps.splice(1, 0, accessStep);
+            }
+            return data;
+        },
+
         getData() {
-            return this._data || this.getDefaultData();
+            const raw = this._data || this.getDefaultData();
+            return this.ensureAccessStep(raw);
         },
 
         subscribe(callback) {
@@ -178,7 +197,7 @@
                             <label style="display: block; font-size: 0.82rem; font-weight: 700; color: #64748b; margin-bottom: 4px;">Anteprima Live:</label>
                             <div style="background: white; border-radius: 16px; border: 1px solid #e2e8f0; padding: 15px; color: #1e293b; display: flex; overflow: hidden; box-shadow: 0 6px 20px rgba(0,0,0,0.06); min-height: 380px;">
                                 <div style="width: 35%; background: #f8fafc; display: flex; align-items: flex-end; justify-content: center; border-right: 1px solid #f1f5f9; padding-top: 10px;">
-                                    <img src="https://prof-memmo.github.io/prof-memmo-gestione-siti/shared/assets/branding/prof-memmo/prof-memmo-full.jpg" onerror="this.src='https://prof-memmo.github.io/prof-memmo-gestione-siti/shared/assets/branding/prof-memmo/prof-memmo-avatar.png';" alt="Prof Memmo" style="width: 120%; object-fit: contain; mix-blend-mode: multiply;">
+                                    <img src="assets/prof_memmo_full.png" onerror="this.src='https://prof-memmo.github.io/prof-memmo-gestione-siti/shared/assets/branding/prof-memmo/prof-memmo-full.png';" alt="Prof Memmo" style="width: 120%; object-fit: contain; filter: drop-shadow(0 10px 15px rgba(0,0,0,0.2));">
                                 </div>
                                 <div style="flex: 1; padding: 10px 15px; display: flex; flex-direction: column; justify-content: space-between;">
                                     <div>

@@ -1508,6 +1508,11 @@
       desc: "Lo scopo del gioco è calarsi nei panni di un protagonista del passato, raccontare i grandi eventi storici con i post e conquistare il consenso e i like della classe."
     },
     {
+      icon: "🏫",
+      title: "Accesso e Classi",
+      desc: "<strong>Per il Docente:</strong> crea le tue classi dal Profilo su <em>prof-memmo.github.io/games</em> per ottenere il <strong>Codice Classe</strong> da condividere con gli alunni.<br><br><strong>Per gli Studenti:</strong> nessun bisogno di email! Basta inserire il <strong>Codice Classe</strong> e selezionare il proprio nome per iniziare subito la sfida storica."
+    },
+    {
       icon: "📱",
       title: "",
       desc: "Si gioca pubblicando post storicamente coerenti con il proprio personaggio, aggiungendo immagini e riflessioni, e interagendo con commenti e like nel feed di classe."

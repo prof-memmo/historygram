@@ -702,7 +702,7 @@
   <div id="modalMiniguida" class="modal-overlay hidden" style="align-items: center; justify-content: center; z-index: 9999; background: rgba(15,23,42,0.8); backdrop-filter: blur(4px); position: fixed; inset: 0; padding: 20px;">
     <div class="modal-content" style="background: white; border-radius: 24px; width: 100%; max-width: 900px; display: flex; overflow: hidden; position: relative; max-height: 90vh; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5);">
       <div style="width: 33%; background: #f8fafc; display: flex; align-items: flex-end; justify-content: center; border-right: 2px solid #f1f5f9; padding-top: 20px;" class="hide-mobile">
-        <img src="https://prof-memmo.github.io/prof-memmo-gestione-siti/shared/assets/branding/prof-memmo/prof-memmo-full.jpg" alt="Prof Memmo" style="width: 120%; object-fit: contain; mix-blend-mode: multiply; filter: drop-shadow(0 10px 15px rgba(0,0,0,0.2));" onerror="this.src='https://prof-memmo.github.io/prof-memmo-gestione-siti/shared/assets/branding/prof-memmo/prof-memmo-avatar.png'">
+        <img src="assets/prof_memmo_full.png" onerror="this.src='https://prof-memmo.github.io/prof-memmo-gestione-siti/shared/assets/branding/prof-memmo/prof-memmo-full.png';" alt="Prof Memmo" style="width: 120%; object-fit: contain; filter: drop-shadow(0 10px 15px rgba(0,0,0,0.2));">
       </div>
       <div style="flex: 1; padding: 30px 40px; display: flex; flex-direction: column; position: relative; min-height: 450px;">
         <button onclick="HistoryGramApp.closeMiniguidaModal()" style="position: absolute; top: 15px; right: 15px; width: 36px; height: 36px; border-radius: 50%; border: none; background: #f1f5f9; color: #475569; font-size: 1.2rem; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background 0.2s;"><i class="fa-solid fa-xmark"></i></button>
@@ -716,7 +716,7 @@
         </div>
         
         <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 20px;">
-          <div style="font-size: 0.85rem; font-weight: 700; color: #94a3b8;" id="guide-step-num">Passo 1 di 5</div>
+          <div style="font-size: 0.85rem; font-weight: 700; color: #94a3b8;" id="guide-step-num">Passo 1 di 6</div>
           <div style="display: flex; gap: 10px;">
             <button id="guide-prev-btn" onclick="HistoryGramApp.prevGuideStep()" style="background: #f1f5f9; color: #475569; border: none; padding: 10px 20px; border-radius: 12px; font-weight: 800; font-size: 0.95rem; cursor: pointer; font-family: var(--font-heading); visibility: hidden;">Indietro</button>
             <button id="guide-next-btn" onclick="HistoryGramApp.nextGuideStep()" style="background: var(--accent-green); color: #fff; border: none; padding: 10px 26px; border-radius: 12px; font-weight: 900; font-size: 0.95rem; cursor: pointer; box-shadow: 0 4px 6px rgba(0,0,0,0.1); font-family: var(--font-heading);">Avanti ➔</button>
