@@ -9,8 +9,8 @@
   <meta name="theme-color" content="#059669">
 
   <!-- Apple iOS Safari & PWA Icons (Isolate per sottodominio) -->
-  <link rel="icon" type="image/png" sizes="32x32" href="favicon.png">
-  <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="favicon.png?v=4">
+  <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png?v=4">
   <link rel="manifest" href="manifest.json">
   <meta name="apple-mobile-web-app-title" content="HistoryGram">
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -26,8 +26,14 @@
 
   <!-- Identità Gioco & Guardie Ecosistema Prof. Memmo -->
   <script>window.HUB_GAME_ID = "historygram";</script>
-  <script src="https://prof-memmo.github.io/prof-memmo-gestione-siti/shared/hub-subscription-guard.js?v=20261009_historygram_guard"></script>
-  <script src="https://prof-memmo.github.io/prof-memmo-gestione-siti/shared/legal-modal.js?v=20261009_historygram_legal"></script>
+  <script>
+    (function() {
+      var isPrev = window.location.pathname.indexOf('/preview') !== -1;
+      var cdnBase = isPrev ? 'https://prof-memmo.github.io/prof-memmo-gestione-siti/preview/shared/' : 'https://prof-memmo.github.io/prof-memmo-gestione-siti/shared/';
+      document.write('<script src="' + cdnBase + 'hub-subscription-guard.js?v=20261020_historygram_guard"><\/script>');
+      document.write('<script src="' + cdnBase + 'legal-modal.js?v=20261020_historygram_legal"><\/script>');
+    })();
+  </script>
 
   <!-- Firebase SDKs Centralizzati (prof-memmo-hub) -->
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
@@ -62,17 +68,41 @@
               <img id="header-user-avatar" src="https://prof-memmo.github.io/prof-memmo-gestione-siti/shared/assets/avatars/6.png" alt="Avatar" onerror="this.src='https://prof-memmo.github.io/prof-memmo-gestione-siti/shared/assets/branding/prof-memmo/prof-memmo-avatar.png'">
             </div>
             <div class="user-trigger-text">
-              <span class="user-trigger-name" id="header-user-name">PROF. MEMMO</span>
-              <span class="user-trigger-role" id="header-user-role">AMMINISTRATORE</span>
+              <span class="user-trigger-name" id="header-user-name">ACCEDI</span>
+              <span class="user-trigger-role" id="header-user-role">OSPITE</span>
             </div>
+            <script>
+              (function() {
+                try {
+                  var nm = localStorage.getItem('hub_user_name') || localStorage.getItem('fanta_user_name') || localStorage.getItem('loratore_user_name');
+                  var av = localStorage.getItem('hub_user_avatar') || localStorage.getItem('fanta_user_avatar') || localStorage.getItem('loratore_user_avatar');
+                  var rl = localStorage.getItem('hub_user_role');
+                  if (nm) {
+                    var elN = document.getElementById('header-user-name');
+                    if (elN) elN.textContent = nm.toUpperCase();
+                    var elT = document.getElementById('dropdown-user-name');
+                    if (elT) elT.textContent = nm.toUpperCase();
+                    var roleLabel = (rl === 'docente' || rl === 'admin') ? 'AMMINISTRATORE' : (rl === 'studente' ? 'STUDENTE' : 'DOCENTE');
+                    var elR = document.getElementById('header-user-role');
+                    if (elR) elR.textContent = roleLabel;
+                    var elSub = document.getElementById('dropdown-user-role-sub');
+                    if (elSub) elSub.textContent = roleLabel;
+                  }
+                  if (av) {
+                    var elA = document.getElementById('header-user-avatar');
+                    if (elA) elA.src = av;
+                  }
+                } catch(e) {}
+              })();
+            </script>
             <span class="user-trigger-chevron"><i class="fa-solid fa-chevron-down"></i></span>
           </div>
 
           <!-- Dropdown Card Integrata -->
           <div class="user-dropdown hidden" id="user-dropdown">
             <div class="dropdown-user-header">
-              <div class="dropdown-user-title" id="dropdown-user-name">PROF. MEMMO</div>
-              <div class="dropdown-user-subtitle" id="dropdown-user-role-sub">AMMINISTRATORE</div>
+              <div class="dropdown-user-title" id="dropdown-user-name">ACCESSO DOCENTE</div>
+              <div class="dropdown-user-subtitle" id="dropdown-user-role-sub">ECOSISTEMA PROF. MEMMO</div>
             </div>
 
             <!-- Sottofondo Music Player Widget -->
@@ -96,11 +126,9 @@
               <i class="fa-solid fa-right-to-bracket"></i> Accedi tramite Hub
             </button>
 
-            <button class="dropdown-pill-btn" onclick="HistoryGramApp.showView('view-docente'); HistoryGramApp.toggleUserDropdown(event);">
-              <i class="fa-solid fa-chalkboard-user"></i> Cattedra Docente
-            </button>
 
-            <button class="dropdown-pill-btn" id="btn-profile-dropdown" onclick="if(window.Modals && Modals.openProfileModal) Modals.openProfileModal();">
+
+            <button class="dropdown-pill-btn" id="btn-profile-dropdown" onclick="window.open('https://prof-memmo.github.io/games/profilo.html', '_blank');">
               <i class="fa-solid fa-user-gear"></i> Modifica Profilo
             </button>
 
@@ -108,17 +136,8 @@
               <i class="fa-solid fa-paper-plane"></i> Invita un Collega
             </button>
 
-            <div class="dropdown-split-row">
-              <button class="dropdown-pill-btn" onclick="if(window.openSharedModal) window.openSharedModal('privacy'); else if(window.Modals) Modals.openLegalModal('privacy');">
-                <i class="fa-solid fa-shield"></i> Privacy
-              </button>
-              <button class="dropdown-pill-btn" onclick="if(window.openSharedModal) window.openSharedModal('termini'); else if(window.Modals) Modals.openLegalModal('termini');">
-                <i class="fa-solid fa-scroll"></i> Termini
-              </button>
-            </div>
-
-            <button class="dropdown-pill-btn" onclick="if(window.openSharedModal) window.openSharedModal('contatti'); else if(window.Modals) Modals.openLegalModal('contatti');">
-              <i class="fa-solid fa-envelope"></i> Contatti
+            <button class="dropdown-pill-btn" id="btn-notifiche-dropdown" onclick="if(window.openSharedModal) window.openSharedModal('notifiche');">
+              <i class="fa-solid fa-bell"></i> Notifiche <span id="dropdown-notif-badge" class="badge-notif-pill" style="display:none;">0</span>
             </button>
 
             <div class="dropdown-bottom-row">
@@ -170,9 +189,11 @@
           <div class="footer-legal-links">
             <a href="javascript:void(0)" onclick="if(window.openSharedModal) window.openSharedModal('privacy'); else if(window.Modals) Modals.openLegalModal('privacy');">Privacy Policy</a>
             <a href="javascript:void(0)" onclick="if(window.openSharedModal) window.openSharedModal('termini'); else if(window.Modals) Modals.openLegalModal('termini');">Termini e Condizioni</a>
+            <a href="javascript:void(0)" onclick="if(window.openSharedModal) window.openSharedModal('contatti'); else if(window.Modals) Modals.openLegalModal('contatti');">Contatti</a>
+            <a href="https://prof-memmo.github.io/games/condividi-esperienza.html" target="_blank" rel="noopener noreferrer">Condividi Esperienza</a>
           </div>
           <div class="footer-badge-text-row">
-            <img src="https://prof-memmo.github.io/prof-memmo-gestione-siti/shared/assets/legal/patamu-badge.png" alt="Patamu" class="patamu-footer-badge">
+            <img src="https://prof-memmo.github.io/prof-memmo-gestione-siti/shared/assets/legal/patamu-badge.png" alt="Patamu" class="patamu-footer-badge" style="height: 52px; object-fit: contain; flex-shrink: 0;">
             <p class="footer-copy">
               &copy; 2026 Guglielmo Piersanti. Tutti i contenuti presenti su questo sito sono di proprietà dell'autore e sono protetti tramite deposito e marcatura temporale presso Patamu. I contenuti sono inoltre distribuiti con licenza Creative Commons Attribuzione - Non commerciale - Non opere derivate 4.0 Internazionale (CC BY-NC-ND 4.0).
             </p>
@@ -233,7 +254,7 @@
               <span class="setup-step-badge" style="margin-bottom: 0;">Passo 2 di 2</span>
               <h2 style="font-family: var(--font-heading); font-size: 1.15rem; font-weight: 800; color: var(--text-main); margin: 0; text-transform: uppercase; letter-spacing: 0.5px;">Scegli quale influencer vuoi essere</h2>
             </div>
-            <!-- Toolbar Selezione Classe & Azzera -->
+            <!-- Toolbar Selezione Classe -->
             <div class="setup-class-toolbar-inline">
               <div class="toolbar-field-inline">
                 <label for="setupSelectClass"><i class="fa-solid fa-chalkboard-user"></i> Classe:</label>
@@ -241,9 +262,6 @@
                   <!-- Popolato da JS -->
                 </select>
               </div>
-              <button type="button" class="btn btn-secondary-action btn-sm" onclick="HistoryGramApp.resetTeamAssignments()" title="Azzera le assegnazioni per ricominciare">
-                <i class="fa-solid fa-arrow-rotate-left"></i> Azzera
-              </button>
             </div>
           </div>
         </div>
@@ -301,7 +319,7 @@
               </div>
               <div style="display: flex; gap: 10px;">
                 <button class="btn-primary-action" id="btnOpenCreatePost">
-                  <i class="fa-solid fa-feather-pointed"></i> Pubblica Post Squadra
+                  <i class="fa-solid fa-feather-pointed"></i> Pubblica Post
                 </button>
                 <button class="btn-refresh" id="btnRefreshFeed" title="Aggiorna Feed">
                   <i class="fa-solid fa-arrows-rotate"></i> Aggiorna
@@ -384,37 +402,84 @@
            6. VIEW: REGOLAMENTO DIDATTICO
            ======================================== -->
       <section id="view-regolamento" class="view">
-        <div class="setup-header-box">
-          <span class="setup-step-badge">DIDATTICA &amp; REGOLE</span>
-          <h2 class="setup-title">Regolamento Ufficiale di HistoryGram</h2>
-          <p class="setup-subtitle">Come condurre l'attività in classe, criteri di valutazione e meccaniche social.</p>
+        <div class="setup-header-box" style="text-align: center; margin-bottom: 25px;">
+          <h2 class="setup-title" style="margin: 0;">Regolamento</h2>
         </div>
 
-        <div class="glass-card" style="max-width: 900px; margin: 0 auto; padding: 30px; border-radius: 20px; border: 1px solid var(--border-color); background: var(--bg-card); line-height: 1.7;">
-          <h3 style="color: var(--accent-purple-light);"><i class="fa-solid fa-circle-info"></i> 1. Obiettivi Didattici</h3>
-          <p>HistoryGram è progettato per sviluppare il pensiero critico, la comprensione delle fonti e la capacità di sintesi persuasiva nella scuola secondaria di primo grado. Gli studenti calano le grandi questioni del passato nei linguaggi della comunicazione contemporanea, distinguendo tra fatti storici e propaganda.</p>
-
-          <h3 style="color: var(--accent-gold); margin-top: 25px;"><i class="fa-solid fa-star"></i> 2. Meccaniche di Voto e Follower</h3>
-          <ul style="padding-left: 20px;">
-            <li><strong>1 Like = 1 Follower:</strong> Ogni studente può votare i post avversari per premiare le tesi più convincenti.</li>
-            <li><strong>Imprimatur del Docente:</strong> Nessun post appare sulla LIM prima della convalida del docente, garantendo zero contenuti inappropriati.</li>
-            <li><strong>Bonus Cattedra (+10 Follower):</strong> Il docente può premiare la citazione corretta di date, fonti o l'eccellenza dello slogan storico.</li>
-            <li><strong>Flame del XVI Secolo:</strong> Nella modalità Riforma vs Controriforma, ogni replica a un post dottrinale riceve una valutazione a 3 stelle: <em>Accuratezza</em> ⭐, <em>Creatività</em> 💡, <em>Chiarezza</em> 🗣️.</li>
-          </ul>
-
-          <h3 style="color: #38bdf8; margin-top: 25px;"><i class="fa-solid fa-ban"></i> 3. Divieto di Anacronismi</h3>
-          <p>I post devono rispettare la cultura materiale e gli orizzonti dell'epoca rappresentata. È vietato citare tecnologie o concetti posteriori alla data storica di ambientazione.</p>
+        <div id="view-regolamento-container">
+          <!-- Popolato dinamicamente da RulesService.renderPublicView('view-regolamento-container') -->
         </div>
 
         <footer class="view-footer-copyright">
           <div class="footer-legal-links">
             <a href="javascript:void(0)" onclick="if(window.openSharedModal) window.openSharedModal('privacy'); else if(window.Modals) Modals.openLegalModal('privacy');">Privacy Policy</a>
             <a href="javascript:void(0)" onclick="if(window.openSharedModal) window.openSharedModal('termini'); else if(window.Modals) Modals.openLegalModal('termini');">Termini e Condizioni</a>
+            <a href="javascript:void(0)" onclick="if(window.openSharedModal) window.openSharedModal('contatti'); else if(window.Modals) Modals.openLegalModal('contatti');">Contatti</a>
+            <a href="https://prof-memmo.github.io/games/condividi-esperienza.html" target="_blank" rel="noopener noreferrer">Condividi Esperienza</a>
           </div>
           <div class="footer-badge-text-row">
-            <img src="https://prof-memmo.github.io/prof-memmo-gestione-siti/shared/assets/legal/patamu-badge.png" alt="Patamu" class="patamu-footer-badge">
+            <img src="https://prof-memmo.github.io/prof-memmo-gestione-siti/shared/assets/legal/patamu-badge.png" alt="Patamu" class="patamu-footer-badge" style="height: 52px; object-fit: contain; flex-shrink: 0;">
             <p class="footer-copy">
-              &copy; 2026 Guglielmo Piersanti. Tutti i contenuti sono protetti tramite deposito e marcatura temporale digitale su Patamu.com (CC BY-NC-ND 4.0).
+              &copy; 2026 Guglielmo Piersanti. Tutti i contenuti presenti su questo sito sono di proprietà dell'autore e sono protetti tramite deposito e marcatura temporale presso Patamu. I contenuti sono inoltre distribuiti con licenza Creative Commons Attribution-NonCommercial-NoDerivatives 4.0 International (CC BY-NC-ND 4.0).
+            </p>
+          </div>
+        </footer>
+      </section>
+
+      <!-- ========================================
+           7. VIEW: PANNELLO SUPER-ADMIN (DASHBOARD)
+           ======================================== -->
+      <section id="view-admin" class="view">
+        <div class="setup-header-box" style="border-bottom: 2px solid var(--accent-gold); padding-bottom: 15px; margin-bottom: 25px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px;">
+            <div>
+              <span class="setup-step-badge" style="background: rgba(212, 175, 55, 0.15); color: var(--accent-gold); border: 1px solid rgba(212, 175, 55, 0.3);">
+                <i class="fa-solid fa-crown"></i> SUPER-ADMIN CONSOLE
+              </span>
+              <h2 class="setup-title" style="color: var(--accent-gold); margin: 6px 0 0 0;">Pannello di Amministrazione HistoryGram</h2>
+              <p class="setup-subtitle" style="margin: 4px 0 0 0;">Gestione e sincronizzazione in tempo reale del Regolamento Ufficiale su Firestore (prof.memmo@gmail.com).</p>
+            </div>
+            <div>
+              <button class="btn-secondary-action" onclick="HistoryGramApp.showView('view-welcome')" style="background: var(--bg-card); border: 1.5px solid var(--accent-gold); color: var(--accent-gold); border-radius: 50px; padding: 8px 20px; font-weight: 700; cursor: pointer;">
+                <i class="fa-solid fa-house"></i> Torna alla Home
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Admin Tabs Standard (Ecosistema Prof. Memmo) -->
+        <div class="admin-tabs-nav" style="display: flex; gap: 10px; margin-bottom: 25px; flex-wrap: wrap; border-bottom: 1px solid var(--border-color); padding-bottom: 12px;">
+          <button type="button" class="admin-tab-btn active" id="btn-tab-hg-rules" onclick="HistoryGramApp.switchAdminTab('rules')" style="padding: 10px 20px; border-radius: 12px; font-weight: 700; font-size: 0.9rem; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; border: 1.5px solid var(--accent-gold); background: var(--accent-gold); color: #000; transition: all 0.2s;">
+            <i class="fa-solid fa-scale-balanced"></i> Regolamento
+          </button>
+          <button type="button" class="admin-tab-btn" id="btn-tab-hg-miniguida" onclick="HistoryGramApp.switchAdminTab('miniguida')" style="padding: 10px 20px; border-radius: 12px; font-weight: 700; font-size: 0.9rem; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; border: 1.5px solid transparent; background: rgba(255,255,255,0.06); color: var(--text-main); transition: all 0.2s;">
+            <i class="fa-solid fa-circle-question"></i> Miniguida
+          </button>
+        </div>
+
+        <div id="historygram-rules-tab-content">
+          <div id="historygram-rules-editor-container">
+            <!-- Popolato dinamicamente da RulesService.renderAdminEditor('historygram-rules-editor-container') -->
+          </div>
+        </div>
+
+        <div id="historygram-miniguida-tab-content" style="display: none;">
+          <div id="historygram-miniguida-editor-container">
+            <!-- Popolato dinamicamente da HistoryGramMiniguidaService.renderAdminEditor('historygram-miniguida-editor-container') -->
+          </div>
+        </div>
+
+        <footer class="view-footer-copyright" style="margin-top: 40px;">
+          <div class="footer-legal-links">
+            <a href="javascript:void(0)" onclick="if(window.openSharedModal) window.openSharedModal('privacy'); else if(window.Modals) Modals.openLegalModal('privacy');">Privacy Policy</a>
+            <a href="javascript:void(0)" onclick="if(window.openSharedModal) window.openSharedModal('termini'); else if(window.Modals) Modals.openLegalModal('termini');">Termini e Condizioni</a>
+            <a href="javascript:void(0)" onclick="if(window.openSharedModal) window.openSharedModal('contatti'); else if(window.Modals) Modals.openLegalModal('contatti');">Contatti</a>
+            <a href="https://prof-memmo.github.io/games/condividi-esperienza.html" target="_blank" rel="noopener noreferrer">Condividi Esperienza</a>
+          </div>
+          <div class="footer-badge-text-row">
+            <img src="https://prof-memmo.github.io/prof-memmo-gestione-siti/shared/assets/legal/patamu-badge.png" alt="Patamu" class="patamu-footer-badge" style="height: 52px; object-fit: contain; flex-shrink: 0;">
+            <p class="footer-copy">
+              &copy; 2026 Guglielmo Piersanti. Riservato al Super-Admin.
             </p>
           </div>
         </footer>
@@ -462,11 +527,13 @@
           <div class="footer-legal-links">
             <a href="javascript:void(0)" onclick="if(window.openSharedModal) window.openSharedModal('privacy'); else if(window.Modals) Modals.openLegalModal('privacy');">Privacy Policy</a>
             <a href="javascript:void(0)" onclick="if(window.openSharedModal) window.openSharedModal('termini'); else if(window.Modals) Modals.openLegalModal('termini');">Termini e Condizioni</a>
+            <a href="javascript:void(0)" onclick="if(window.openSharedModal) window.openSharedModal('contatti'); else if(window.Modals) Modals.openLegalModal('contatti');">Contatti</a>
+            <a href="https://prof-memmo.github.io/games/condividi-esperienza.html" target="_blank" rel="noopener noreferrer">Condividi Esperienza</a>
           </div>
           <div class="footer-badge-text-row">
-            <img src="https://prof-memmo.github.io/prof-memmo-gestione-siti/shared/assets/legal/patamu-badge.png" alt="Patamu" class="patamu-footer-badge">
+            <img src="https://prof-memmo.github.io/prof-memmo-gestione-siti/shared/assets/legal/patamu-badge.png" alt="Patamu" class="patamu-footer-badge" style="height: 52px; object-fit: contain; flex-shrink: 0;">
             <p class="footer-copy">
-              &copy; 2026 Guglielmo Piersanti. Tutti i contenuti sono protetti tramite deposito e marcatura temporale digitale su Patamu.com (CC BY-NC-ND 4.0).
+              &copy; 2026 Guglielmo Piersanti. Tutti i contenuti presenti su questo sito sono di proprietà dell'autore e sono protetti tramite deposito e marcatura temporale presso Patamu. I contenuti sono inoltre distribuiti con licenza Creative Commons Attribution-NonCommercial-NoDerivatives 4.0 International (CC BY-NC-ND 4.0).
             </p>
           </div>
         </footer>
@@ -478,25 +545,29 @@
          BOTTOM DOCK NAVIGATION BAR (Stile L'Oratore)
          ========================================== -->
     <nav class="bottom-bar">
-      <a href="#" class="tab-item active" data-view="view-welcome" onclick="HistoryGramApp.showView('view-welcome'); return false;">
+      <a href="#" class="tab-item active" data-view="view-welcome" onclick="HistoryGramApp.showView('view-welcome'); return false;" data-tooltip="Home">
         <i class="fa-solid fa-house"></i>
         <span>Home</span>
       </a>
-      <a href="#" class="tab-item" data-view="view-regolamento" onclick="HistoryGramApp.showView('view-regolamento'); return false;">
-        <i class="fa-solid fa-scale-balanced"></i>
-        <span>Regole</span>
-      </a>
-      <a href="#" class="tab-item" onclick="HistoryGramApp.openMiniguidaModal(); return false;">
+      <a href="#" class="tab-item" onclick="HistoryGramApp.openMiniguidaModal(); return false;" data-tooltip="Miniguida">
         <i class="fa-solid fa-circle-question"></i>
         <span>Miniguida</span>
       </a>
-      <a href="#" class="tab-item" data-view="view-leaderboard" onclick="HistoryGramApp.showView('view-leaderboard'); return false;">
+      <a href="#" class="tab-item" data-view="view-regolamento" onclick="HistoryGramApp.showView('view-regolamento'); return false;" data-tooltip="Regolamento">
+        <i class="fa-solid fa-scale-balanced"></i>
+        <span>Regolamento</span>
+      </a>
+      <a href="#" class="tab-item" data-view="view-leaderboard" onclick="HistoryGramApp.showView('view-leaderboard'); return false;" data-tooltip="Classifica">
         <i class="fa-solid fa-trophy"></i>
         <span>Classifica</span>
       </a>
-      <a href="#" class="tab-item hidden" id="nav-item-approvazione" data-view="view-docente" onclick="HistoryGramApp.showView('view-docente'); return false;" title="Pannello Docente">
+      <a href="#" class="tab-item hidden" id="nav-item-approvazione" data-view="view-docente" onclick="HistoryGramApp.showView('view-docente'); return false;" title="Docente" data-tooltip="Docente">
         <i class="fa-solid fa-chalkboard-user"></i>
-        <span>Pannello Docente</span>
+        <span>Docente</span>
+      </a>
+      <a href="#" class="tab-item hidden" id="nav-item-admin" data-view="view-admin" onclick="HistoryGramApp.showView('view-admin'); return false;" title="Admin" data-tooltip="Admin">
+        <i class="fa-solid fa-crown"></i>
+        <span>Admin</span>
       </a>
     </nav>
 
@@ -509,7 +580,6 @@
     <div class="modal-box modal-xl">
       <div class="modal-header-styled">
         <div>
-          <span class="modal-category-tag">ATTIVITÀ DIDATTICA</span>
           <h2 class="modal-title-text">Crea il tuo Post da Influencer Storico</h2>
         </div>
         <button class="btn-close-styled" id="btnCloseCreateModal">&times;</button>
@@ -525,47 +595,19 @@
             </div>
 
             <div class="form-group">
-              <label for="inputGroupName">2. Nome del Gruppo o Componenti (Banco)</label>
-              <input type="text" id="inputGroupName" class="form-input" placeholder="Es. Team Garibaldi - Banco 3 (Sara, Matteo, Luca)" required>
-            </div>
-
-            <div class="form-group">
-              <label for="inputSlogan">3. Slogan / Motto Storico (Inventato dal tuo gruppo)</label>
+              <label for="inputSlogan">2. Slogan / Motto Storico (Inventato dal tuo gruppo)</label>
               <input type="text" id="inputSlogan" class="form-input" placeholder="Es. Nessun re senza Costituzione! Inventa il tuo motto originale..." maxlength="90" required>
             </div>
 
             <div class="form-group">
-              <label for="inputText">4. Proclama / Tesi Storica (Testo del post)</label>
+              <label for="inputText">3. Proclama / Tesi Storica (Testo del post)</label>
               <textarea id="inputText" class="form-input" rows="4" placeholder="Esponi le motivazioni storiche, i diritti rivendicati e gli ideali..." maxlength="450" required></textarea>
               <div class="char-count-text"><span id="charCounter">0</span>/450 caratteri</div>
             </div>
 
             <div class="form-group">
-              <label for="inputHashtags">5. Hashtag Storici</label>
+              <label for="inputHashtags">4. Hashtag Storici</label>
               <input type="text" id="inputHashtags" class="form-input" placeholder="#CostituzioneOra #UnitiperlaPatria">
-              <div class="chips-container" id="hashtagsChips"></div>
-            </div>
-
-            <div class="form-group">
-              <label>6. Cornice Visiva d'Epoca</label>
-              <div class="style-selector-grid" id="styleSelectorGrid">
-                <label class="style-card active" data-style="parchment">
-                  <input type="radio" name="postStyle" value="parchment" checked>
-                  <span>📜 Pergamena d'Epoca</span>
-                </label>
-                <label class="style-card" data-style="barricade">
-                  <input type="radio" name="postStyle" value="barricade">
-                  <span>🚩 Barricata &amp; Rivolta</span>
-                </label>
-                <label class="style-card" data-style="proclamation">
-                  <input type="radio" name="postStyle" value="proclamation">
-                  <span>📰 Torchio &amp; Manifesto</span>
-                </label>
-                <label class="style-card" data-style="cathedral">
-                  <input type="radio" name="postStyle" value="cathedral">
-                  <span>🏛️ Sigillo &amp; Cattedrale</span>
-                </label>
-              </div>
             </div>
 
             <button type="submit" class="btn-submit-post">
@@ -589,7 +631,7 @@
                   <span class="preview-avatar-icon" id="prevAvatar">🕯️</span>
                   <div>
                     <strong id="prevCharName">Il Carbonaro</strong>
-                    <small id="prevGroupName">Team Studenti</small>
+                    <small id="prevFactionName">Fazione Storica</small>
                   </div>
                 </div>
                 <div class="preview-banner-styled style-parchment" id="prevBanner">
@@ -665,21 +707,21 @@
   <div id="modalMiniguida" class="modal-overlay hidden" style="align-items: center; justify-content: center; z-index: 9999; background: rgba(15,23,42,0.8); backdrop-filter: blur(4px); position: fixed; inset: 0; padding: 20px;">
     <div class="modal-content" style="background: white; border-radius: 24px; width: 100%; max-width: 900px; display: flex; overflow: hidden; position: relative; max-height: 90vh; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5);">
       <div style="width: 33%; background: #f8fafc; display: flex; align-items: flex-end; justify-content: center; border-right: 2px solid #f1f5f9; padding-top: 20px;" class="hide-mobile">
-        <img src="https://prof-memmo.github.io/prof-memmo-gestione-siti/shared/assets/branding/prof-memmo/prof-memmo-full.jpg" alt="Prof Memmo" style="width: 120%; object-fit: contain; mix-blend-mode: multiply; filter: drop-shadow(0 10px 15px rgba(0,0,0,0.2));" onerror="this.src='https://prof-memmo.github.io/prof-memmo-gestione-siti/shared/assets/branding/prof-memmo/prof-memmo-avatar.png'">
+        <img src="assets/prof_memmo_full.png" onerror="this.src='https://prof-memmo.github.io/prof-memmo-gestione-siti/shared/assets/branding/prof-memmo/prof-memmo-full.png';" alt="Prof Memmo" style="width: 120%; object-fit: contain; filter: drop-shadow(0 10px 15px rgba(0,0,0,0.2));">
       </div>
       <div style="flex: 1; padding: 30px 40px; display: flex; flex-direction: column; position: relative; min-height: 450px;">
         <button onclick="HistoryGramApp.closeMiniguidaModal()" style="position: absolute; top: 15px; right: 15px; width: 36px; height: 36px; border-radius: 50%; border: none; background: #f1f5f9; color: #475569; font-size: 1.2rem; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background 0.2s;"><i class="fa-solid fa-xmark"></i></button>
         
-        <h2 id="guide-modal-title" style="font-size: 1.85rem; font-weight: 900; color: var(--accent-green); margin-bottom: 25px; text-align: center; text-transform: uppercase; border-bottom: 4px solid rgba(5, 150, 105, 0.2); padding-bottom: 10px; display: inline-block; margin-left: auto; margin-right: auto; font-family: var(--font-heading);">Come si gioca?</h2>
+        <h2 id="guide-modal-title" style="font-size: 1.85rem; font-weight: 900; color: var(--accent-green); margin-bottom: 25px; text-align: center; text-transform: uppercase; border-bottom: 4px solid rgba(5, 150, 105, 0.2); padding-bottom: 10px; display: inline-block; margin-left: auto; margin-right: auto; font-family: var(--font-heading);">Miniguida</h2>
         
         <div style="flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; animation: fadeIn 0.3s ease-out;">
-          <div id="guide-step-icon" style="font-size: 4.5rem; margin-bottom: 15px;">👥</div>
-          <h3 id="guide-step-title" style="font-size: 1.25rem; font-weight: 800; color: #1e293b; margin-bottom: 10px; font-family: var(--font-heading);">1. Forma le Squadre e Scegli l'Epoca</h3>
-          <p id="guide-step-desc" style="font-size: 1.15rem; color: #475569; line-height: 1.6; font-weight: 500; max-width: 520px;">Il docente seleziona la classe e la modalità didattica (Ottocento: Moti Rivoluzionari o Cinquecento: Riforma vs Controriforma), assegnando gli studenti alle fazioni e ai protagonisti storici.</p>
+          <div id="guide-step-icon" style="font-size: 4.5rem; margin-bottom: 15px;">🎯</div>
+          <h3 id="guide-step-title" style="display: none;"></h3>
+          <p id="guide-step-desc" style="font-size: 1.15rem; color: #475569; line-height: 1.6; font-weight: 500; max-width: 520px;">Lo scopo del gioco è calarsi nei panni di un protagonista del passato, raccontare i grandi eventi storici con i post e conquistare il consenso e i like della classe.</p>
         </div>
         
         <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 20px;">
-          <div style="font-size: 0.85rem; font-weight: 700; color: #94a3b8;" id="guide-step-num">Passo 1 di 4</div>
+          <div style="font-size: 0.85rem; font-weight: 700; color: #94a3b8;" id="guide-step-num">Passo 1 di 6</div>
           <div style="display: flex; gap: 10px;">
             <button id="guide-prev-btn" onclick="HistoryGramApp.prevGuideStep()" style="background: #f1f5f9; color: #475569; border: none; padding: 10px 20px; border-radius: 12px; font-weight: 800; font-size: 0.95rem; cursor: pointer; font-family: var(--font-heading); visibility: hidden;">Indietro</button>
             <button id="guide-next-btn" onclick="HistoryGramApp.nextGuideStep()" style="background: var(--accent-green); color: #fff; border: none; padding: 10px 26px; border-radius: 12px; font-weight: 900; font-size: 0.95rem; cursor: pointer; box-shadow: 0 4px 6px rgba(0,0,0,0.1); font-family: var(--font-heading);">Avanti ➔</button>
@@ -720,6 +762,22 @@
   <script src="js/characters.js?v=preview_3.7"></script>
   <script src="js/historygram-service.js?v=preview_3.7"></script>
   <script src="js/music.js?v=preview_3.7"></script>
+  <script src="js/miniguida-service.js?v=preview_3.8"></script>
+  <script src="js/rules-service.js?v=preview_3.8"></script>
   <script src="js/app.js?v=preview_3.7"></script>
+  <script>
+    (function() {
+      if (!window.MutationObserver) return;
+      document.querySelectorAll('.footer-legal-links').forEach(function(fl) {
+        var expected = fl.innerHTML;
+        var obs = new MutationObserver(function() {
+          if (!fl.querySelector('a[href*="condividi-esperienza"]')) {
+            fl.innerHTML = expected;
+          }
+        });
+        obs.observe(fl, { childList: true, subtree: true });
+      });
+    })();
+  </script>
 </body>
 </html>

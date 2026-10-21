@@ -49,6 +49,7 @@
     bottomNav: document.querySelector('.bottom-bar'),
     tabItems: document.querySelectorAll('.bottom-bar .tab-item'),
     navItemApprovazione: document.getElementById('nav-item-approvazione'),
+    navItemAdmin: document.getElementById('nav-item-admin'),
 
     // Setup Flow
     setupSelectClass: document.getElementById('setupSelectClass'),
@@ -110,6 +111,7 @@
     prevAvatar: document.getElementById('prevAvatar'),
     prevCharName: document.getElementById('prevCharName'),
     prevGroupName: document.getElementById('prevGroupName'),
+    prevFactionName: document.getElementById('prevFactionName'),
     prevBanner: document.getElementById('prevBanner'),
     prevSlogan: document.getElementById('prevSlogan'),
     prevText: document.getElementById('prevText'),
@@ -171,6 +173,10 @@
     connectSession();
 
     // 5. Imposta Vista Iniziale
+    const initHash = window.location.hash ? window.location.hash.replace(/^#/, '') : '';
+    if (initHash && document.getElementById('view-' + initHash)) {
+      AppState.currentView = 'view-' + initHash;
+    }
     showView(AppState.currentView, false);
 
     // Gestione popstate (tasto indietro/avanti)
@@ -178,7 +184,12 @@
       if (e.state && e.state.view) {
         showView(e.state.view, false);
       } else {
-        showView('view-welcome', false);
+        const hash = window.location.hash ? window.location.hash.replace(/^#/, '') : '';
+        if (hash && document.getElementById('view-' + hash)) {
+          showView('view-' + hash, false);
+        } else {
+          showView('view-welcome', false);
+        }
       }
     });
 
@@ -197,19 +208,63 @@
     return false;
   }
 
+  function isSuperAdminUser() {
+    if (window.HistoryGramRulesService && typeof window.HistoryGramRulesService.isSuperAdmin === 'function') {
+      if (window.HistoryGramRulesService.isSuperAdmin()) return true;
+    }
+    if (AppState.teacherUser && AppState.teacherUser.email && AppState.teacherUser.email.toLowerCase() === 'prof.memmo@gmail.com') {
+      return true;
+    }
+    try {
+      const candidates = ['currentUser', 'user', 'teacherUser', 'hub_user', 'eroi_user_profile', 'userProfile'];
+      for (const k of candidates) {
+        const raw = localStorage.getItem(k);
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          if (parsed) {
+            if (typeof parsed.email === 'string' && parsed.email.toLowerCase() === 'prof.memmo@gmail.com') {
+              return true;
+            }
+            if (parsed.role === 'admin' || parsed.name === 'Prof. Memmo') {
+              return true;
+            }
+          }
+        }
+      }
+    } catch(e) {}
+    if (localStorage.getItem('adminLoggedIn') === 'true') return true;
+    return false;
+  }
+
   function updateTeacherNavVisibility() {
     const navItem = DOM.navItemApprovazione || document.getElementById('nav-item-approvazione');
-    if (!navItem) return;
-    if (isTeacherUser()) {
-      navItem.classList.remove('hidden');
-    } else {
-      navItem.classList.add('hidden');
+    if (navItem) {
+      if (isTeacherUser()) {
+        navItem.classList.remove('hidden');
+      } else {
+        navItem.classList.add('hidden');
+      }
+    }
+
+    const adminNav = (DOM && DOM.navItemAdmin) || document.getElementById('nav-item-admin');
+    if (adminNav) {
+      if (isSuperAdminUser()) {
+        adminNav.classList.remove('hidden');
+      } else {
+        adminNav.classList.add('hidden');
+      }
     }
   }
 
   /* ================= GESTIONE VISTE (MULTI-VIEW SPA) ================= */
   function showView(viewId, pushHistory = true) {
     if (!document.getElementById(viewId)) return;
+
+    // Guardia di accesso: Pannello Super-Admin riservato esclusivamente a prof.memmo@gmail.com
+    if (viewId === 'view-admin' && !isSuperAdminUser()) {
+      showToast("⛔ Accesso riservato esclusivamente al Super-Admin (prof.memmo@gmail.com).", "toast-danger");
+      return;
+    }
 
     // Guardia di accesso: il pannello Approvazione/Docente è riservato esclusivamente al docente
     if (viewId === 'view-docente' && !isTeacherUser()) {
@@ -245,6 +300,21 @@
       renderSetupClassView();
     } else {
       document.body.classList.remove('view-no-scroll');
+    }
+
+    // Rendering dinamico per Regolamento e Super-Admin
+    if (viewId === 'view-regolamento') {
+      if (window.HistoryGramRulesService) {
+        window.HistoryGramRulesService.renderPublicView('view-regolamento-container');
+      }
+    }
+    if (viewId === 'view-admin') {
+      if (window.HistoryGramRulesService) {
+        window.HistoryGramRulesService.renderAdminEditor('historygram-rules-editor-container');
+      }
+      if (window.HistoryGramMiniguidaService) {
+        window.HistoryGramMiniguidaService.renderAdminEditor('historygram-miniguida-editor-container');
+      }
     }
 
     // Scroll verso l'alto
@@ -343,11 +413,7 @@
       DOM.setupSelectClass.appendChild(opt);
     });
 
-    // Aggiungi opzione per nuova classe libera rapida
-    const optCustom = document.createElement('option');
-    optCustom.value = 'custom';
-    optCustom.textContent = '➕ Inserisci un nuovo codice classe...';
-    DOM.setupSelectClass.appendChild(optCustom);
+
 
     // Carica eventuale sessione esistente da Firestore o LocalStorage
     if (window.HistoryGramService) {
@@ -717,15 +783,7 @@
   }
 
   function onSetupClassChange(val) {
-    if (val === 'custom') {
-      const customCode = prompt("Inserisci il codice classe per questa sessione (es. 2C, 3A):", "3A");
-      if (customCode) {
-        AppState.currentClassCode = customCode.toUpperCase().replace(/[^A-Z0-9_-]/g, '');
-        AppState.currentClassId = 'classe_' + AppState.currentClassCode.toLowerCase();
-        renderSetupClassView();
-      }
-      return;
-    }
+    if (!val) return;
     AppState.currentClassId = val;
     const parts = val.replace('classe_', '').toUpperCase();
     AppState.currentClassCode = parts || '3B';
@@ -1445,31 +1503,57 @@
   /* ================= MINIGUIDA MODAL LOGIC (Stile L'Oratore) ================= */
   const guideSteps = [
     {
-      icon: "👥",
-      title: "1. Forma le Squadre e Scegli l'Epoca",
-      desc: "Il docente seleziona la classe dall'Hub e la modalità storica (Ottocento: Moti Rivoluzionari o Cinquecento: Riforma vs Controriforma), assegnando gli studenti alle fazioni e ai protagonisti storici."
+      icon: "🎯",
+      title: "",
+      desc: "Lo scopo del gioco è calarsi nei panni di un protagonista del passato, raccontare i grandi eventi storici con i post e conquistare il consenso e i like della classe."
+    },
+    {
+      icon: "🏫",
+      title: "Accesso e Classi",
+      desc: "<strong>Per il Docente:</strong> crea le tue classi dal Profilo su <em>prof-memmo.github.io/games</em> per ottenere il <strong>Codice Classe</strong> da condividere con gli alunni.<br><br><strong>Per gli Studenti:</strong> nessun bisogno di email! Basta inserire il <strong>Codice Classe</strong> e selezionare il proprio nome per iniziare subito la sfida storica."
+    },
+    {
+      icon: "📱",
+      title: "",
+      desc: "Si gioca pubblicando post storicamente coerenti con il proprio personaggio, aggiungendo immagini e riflessioni, e interagendo con commenti e like nel feed di classe."
+    },
+    {
+      icon: "🏠",
+      title: "",
+      desc: "Nella <strong>Home</strong> scegli la tua epoca storica e il tuo personaggio per esplorare il feed e scoprire gli aggiornamenti del giorno."
     },
     {
       icon: "✍️",
-      title: "2. Componi Proclami e Slogan d'Epoca",
-      desc: "Ogni squadra cala le tesi storiche nei linguaggi della comunicazione social: argomenta ideali e riforme, cita fonti autentiche, inventa slogan virali e sceglie la cornice visiva d'epoca."
+      title: "",
+      desc: "Clicca su <strong>Crea Post</strong> per pubblicare contenuti coerenti con il tuo personaggio e interagire con i like dei compagni."
     },
     {
-      icon: "🛡️",
-      title: "3. Imprimatur del Docente sulla LIM",
-      desc: "I post vengono inviati alla Cattedra. Il docente verifica l'accuratezza storica, assegna follower bonus per merito e convalida l'imprimatur per proiettare i post in tempo reale sulla LIM."
-    },
-    {
-      icon: "🔥",
-      title: "4. Repliche, Dibattito e Like alla Libertà",
-      desc: "La classe vota i proclami più persuasivi con Like ❤️ e scatena repliche o sfide dottrinali per far trionfare la propria tesi storica sul tabellone finale!"
+      icon: "🏆",
+      title: "",
+      desc: "Vai su <strong>Classifica</strong> per scoprire i profili storici più seguiti e i post più popolari della classe.<br><br><em>Consulta il regolamento per saperne di più.</em>"
     }
   ];
 
   let currentGuideStepIndex = 0;
 
+  function getActiveGuideSteps() {
+    if (window.HistoryGramMiniguidaService && typeof window.HistoryGramMiniguidaService.getData === 'function') {
+      const d = window.HistoryGramMiniguidaService.getData();
+      if (d && Array.isArray(d.steps) && d.steps.length > 0) {
+        return d.steps.map(s => ({
+          icon: s.icon || '🎯',
+          title: s.title || '',
+          desc: s.text || s.desc || ''
+        }));
+      }
+    }
+    return guideSteps;
+  }
+
   function renderGuideStep() {
-    const s = guideSteps[currentGuideStepIndex];
+    const activeSteps = getActiveGuideSteps();
+    if (currentGuideStepIndex >= activeSteps.length) currentGuideStepIndex = 0;
+    const s = activeSteps[currentGuideStepIndex] || activeSteps[0];
     const iconEl = document.getElementById('guide-step-icon');
     const titleEl = document.getElementById('guide-step-title');
     const descEl = document.getElementById('guide-step-desc');
@@ -1477,16 +1561,24 @@
     const prevBtn = document.getElementById('guide-prev-btn');
     const nextBtn = document.getElementById('guide-next-btn');
 
-    if (iconEl) iconEl.textContent = s.icon;
-    if (titleEl) titleEl.textContent = s.title;
-    if (descEl) descEl.textContent = s.desc;
-    if (numEl) numEl.textContent = `Passo ${currentGuideStepIndex + 1} di ${guideSteps.length}`;
+    if (iconEl) iconEl.innerHTML = s.icon;
+    if (titleEl) {
+      if (s.title) {
+        titleEl.textContent = s.title;
+        titleEl.style.display = 'block';
+      } else {
+        titleEl.style.display = 'none';
+      }
+    }
+    if (descEl) descEl.innerHTML = s.desc;
+    if (numEl) numEl.textContent = `Passo ${currentGuideStepIndex + 1} di ${activeSteps.length}`;
     if (prevBtn) prevBtn.style.visibility = currentGuideStepIndex === 0 ? 'hidden' : 'visible';
-    if (nextBtn) nextBtn.textContent = currentGuideStepIndex === guideSteps.length - 1 ? 'Chiudi ✓' : 'Avanti ➔';
+    if (nextBtn) nextBtn.textContent = currentGuideStepIndex === activeSteps.length - 1 ? 'Chiudi ✓' : 'Avanti ➔';
   }
 
   function nextGuideStep() {
-    if (currentGuideStepIndex < guideSteps.length - 1) {
+    const activeSteps = getActiveGuideSteps();
+    if (currentGuideStepIndex < activeSteps.length - 1) {
       currentGuideStepIndex++;
       renderGuideStep();
     } else {
@@ -1498,6 +1590,51 @@
     if (currentGuideStepIndex > 0) {
       currentGuideStepIndex--;
       renderGuideStep();
+    }
+  }
+
+  function switchAdminTab(tab) {
+    const rulesBtn = document.getElementById('btn-tab-hg-rules');
+    const miniBtn = document.getElementById('btn-tab-hg-miniguida');
+    const rulesContent = document.getElementById('historygram-rules-tab-content');
+    const miniContent = document.getElementById('historygram-miniguida-tab-content');
+
+    if (tab === 'rules') {
+      if (rulesBtn) {
+        rulesBtn.classList.add('active');
+        rulesBtn.style.background = 'var(--accent-gold)';
+        rulesBtn.style.color = '#000';
+        rulesBtn.style.borderColor = 'var(--accent-gold)';
+      }
+      if (miniBtn) {
+        miniBtn.classList.remove('active');
+        miniBtn.style.background = 'rgba(255,255,255,0.06)';
+        miniBtn.style.color = 'var(--text-main)';
+        miniBtn.style.borderColor = 'transparent';
+      }
+      if (rulesContent) rulesContent.style.display = 'block';
+      if (miniContent) miniContent.style.display = 'none';
+      if (window.HistoryGramRulesService) {
+        window.HistoryGramRulesService.renderAdminEditor('historygram-rules-editor-container');
+      }
+    } else if (tab === 'miniguida') {
+      if (miniBtn) {
+        miniBtn.classList.add('active');
+        miniBtn.style.background = 'var(--accent-gold)';
+        miniBtn.style.color = '#000';
+        miniBtn.style.borderColor = 'var(--accent-gold)';
+      }
+      if (rulesBtn) {
+        rulesBtn.classList.remove('active');
+        rulesBtn.style.background = 'rgba(255,255,255,0.06)';
+        rulesBtn.style.color = 'var(--text-main)';
+        rulesBtn.style.borderColor = 'transparent';
+      }
+      if (rulesContent) rulesContent.style.display = 'none';
+      if (miniContent) miniContent.style.display = 'block';
+      if (window.HistoryGramMiniguidaService) {
+        window.HistoryGramMiniguidaService.renderAdminEditor('historygram-miniguida-editor-container');
+      }
     }
   }
 
@@ -1594,12 +1731,13 @@
     if (DOM.formCreatePost) {
       DOM.formCreatePost.onsubmit = async (e) => {
         e.preventDefault();
-        const charId = DOM.selectCharacter.value;
-        const groupName = DOM.inputGroupName.value.trim();
-        const slogan = DOM.inputSlogan.value.trim();
-        const text = DOM.inputText.value.trim();
-        const tagsRaw = DOM.inputHashtags.value.trim();
-        const style = document.querySelector('input[name="postStyle"]:checked')?.value || 'parchment';
+        const charId = DOM.selectCharacter ? DOM.selectCharacter.value : '';
+        const char = getCharacterById(charId);
+        const groupName = char ? (char.faction || char.name) : 'Squadra';
+        const slogan = DOM.inputSlogan ? DOM.inputSlogan.value.trim() : '';
+        const text = DOM.inputText ? DOM.inputText.value.trim() : '';
+        const tagsRaw = DOM.inputHashtags ? DOM.inputHashtags.value.trim() : '';
+        const style = 'parchment';
 
         const hashtags = tagsRaw ? tagsRaw.split(/\s+/).filter(t => t.startsWith('#') || t.length > 0).map(t => t.startsWith('#') ? t : '#' + t) : [];
 
@@ -1628,7 +1766,6 @@
 
     // Live preview form crea post
     if (DOM.selectCharacter) DOM.selectCharacter.onchange = updateCharacterPreview;
-    if (DOM.inputGroupName) DOM.inputGroupName.oninput = (e) => { if (DOM.prevGroupName) DOM.prevGroupName.textContent = e.target.value || 'Team Studenti'; };
     if (DOM.inputSlogan) DOM.inputSlogan.oninput = (e) => { if (DOM.prevSlogan) DOM.prevSlogan.textContent = e.target.value || 'Slogan virale...'; };
     if (DOM.inputText) DOM.inputText.oninput = (e) => {
       if (DOM.prevText) DOM.prevText.textContent = e.target.value || 'Testo del proclama...';
@@ -1637,17 +1774,6 @@
     if (DOM.inputHashtags) DOM.inputHashtags.oninput = (e) => {
       if (DOM.prevTags) DOM.prevTags.textContent = e.target.value || '#Hashtag';
     };
-
-    // Stili cornice
-    document.querySelectorAll('.style-card input[type="radio"]').forEach(radio => {
-      radio.onchange = () => {
-        document.querySelectorAll('.style-card').forEach(sc => sc.classList.remove('active'));
-        radio.closest('.style-card').classList.add('active');
-        if (DOM.prevBanner) {
-          DOM.prevBanner.className = `preview-banner-styled style-${radio.value}`;
-        }
-      };
-    });
 
     // Refresh Feed
     if (DOM.btnRefreshFeed) {
@@ -1666,6 +1792,8 @@
 
     if (DOM.prevAvatar) DOM.prevAvatar.textContent = char.avatar;
     if (DOM.prevCharName) DOM.prevCharName.textContent = char.name;
+    if (DOM.prevFactionName) DOM.prevFactionName.textContent = char.faction || '';
+    if (DOM.prevGroupName) DOM.prevGroupName.textContent = char.faction || '';
 
     // Gli slogan/motti vengono inventati liberamente dagli studenti
     if (DOM.slogansChips) {
@@ -1731,7 +1859,11 @@
   }
 
   function goToUnifiedLogin() {
-    window.location.href = 'https://prof-memmo.github.io/prof-memmo-gestione-siti/portal.html';
+    const isPreview = window.location.pathname.includes('/preview');
+    const portalUrl = isPreview
+      ? 'https://prof-memmo.github.io/prof-memmo-gestione-siti/preview/portal.html?redirect=historygram'
+      : 'https://prof-memmo.github.io/prof-memmo-gestione-siti/portal.html?redirect=historygram';
+    window.location.href = portalUrl;
   }
 
   function confirmLogout() {
@@ -1878,6 +2010,8 @@
     openCharDetailModal,
     closeCharDetailModal,
     isTeacherUser,
+    isSuperAdminUser,
+    switchAdminTab,
     updateTeacherNavVisibility
   };
 
