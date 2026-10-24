@@ -853,8 +853,8 @@
         }
       } else {
         const isStudent = (ssoRole === 'studente');
-        if (DOM.headerUserRole) DOM.headerUserRole.textContent = isStudent ? 'STUDENTE' : 'AMMINISTRATORE';
-        if (DOM.dropdownUserRoleSub) DOM.dropdownUserRoleSub.textContent = isStudent ? 'STUDENTE' : 'AMMINISTRATORE';
+        if (DOM.headerUserRole) DOM.headerUserRole.textContent = isStudent ? 'STUDENTE' : 'OSPITE';
+        if (DOM.dropdownUserRoleSub) DOM.dropdownUserRoleSub.textContent = isStudent ? 'STUDENTE' : 'OSPITE';
         if (isStudent) {
           AppState.isTeacherUnlocked = false;
         } else {
