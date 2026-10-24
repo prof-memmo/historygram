@@ -861,8 +861,9 @@
           AppState.isTeacherUnlocked = true;
         }
       }
-      if (ssoAvatar && DOM.headerUserAvatar) {
-        DOM.headerUserAvatar.src = ssoAvatar;
+      var resolvedSsoAvatar = window.resolveEcosystemAvatar ? window.resolveEcosystemAvatar(ssoAvatar) : ssoAvatar;
+      if (resolvedSsoAvatar && DOM.headerUserAvatar) {
+        DOM.headerUserAvatar.src = resolvedSsoAvatar;
       }
     } catch (e) {}
 
@@ -900,12 +901,13 @@
           if (DOM.dropdownUserName) DOM.dropdownUserName.textContent = displayName;
           if (DOM.headerUserRole) DOM.headerUserRole.textContent = userRole;
           if (DOM.dropdownUserRoleSub) DOM.dropdownUserRoleSub.textContent = userRole;
-          if (userAvatar && DOM.headerUserAvatar) {
-            DOM.headerUserAvatar.src = userAvatar;
+          var resolvedAvatar = window.resolveEcosystemAvatar ? window.resolveEcosystemAvatar(userAvatar, isSuperAdmin, displayName) : userAvatar;
+          if (resolvedAvatar && DOM.headerUserAvatar) {
+            DOM.headerUserAvatar.src = resolvedAvatar;
           }
           try {
             localStorage.setItem('hub_user_name', displayName);
-            if (userAvatar) localStorage.setItem('hub_user_avatar', userAvatar);
+            if (resolvedAvatar) localStorage.setItem('hub_user_avatar', resolvedAvatar);
           } catch(e) {}
 
           // Se ci troviamo nella vista di configurazione classe, ricarica subito le classi del docente autenticato

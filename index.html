@@ -90,7 +90,8 @@
                   }
                   if (av) {
                     var elA = document.getElementById('header-user-avatar');
-                    if (elA) elA.src = av;
+                    var resolvedA = window.resolveEcosystemAvatar ? window.resolveEcosystemAvatar(av) : av;
+                    if (elA) elA.src = resolvedA;
                   }
                 } catch(e) {}
               })();
