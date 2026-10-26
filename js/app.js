@@ -256,9 +256,37 @@
     }
   }
 
+  /* ================= VERIFICA ACCESSO ECOSYSTEM GUARD ================= */
+  async function verifyEcosystemAccess(isPublicView = false) {
+    if (!window.HubSubscriptionGuard || typeof window.HubSubscriptionGuard.verifyAccess !== 'function') {
+      return true;
+    }
+    const currentUser = (AppState && AppState.teacherUser) || (typeof firebase !== 'undefined' && firebase.auth && firebase.auth().currentUser) || null;
+    let currentRole = 'guest';
+    if (currentUser) {
+      currentRole = isSuperAdminUser() ? 'admin' : (isTeacherUser() ? 'docente' : 'studente');
+    } else {
+      const ssoRole = (localStorage.getItem('hub_user_role') || '').toLowerCase();
+      if (ssoRole === 'docente' || ssoRole === 'admin') currentRole = ssoRole;
+      else if (ssoRole === 'studente') currentRole = 'studente';
+      else currentRole = 'guest';
+    }
+    return await window.HubSubscriptionGuard.verifyAccess({
+      user: currentUser,
+      role: currentRole,
+      isPublicView: isPublicView
+    });
+  }
+
   /* ================= GESTIONE VISTE (MULTI-VIEW SPA) ================= */
-  function showView(viewId, pushHistory = true) {
+  async function showView(viewId, pushHistory = true) {
     if (!document.getElementById(viewId)) return;
+
+    const isPublic = ['view-welcome', 'view-regolamento'].includes(viewId);
+    if (!isPublic) {
+      const isAllowed = await verifyEcosystemAccess(false);
+      if (!isAllowed) return;
+    }
 
     // Guardia di accesso: Pannello Super-Admin riservato esclusivamente a prof.memmo@gmail.com
     if (viewId === 'view-admin' && !isSuperAdminUser()) {
@@ -328,7 +356,9 @@
   }
 
   /* ================= FLUSSO DI SETUP (STILE L'ORATORE & OPS! STORIA) ================= */
-  function startSetupFlow() {
+  async function startSetupFlow() {
+    const isAllowed = await verifyEcosystemAccess(false);
+    if (!isAllowed) return;
     showView('view-setup-mode');
   }
 
@@ -354,6 +384,8 @@
   }
 
   async function selectSetupMode(modeId) {
+    const isAllowed = await verifyEcosystemAccess(false);
+    if (!isAllowed) return;
     if (!HISTORY_MODES[modeId]) return;
     AppState.currentMode = modeId;
     renderModeUI();
@@ -853,16 +885,17 @@
         }
       } else {
         const isStudent = (ssoRole === 'studente');
-        if (DOM.headerUserRole) DOM.headerUserRole.textContent = isStudent ? 'STUDENTE' : 'AMMINISTRATORE';
-        if (DOM.dropdownUserRoleSub) DOM.dropdownUserRoleSub.textContent = isStudent ? 'STUDENTE' : 'AMMINISTRATORE';
+        if (DOM.headerUserRole) DOM.headerUserRole.textContent = isStudent ? 'STUDENTE' : 'OSPITE';
+        if (DOM.dropdownUserRoleSub) DOM.dropdownUserRoleSub.textContent = isStudent ? 'STUDENTE' : 'OSPITE';
         if (isStudent) {
           AppState.isTeacherUnlocked = false;
         } else {
-          AppState.isTeacherUnlocked = true;
+          AppState.isTeacherUnlocked = false;
         }
       }
-      if (ssoAvatar && DOM.headerUserAvatar) {
-        DOM.headerUserAvatar.src = ssoAvatar;
+      var resolvedSsoAvatar = window.resolveEcosystemAvatar ? window.resolveEcosystemAvatar(ssoAvatar) : ssoAvatar;
+      if (resolvedSsoAvatar && DOM.headerUserAvatar) {
+        DOM.headerUserAvatar.src = resolvedSsoAvatar;
       }
     } catch (e) {}
 
@@ -900,12 +933,13 @@
           if (DOM.dropdownUserName) DOM.dropdownUserName.textContent = displayName;
           if (DOM.headerUserRole) DOM.headerUserRole.textContent = userRole;
           if (DOM.dropdownUserRoleSub) DOM.dropdownUserRoleSub.textContent = userRole;
-          if (userAvatar && DOM.headerUserAvatar) {
-            DOM.headerUserAvatar.src = userAvatar;
+          var resolvedAvatar = window.resolveEcosystemAvatar ? window.resolveEcosystemAvatar(userAvatar, isSuperAdmin, displayName) : userAvatar;
+          if (resolvedAvatar && DOM.headerUserAvatar) {
+            DOM.headerUserAvatar.src = resolvedAvatar;
           }
           try {
             localStorage.setItem('hub_user_name', displayName);
-            if (userAvatar) localStorage.setItem('hub_user_avatar', userAvatar);
+            if (resolvedAvatar) localStorage.setItem('hub_user_avatar', resolvedAvatar);
           } catch(e) {}
 
           // Se ci troviamo nella vista di configurazione classe, ricarica subito le classi del docente autenticato
@@ -1879,7 +1913,9 @@
   }
 
   /* ================= GESTIONE MODALE RIPRENDI PARTITA (Stile L'Oratore) ================= */
-  function openSavedGamesModal() {
+  async function openSavedGamesModal() {
+    const isAllowed = await verifyEcosystemAccess(false);
+    if (!isAllowed) return;
     renderSavedGamesList();
     const modal = document.getElementById('savedGamesModal');
     if (modal) modal.classList.remove('hidden');

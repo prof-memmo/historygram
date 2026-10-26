@@ -155,3 +155,45 @@ Per garantire il pieno controllo su ogni modifica ed evitare derive o regression
 3. **Punto di Arresto e Attesa dell'OK Esplicito (Checkpoint Stop)**:
    - Dopo aver emesso il report del blocco, l'agente ha il **DIVIETO ASSOLUTO di procedere al blocco successivo** in autonomia.
    - L'agente deve terminare il proprio turno e rimanere in attesa dell'esplicito messaggio di convalida dell'utente ("ok", "procedi", "avanti"). Nessuna riga di codice del blocco successivo può essere scritta prima di tale conferma.
+
+---
+
+### ART. 12 - PROTOCOLLO DI AUDIT DI CONFORMITÀ DIDATTICA, UX E LIM ("MANCA QUALCOSA?")
+Ogni volta che l'utente formula domande aperte di verifica come:
+*"Manca qualcosa?"*, *"Ci sono problemi?"*, *"Secondo te va bene?"*, *"Audit conformità"*, o qualsiasi richiesta di revisione generale su un gioco o componente dell'Ecosistema:
+
+1. **Divieto di Fermarsi al Solo Collaudo Tecnico (Anti-False-Positive Guard)**:
+   - L'agente NON DEVE limitarsi a verificare se il codice compila, se i test di rete danno HTTP 200 o se il git working tree è pulito. Per un linter o test di rete, un pulsante orfano o un testo grafico illeggibile risultano "100% OK", ma violano gli standard didattici dell'Ecosistema.
+2. **Audit Obbligatorio sui 4 Pilastri di Conformità UX & LIM**:
+   - **Pilastro 1: Zero-Scroll Viewport**: La vista operativa del gioco deve essere rigorosamente contenuta al 100% all'interno del viewport (desktop/LIM), senza barre di scorrimento verticali parassite.
+   - **Pilastro 2: Eliminazione Ridondanze UI (Zero-Redundancy Guard)**: Nessun pulsante a centro schermo deve duplicare azioni già presenti negli elementi primari di gioco (es. ruote, tabelloni, carte) o nella dock bar inferiore (es. pulsante "Regolamento" duplicato nella welcome o pulsanti "Reset/Free" ridondanti sotto elementi interattivi).
+   - **Pilastro 3: Leggibilità Grafica e Canvas a Distanza LIM (3 Metri)**:
+     - Nei componenti grafici `<canvas>` o SVG, è vietato l'uso di font sottili o non scalabili (es. *Julius Sans One* su testi piccoli). Utilizzare esclusivamente font solidi ad alta leggibilità (`system-ui`, `Inter`, `sans-serif`) con pesi `bold` o `900`.
+     - Rispetto del contrasto WCAG (testo chiaro su spicchi/tessere scure con ombra a 360°, testo scuro su spicchi chiari).
+     - Gestione multiriga automatica per etichette composte da più parole: nessun testo deve toccare, sovrapporsi o finire coperto sotto perni, mozzi centrali o bordi esterni.
+   - **Pilastro 4: Allineamento agli Standard Ecosistema (L'Oratore / HistoryGram Benchmark)**:
+     - Presenza obbligatoria della modale "Riprendi Partita" e gestione salvataggi in LocalStorage.
+     - Visualizzazione delle prove/sfide estratte tramite modale pop-up centrale ad alto contrasto con timer dedicato (non testo inline statico sotto gli elementi).
+     - Proporzioni armoniose dei pulsanti primari (mai bottoni sovradimensionati che rompono la gerarchia visiva).
+3. **Ispezione Visiva Reale Tramite Browser Subagent**:
+   - L'agente DEVE eseguire una scansione reale con il browser subagent catturando le viste chiave (Welcome, Scelta Argomento/Lobby, Tavolo di Gioco) ed emettere un report puntuale con checkbox `[X]` / `[ ]` per ciascuno dei 4 pilastri.
+
+---
+
+### ART. 13 - PROTOCOLLO DI INTEGRITÀ SEMANTICA DEI CONTENUTI, REGOLE DI PUNTEGGIO E CICLO DI TURNO (SEMANTIC & MULTI-TURN GAMEPLAY INTEGRITY GUARD)
+Valido tassativamente per tutte le applicazioni e siti presenti e futuri dell'Ecosistema Prof. Memmo:
+1. **Zero-Template e Zero-Duplicati nei Dataset Didattici (Content Uniqueness Guard)**:
+   - E' fatto divieto assoluto di rilasciare o mantenere dataset JSON/JS con testi template clonati, generici o procedurati con copia-incolla (es. formule burocratiche ripetute, refusi di sintassi, tracce identiche su più slot).
+   - Ogni mazzo, livello didattico o categoria deve possedere contenuti unici, autentici, narrativi e tarati pedagogicamente sul target scolastico reale (A1-A2 Scuola Primaria, B1 Scuola Media, B2-C2 Superiori).
+   - L'indice di unicità semantica dei testi didattici all'interno di ogni file/dataset deve essere >= 95%.
+2. **Coerenza Effetto-Punteggio (Scoring Business Logic Guard)**:
+   - Qualsiasi elemento interattivo a schermo (buzzer penalità, bonus tempo, moltiplicatori di passi, conteggio vocaboli) DEVE produrre un impatto matematico reale, verificabile ed esplicitamente visualizzato nel riepilogo a video. E' severamente vietato avere pulsanti dotati di feedback sonoro/visivo privi di impatto effettivo sulle regole di gioco o sul punteggio.
+3. **Rotazione E2E dei Contenuti nei Turni (Multi-Turn Progression Guard)**:
+   - Nei giochi a squadre o a turni, ogni transizione di turno deve garantire l'estrazione e il rendering visivo di contenuti differenti: due squadre consecutive nello stesso round o in turni contigui non possono mai visualizzare la medesima traccia identica.
+4. **Contratto Universale di Persistenza e Ripresa Sessione (Save & Resume Contract)**:
+   - Tutte le applicazioni a sessione devono salvare lo stato automaticamente a ogni turno (`autoSave`) e devono esporre:
+     1. Un banner o pulsante evidente nella schermata principale per riprendere la sessione interrotta.
+     2. Un'opzione di uscita ordinata *"Salva ed Esci"* accessibile in qualsiasi momento durante la partita.
+5. **Estensione Obbligatoria del Collaudo Automatico (Universal Test Suite Integration)**:
+   - I collaudi automatici dell'ecosistema (Master Suite `collaudo_totale.py` e Preflight Hub `releases-ui.js`) devono obbligatoriamente includere l'Audit Semantico dei dataset e la simulazione multi-turno Playwright per validare il flusso reale su tutti i siti presenti e futuri.
+
