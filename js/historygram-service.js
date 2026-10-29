@@ -389,6 +389,7 @@ class HistoryGramService {
     return {
       classId: classId || 'classe_3b',
       modeId: modeId || 'revolution_1800',
+      isMatchActive: false,
       teamAssignments: {}, // characterId -> [studenti]
       pendingPosts: [],
       approvedPosts: [],

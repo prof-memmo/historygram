@@ -2267,6 +2267,94 @@ h1, h2, h3, h4, h5, h6 {
   transform: translateY(-2px);
 }
 
+/* ================= BANNER PARTITA IN CORSO (STUDENTE & LIM) ================= */
+.welcome-live-banner {
+  background: linear-gradient(135deg, rgba(5, 150, 105, 0.08) 0%, rgba(13, 148, 136, 0.12) 100%);
+  border: 2px solid var(--accent-green);
+  border-radius: var(--radius-lg);
+  padding: 20px 24px;
+  max-width: 680px;
+  margin: 18px auto 22px auto;
+  text-align: center;
+  box-shadow: 0 10px 25px rgba(5, 150, 105, 0.15);
+  animation: pulseLiveBorder 3s infinite ease-in-out;
+}
+
+@keyframes pulseLiveBorder {
+  0%, 100% {
+    border-color: var(--accent-green);
+    box-shadow: 0 10px 25px rgba(5, 150, 105, 0.15);
+  }
+  50% {
+    border-color: #10b981;
+    box-shadow: 0 10px 30px rgba(16, 185, 129, 0.28);
+  }
+}
+
+.live-banner-pulse-row {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(5, 150, 105, 0.12);
+  border: 1px solid rgba(5, 150, 105, 0.3);
+  padding: 4px 14px;
+  border-radius: 999px;
+  margin-bottom: 10px;
+}
+
+.live-dot-pulse {
+  width: 10px;
+  height: 10px;
+  background: #10b981;
+  border-radius: 50%;
+  display: inline-block;
+  box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+  animation: liveDotAnimation 1.6s infinite;
+}
+
+@keyframes liveDotAnimation {
+  0% {
+    transform: scale(0.95);
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+  }
+  70% {
+    transform: scale(1);
+    box-shadow: 0 0 0 8px rgba(16, 185, 129, 0);
+  }
+  100% {
+    transform: scale(0.95);
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0);
+  }
+}
+
+.live-badge-text {
+  font-family: var(--font-heading);
+  font-size: 0.78rem;
+  font-weight: 800;
+  color: #047857;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+
+.welcome-live-banner h3 {
+  font-family: var(--font-heading);
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: var(--text-main);
+  margin: 4px 0 6px 0;
+}
+
+.welcome-live-banner p {
+  font-size: 0.92rem;
+  color: var(--text-muted);
+  margin: 0 0 16px 0;
+  line-height: 1.45;
+}
+
+.live-banner-btn {
+  margin: 0 auto;
+}
+
 /* ================= SETUP FLOW ================= */
 .setup-header-box {
   text-align: center;

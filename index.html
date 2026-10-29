@@ -176,6 +176,21 @@
             <div class="mode-pill"><i class="fa-solid fa-bolt" style="color: #a855f7;"></i> Proclami &amp; Flame Dottrinali</div>
           </div>
 
+          <!-- Banner Partita Attiva (Visibile in tempo reale quando la sfida e avviata) -->
+          <div id="welcomeLiveMatchBanner" class="welcome-live-banner hidden">
+            <div class="live-banner-pulse-row">
+              <span class="live-dot-pulse"></span>
+              <span class="live-badge-text">Partita in Corso alla LIM</span>
+            </div>
+            <h3 id="liveBannerTitle">Sfida attiva sul Muro Storico</h3>
+            <p id="liveBannerSubtitle">Il docente ha aperto la Piazza Storica per la tua classe. Entra per visualizzare i proclami e pubblicare il tuo post!</p>
+            <div>
+              <button type="button" class="btn-giant btn-primary live-banner-btn" onclick="HistoryGramApp.showView('view-game')">
+                <i class="fa-solid fa-comments"></i> Entra nel Muro Storico &rarr;
+              </button>
+            </div>
+          </div>
+
           <div class="welcome-actions-wrap" style="display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; margin-top: 20px;">
             <button class="btn-giant btn-primary" onclick="HistoryGramApp.startSetupFlow()">
               <i class="fa-solid fa-play"></i> Inizia Nuova Partita
@@ -549,6 +564,10 @@
       <a href="#" class="tab-item active" data-view="view-welcome" onclick="HistoryGramApp.showView('view-welcome'); return false;" data-tooltip="Home">
         <i class="fa-solid fa-house"></i>
         <span>Home</span>
+      </a>
+      <a href="#" class="tab-item" id="nav-item-muro" data-view="view-game" onclick="HistoryGramApp.showView('view-game'); return false;" data-tooltip="Muro Storico">
+        <i class="fa-solid fa-comments"></i>
+        <span>Muro</span>
       </a>
       <a href="#" class="tab-item" onclick="HistoryGramApp.openMiniguidaModal(); return false;" data-tooltip="Miniguida">
         <i class="fa-solid fa-circle-question"></i>

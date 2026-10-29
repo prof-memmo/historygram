@@ -48,8 +48,12 @@
     views: document.querySelectorAll('.view'),
     bottomNav: document.querySelector('.bottom-bar'),
     tabItems: document.querySelectorAll('.bottom-bar .tab-item'),
+    navItemMuro: document.getElementById('nav-item-muro'),
     navItemApprovazione: document.getElementById('nav-item-approvazione'),
     navItemAdmin: document.getElementById('nav-item-admin'),
+    welcomeLiveMatchBanner: document.getElementById('welcomeLiveMatchBanner'),
+    liveBannerTitle: document.getElementById('liveBannerTitle'),
+    liveBannerSubtitle: document.getElementById('liveBannerSubtitle'),
 
     // Setup Flow
     setupSelectClass: document.getElementById('setupSelectClass'),
@@ -274,6 +278,7 @@
     return await window.HubSubscriptionGuard.verifyAccess({
       user: currentUser,
       role: currentRole,
+      teamCode: AppState ? AppState.currentClassCode : '',
       isPublicView: isPublicView
     });
   }
@@ -834,6 +839,10 @@
         return;
       }
 
+      if (!AppState.sessionData) AppState.sessionData = {};
+      AppState.sessionData.isMatchActive = true;
+      AppState.sessionData.matchStartedAt = new Date().toISOString();
+
       await persistSessionAsync();
 
       connectSession();
@@ -972,6 +981,12 @@
         AppState.currentMode,
         (data) => {
           if (data) {
+            // Stato di attività precedente per rilevare passaggio ad attiva
+            const wasLive = AppState.sessionData && (
+              AppState.sessionData.isMatchActive ||
+              (AppState.sessionData.teamAssignments && Object.values(AppState.sessionData.teamAssignments).some(arr => Array.isArray(arr) && arr.length > 0))
+            );
+
             // Se abbiamo già assegnazioni attive in locale, non sovrascriverle con un payload vuoto
             const localHasAssignments = AppState.sessionData && 
               AppState.sessionData.teamAssignments && 
@@ -991,6 +1006,21 @@
             }
             AppState.sessionData = data;
             renderAll();
+            updateLiveMatchBanner(data);
+
+            const isNowLive = data && (
+              data.isMatchActive ||
+              (data.teamAssignments && Object.values(data.teamAssignments).some(arr => Array.isArray(arr) && arr.length > 0))
+            );
+
+            // Se la partita e appena passata ad attiva e l'utente non si trova ancora sul Muro, notifica toast amichevole
+            if (!wasLive && isNowLive && AppState.currentView !== 'view-game') {
+              showToast(
+                "🚀 <strong>Partita avviata dal docente!</strong> <a href='javascript:void(0)' onclick='HistoryGramApp.showView(\"view-game\")' style='color:#fff;text-decoration:underline;margin-left:8px;font-weight:700;'>Entra nel Muro &rarr;</a>",
+                "toast-success"
+              );
+            }
+
             if (AppState.currentView === 'view-setup-class') {
               renderPawnsGrid();
               if (AppState.selectedSetupFactionId) {
@@ -1010,8 +1040,42 @@
     renderStoriesBar();
     renderFeed();
     renderLeaderboard();
+    updateLiveMatchBanner();
     if (AppState.currentView === 'view-docente') {
       renderTeacherView();
+    }
+  }
+
+  function updateLiveMatchBanner(data) {
+    const session = data || AppState.sessionData;
+    if (!session) {
+      if (DOM.welcomeLiveMatchBanner) DOM.welcomeLiveMatchBanner.classList.add('hidden');
+      return;
+    }
+
+    const hasTeams = session.teamAssignments && Object.values(session.teamAssignments).some(arr => Array.isArray(arr) && arr.length > 0);
+    const hasPosts = (session.approvedPosts && session.approvedPosts.length > 0) || (session.pendingPosts && session.pendingPosts.length > 0);
+    const isLive = session.isMatchActive || hasTeams || hasPosts;
+
+    if (DOM.welcomeLiveMatchBanner) {
+      if (isLive) {
+        const mode = HISTORY_MODES[AppState.currentMode] || HISTORY_MODES['revolution_1800'];
+        if (DOM.liveBannerTitle) {
+          DOM.liveBannerTitle.textContent = `Sfida attiva: ${mode.title}`;
+        }
+        if (DOM.liveBannerSubtitle) {
+          DOM.liveBannerSubtitle.textContent = `La Piazza Storica è aperta per la tua classe. Entra per visualizzare il Muro, consultare le fonti e pubblicare il tuo post!`;
+        }
+        DOM.welcomeLiveMatchBanner.classList.remove('hidden');
+      } else {
+        DOM.welcomeLiveMatchBanner.classList.add('hidden');
+      }
+    }
+
+    if (DOM.navItemMuro) {
+      if (isLive) {
+        DOM.navItemMuro.classList.remove('hidden');
+      }
     }
   }
 
@@ -1434,6 +1498,14 @@
     if (window.HistoryGramService) {
       await window.HistoryGramService.resetSession(AppState.currentClassId, AppState.currentMode);
     }
+    if (AppState.sessionData) {
+      AppState.sessionData.isMatchActive = false;
+      AppState.sessionData.teamAssignments = {};
+      AppState.sessionData.approvedPosts = [];
+      AppState.sessionData.pendingPosts = [];
+    }
+    updateLiveMatchBanner(AppState.sessionData);
+    renderAll();
     showToast("🧹 Sessione azzerata con successo!", "toast-gold");
   }
 
@@ -2048,7 +2120,8 @@
     isTeacherUser,
     isSuperAdminUser,
     switchAdminTab,
-    updateTeacherNavVisibility
+    updateTeacherNavVisibility,
+    updateLiveMatchBanner
   };
 
   window.addEventListener('DOMContentLoaded', init);
