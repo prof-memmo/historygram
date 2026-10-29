@@ -304,10 +304,16 @@
       else if (ssoRole === 'studente') currentRole = 'studente';
       else currentRole = 'guest';
     }
+
+    const effectiveCode = (AppState && AppState.currentClassCode) || 
+                          (new URLSearchParams(window.location.search).get('class') || '').toUpperCase() || 
+                          (typeof localStorage !== 'undefined' ? (localStorage.getItem('hub_user_class') || localStorage.getItem('pm_student_class')) : '') || 
+                          '3B';
+
     return await window.HubSubscriptionGuard.verifyAccess({
       user: currentUser,
       role: currentRole,
-      teamCode: AppState ? AppState.currentClassCode : '',
+      teamCode: effectiveCode,
       isPublicView: isPublicView
     });
   }
