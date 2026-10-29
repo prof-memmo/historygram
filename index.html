@@ -191,11 +191,23 @@
             </div>
           </div>
 
-          <!-- Card Studente in Attesa (Visibile solo per lo studente quando la sfida NON e ancora avviata) -->
+          <!-- Card Studente in Attesa e Visualizzazione Squadre Live (Visibile solo per lo studente prima dell'avvio) -->
           <div id="studentWaitingCard" class="student-waiting-card hidden">
-            <div class="waiting-icon-badge">⏳</div>
-            <h3 class="waiting-title">In attesa che il Docente avvii la sfida</h3>
-            <p class="waiting-desc">La Piazza Storica non è ancora stata aperta alla LIM per la tua classe. Resta connesso su questa schermata: la sessione si attiverà in tempo reale non appena il docente lancerà la sfida!</p>
+            <div class="waiting-header-row">
+              <div class="live-banner-pulse-row" style="background: rgba(245, 158, 11, 0.12); border-color: rgba(245, 158, 11, 0.35); margin-bottom: 8px;">
+                <span class="live-dot-pulse" style="background: #f59e0b; box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.7);"></span>
+                <span class="live-badge-text" style="color: #b45309;" id="studentWaitingBadge">Composizione Squadre alla LIM</span>
+              </div>
+              <h3 class="waiting-title" id="studentWaitingEpochTitle">I Moti Rivoluzionari dell'Ottocento</h3>
+              <p class="waiting-desc" id="studentWaitingDesc">Il docente sta assegnando le fazioni e i personaggi alla LIM. Segui l'attribuzione in tempo reale sul tuo schermo!</p>
+            </div>
+
+            <!-- Banner Assegnazione Personale dello Studente -->
+            <div id="studentMyTeamBanner" class="student-my-team-banner hidden"></div>
+
+            <!-- Griglia Squadre Live (Read-Only) -->
+            <div id="studentLiveTeamsGrid" class="student-live-teams-grid"></div>
+
             <div class="waiting-actions-row">
               <button type="button" class="btn-secondary-action" onclick="HistoryGramApp.showView('view-regolamento')">
                 <i class="fa-solid fa-scale-balanced"></i> Consulta il Regolamento

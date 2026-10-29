@@ -55,6 +55,11 @@
     liveBannerTitle: document.getElementById('liveBannerTitle'),
     liveBannerSubtitle: document.getElementById('liveBannerSubtitle'),
     studentWaitingCard: document.getElementById('studentWaitingCard'),
+    studentWaitingBadge: document.getElementById('studentWaitingBadge'),
+    studentWaitingEpochTitle: document.getElementById('studentWaitingEpochTitle'),
+    studentWaitingDesc: document.getElementById('studentWaitingDesc'),
+    studentMyTeamBanner: document.getElementById('studentMyTeamBanner'),
+    studentLiveTeamsGrid: document.getElementById('studentLiveTeamsGrid'),
     welcomeTeacherActionsWrap: document.getElementById('welcomeTeacherActionsWrap'),
 
     // Setup Flow
@@ -1050,6 +1055,29 @@
               );
             }
 
+            // Se l'utente e uno studente e la partita non e ancora avviata, aggiorna in tempo reale le squadre
+            if (!isTeacherUser() && !isNowLive) {
+              const rawMyName = (localStorage.getItem('hub_user_name') || '').trim().toLowerCase();
+              if (rawMyName) {
+                const prevAssignments = (AppState.sessionData && AppState.sessionData.teamAssignments) || {};
+                const newAssignments = (data && data.teamAssignments) || {};
+                const wasAssigned = Object.values(prevAssignments).some(arr => Array.isArray(arr) && arr.some(n => String(n).trim().toLowerCase() === rawMyName));
+                let newlyAssignedChar = null;
+                const activeModeKey = data.modeId || AppState.currentMode || 'revolution_1800';
+                const chars = (HISTORY_MODES[activeModeKey] || HISTORY_MODES['revolution_1800']).characters;
+                chars.forEach(c => {
+                  const arr = newAssignments[c.id] || [];
+                  if (arr.some(n => String(n).trim().toLowerCase() === rawMyName)) {
+                    newlyAssignedChar = c;
+                  }
+                });
+                if (!wasAssigned && newlyAssignedChar) {
+                  showToast(`🎖️ Sei stato assegnato alla fazione: <strong>${newlyAssignedChar.avatar} ${newlyAssignedChar.name}</strong>!`, "toast-gold");
+                }
+              }
+              renderStudentLiveTeams(data);
+            }
+
             if (AppState.currentView === 'view-setup-class') {
               renderPawnsGrid();
               if (AppState.selectedSetupFactionId) {
@@ -1102,6 +1130,7 @@
     if (DOM.studentWaitingCard) {
       if (!isTeacher && !isLive) {
         DOM.studentWaitingCard.classList.remove('hidden');
+        renderStudentLiveTeams(session);
       } else {
         DOM.studentWaitingCard.classList.add('hidden');
       }
@@ -1112,6 +1141,107 @@
         DOM.navItemMuro.classList.remove('hidden');
       }
     }
+  }
+
+  /* ================= VISUALIZZATORE SQUADRE LIVE PER LO STUDENTE (READ-ONLY) ================= */
+  function renderStudentLiveTeams(session) {
+    if (!DOM.studentLiveTeamsGrid || !DOM.studentWaitingCard) return;
+
+    const currentSession = session || AppState.sessionData || {};
+    const modeKey = currentSession.modeId || AppState.currentMode || 'revolution_1800';
+    const mode = HISTORY_MODES[modeKey] || HISTORY_MODES['revolution_1800'];
+    const characters = mode.characters || [];
+    const assignments = currentSession.teamAssignments || {};
+
+    // 1. Aggiorna titoli didattici
+    if (DOM.studentWaitingEpochTitle) {
+      DOM.studentWaitingEpochTitle.textContent = `${mode.title} – ${mode.badge}`;
+    }
+
+    // 2. Identifica il nome dello studente autenticato
+    const rawMyName = (localStorage.getItem('hub_user_name') || '').trim();
+    const cleanMyName = rawMyName.toLowerCase();
+
+    let myAssignedChar = null;
+    let myTeammates = [];
+    let totalAssignedStudents = 0;
+
+    characters.forEach(c => {
+      const roster = assignments[c.id] || [];
+      totalAssignedStudents += roster.length;
+      if (cleanMyName) {
+        const found = roster.some(name => {
+          const n = String(name || '').trim().toLowerCase();
+          return n === cleanMyName || cleanMyName.includes(n) || n.includes(cleanMyName);
+        });
+        if (found) {
+          myAssignedChar = c;
+          myTeammates = roster.filter(name => {
+            const n = String(name || '').trim().toLowerCase();
+            return !(n === cleanMyName || cleanMyName.includes(n) || n.includes(cleanMyName));
+          });
+        }
+      }
+    });
+
+    // 3. Renderizza Banner Personale
+    if (DOM.studentMyTeamBanner) {
+      if (myAssignedChar) {
+        DOM.studentMyTeamBanner.innerHTML = `
+          <span style="font-size: 1.35rem; line-height: 1;">🎖️</span>
+          <div>
+            <div>Sei nella fazione <strong>${myAssignedChar.avatar} ${escapeHtml(myAssignedChar.name)}</strong> (${escapeHtml(myAssignedChar.faction)})</div>
+            <small style="color: var(--text-muted); font-size: 0.8rem; font-weight: normal; display: block; margin-top: 2px;">
+              ${myTeammates.length > 0 ? 'Con: <strong>' + escapeHtml(myTeammates.join(', ')) + '</strong>' : 'In attesa di altri compagni di squadra...'}
+            </small>
+          </div>
+        `;
+        DOM.studentMyTeamBanner.classList.remove('hidden');
+      } else if (totalAssignedStudents > 0) {
+        DOM.studentMyTeamBanner.innerHTML = `
+          <span style="font-size: 1.15rem; line-height: 1;">⏳</span>
+          <span>Il docente sta componendo le squadre... In attesa della tua attribuzione!</span>
+        `;
+        DOM.studentMyTeamBanner.classList.remove('hidden');
+      } else {
+        DOM.studentMyTeamBanner.classList.add('hidden');
+      }
+    }
+
+    // 4. Renderizza Griglia Fazioni Read-Only
+    let gridHtml = '';
+    characters.forEach(c => {
+      const roster = assignments[c.id] || [];
+      const isMyTeam = myAssignedChar && myAssignedChar.id === c.id;
+
+      let membersHtml = '';
+      if (roster.length > 0) {
+        membersHtml = roster.map(st => {
+          const isMe = cleanMyName && (String(st).trim().toLowerCase() === cleanMyName || cleanMyName.includes(String(st).trim().toLowerCase()));
+          return `<span class="student-live-chip ${isMe ? 'is-me' : ''}"><i class="fa-solid fa-user"></i> ${escapeHtml(st)}</span>`;
+        }).join('');
+      } else {
+        membersHtml = `<span class="team-empty-state-text">In attesa di componenti...</span>`;
+      }
+
+      gridHtml += `
+        <div class="student-live-team-card ${isMyTeam ? 'my-team-active' : ''}">
+          ${isMyTeam ? '<span class="my-team-badge-tag">⭐ La tua squadra</span>' : ''}
+          <div class="team-card-top-info">
+            <span class="team-card-avatar">${c.avatar}</span>
+            <div class="team-card-titles">
+              <h4>${escapeHtml(c.name)}</h4>
+              <small>${escapeHtml(c.faction)} &bull; ${roster.length} ${roster.length === 1 ? 'componente' : 'componenti'}</small>
+            </div>
+          </div>
+          <div class="team-members-pills-wrap">
+            ${membersHtml}
+          </div>
+        </div>
+      `;
+    });
+
+    DOM.studentLiveTeamsGrid.innerHTML = gridHtml;
   }
 
   function renderModeUI() {
@@ -1806,6 +1936,20 @@
     // Form Crea Post
     if (DOM.btnOpenCreatePost) {
       DOM.btnOpenCreatePost.onclick = () => {
+        // Se lo studente e assegnato a un personaggio, preselezionalo automaticamente nel form
+        const rawMyName = (localStorage.getItem('hub_user_name') || '').trim().toLowerCase();
+        if (rawMyName && AppState.sessionData && AppState.sessionData.teamAssignments) {
+          const chars = (HISTORY_MODES[AppState.currentMode] || HISTORY_MODES['revolution_1800']).characters;
+          chars.forEach(c => {
+            const arr = AppState.sessionData.teamAssignments[c.id] || [];
+            if (arr.some(n => String(n).trim().toLowerCase() === rawMyName)) {
+              if (DOM.selectCharacter) {
+                DOM.selectCharacter.value = c.id;
+                updateCharacterPreview();
+              }
+            }
+          });
+        }
         if (DOM.modalCreatePost) DOM.modalCreatePost.classList.remove('hidden');
       };
     }
@@ -2161,7 +2305,8 @@
     switchAdminTab,
     updateTeacherNavVisibility,
     updateRoleBasedUI,
-    updateLiveMatchBanner
+    updateLiveMatchBanner,
+    renderStudentLiveTeams
   };
 
   window.addEventListener('DOMContentLoaded', init);
