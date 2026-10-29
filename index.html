@@ -191,7 +191,23 @@
             </div>
           </div>
 
-          <div class="welcome-actions-wrap" style="display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; margin-top: 20px;">
+          <!-- Card Studente in Attesa (Visibile solo per lo studente quando la sfida NON e ancora avviata) -->
+          <div id="studentWaitingCard" class="student-waiting-card hidden">
+            <div class="waiting-icon-badge">⏳</div>
+            <h3 class="waiting-title">In attesa che il Docente avvii la sfida</h3>
+            <p class="waiting-desc">La Piazza Storica non è ancora stata aperta alla LIM per la tua classe. Resta connesso su questa schermata: la sessione si attiverà in tempo reale non appena il docente lancerà la sfida!</p>
+            <div class="waiting-actions-row">
+              <button type="button" class="btn-secondary-action" onclick="HistoryGramApp.showView('view-regolamento')">
+                <i class="fa-solid fa-scale-balanced"></i> Consulta il Regolamento
+              </button>
+              <button type="button" class="btn-secondary-action" onclick="HistoryGramApp.openMiniguidaModal()">
+                <i class="fa-solid fa-circle-question"></i> Miniguida Rapida
+              </button>
+            </div>
+          </div>
+
+          <!-- Azioni Cattedra Docente (Visibili esclusivamente per Docente e Admin) -->
+          <div id="welcomeTeacherActionsWrap" class="welcome-actions-wrap" style="display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; margin-top: 20px;">
             <button class="btn-giant btn-primary" onclick="HistoryGramApp.startSetupFlow()">
               <i class="fa-solid fa-play"></i> Inizia Nuova Partita
             </button>

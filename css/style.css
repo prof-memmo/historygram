@@ -2355,6 +2355,60 @@ h1, h2, h3, h4, h5, h6 {
   margin: 0 auto;
 }
 
+/* ================= CARD ATTESA DOCENTE PER LO STUDENTE ================= */
+.student-waiting-card {
+  background: var(--bg-card);
+  border: 1.5px dashed var(--border-color);
+  border-radius: var(--radius-lg);
+  padding: 24px 26px;
+  max-width: 660px;
+  margin: 18px auto 20px auto;
+  text-align: center;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
+}
+
+.waiting-icon-badge {
+  font-size: 2.2rem;
+  margin-bottom: 8px;
+  display: inline-block;
+  animation: waitingPulse 2.5s infinite ease-in-out;
+}
+
+@keyframes waitingPulse {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 0.85;
+  }
+  50% {
+    transform: scale(1.1);
+    opacity: 1;
+  }
+}
+
+.waiting-title {
+  font-family: var(--font-heading);
+  font-size: 1.2rem;
+  font-weight: 800;
+  color: var(--text-main);
+  margin: 0 0 8px 0;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.waiting-desc {
+  font-size: 0.92rem;
+  color: var(--text-muted);
+  line-height: 1.5;
+  margin: 0 0 16px 0;
+}
+
+.waiting-actions-row {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
 /* ================= SETUP FLOW ================= */
 .setup-header-box {
   text-align: center;

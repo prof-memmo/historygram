@@ -54,6 +54,8 @@
     welcomeLiveMatchBanner: document.getElementById('welcomeLiveMatchBanner'),
     liveBannerTitle: document.getElementById('liveBannerTitle'),
     liveBannerSubtitle: document.getElementById('liveBannerSubtitle'),
+    studentWaitingCard: document.getElementById('studentWaitingCard'),
+    welcomeTeacherActionsWrap: document.getElementById('welcomeTeacherActionsWrap'),
 
     // Setup Flow
     setupSelectClass: document.getElementById('setupSelectClass'),
@@ -174,12 +176,17 @@
     // 4. Setup Eventi & Interfaccia
     bindEvents();
     renderModeUI();
+    updateRoleBasedUI();
     connectSession();
 
     // 5. Imposta Vista Iniziale
     const initHash = window.location.hash ? window.location.hash.replace(/^#/, '') : '';
     if (initHash && document.getElementById('view-' + initHash)) {
-      AppState.currentView = 'view-' + initHash;
+      const targetV = 'view-' + initHash;
+      const teacherOnlyViews = ['view-setup-mode', 'view-setup-class', 'view-docente'];
+      if (!teacherOnlyViews.includes(targetV) || isTeacherUser()) {
+        AppState.currentView = targetV;
+      }
     }
     showView(AppState.currentView, false);
 
@@ -260,6 +267,23 @@
     }
   }
 
+  function updateRoleBasedUI() {
+    const isTeacher = isTeacherUser();
+
+    updateTeacherNavVisibility();
+
+    // Gestione azioni Cattedra Docente vs Attesa Studente sulla Home
+    if (DOM.welcomeTeacherActionsWrap) {
+      if (isTeacher) {
+        DOM.welcomeTeacherActionsWrap.classList.remove('hidden');
+      } else {
+        DOM.welcomeTeacherActionsWrap.classList.add('hidden');
+      }
+    }
+
+    updateLiveMatchBanner();
+  }
+
   /* ================= VERIFICA ACCESSO ECOSYSTEM GUARD ================= */
   async function verifyEcosystemAccess(isPublicView = false) {
     if (!window.HubSubscriptionGuard || typeof window.HubSubscriptionGuard.verifyAccess !== 'function') {
@@ -299,9 +323,10 @@
       return;
     }
 
-    // Guardia di accesso: il pannello Approvazione/Docente è riservato esclusivamente al docente
-    if (viewId === 'view-docente' && !isTeacherUser()) {
-      showToast("⛔ Accesso riservato esclusivamente al docente.", "toast-danger");
+    // Guardia di accesso: le viste di setup e la cattedra sono riservate esclusivamente al docente
+    const teacherOnlyViews = ['view-setup-mode', 'view-setup-class', 'view-docente'];
+    if (teacherOnlyViews.includes(viewId) && !isTeacherUser()) {
+      showToast("⛔ Questa sezione è riservata esclusivamente al docente.", "toast-danger");
       return;
     }
 
@@ -362,6 +387,10 @@
 
   /* ================= FLUSSO DI SETUP (STILE L'ORATORE & OPS! STORIA) ================= */
   async function startSetupFlow() {
+    if (!isTeacherUser()) {
+      showToast("⛔ La configurazione della partita è riservata esclusivamente al docente.", "toast-danger");
+      return;
+    }
     const isAllowed = await verifyEcosystemAccess(false);
     if (!isAllowed) return;
     showView('view-setup-mode');
@@ -908,7 +937,7 @@
       }
     } catch (e) {}
 
-    updateTeacherNavVisibility();
+    updateRoleBasedUI();
 
     if (window.fbAuth) {
       window.fbAuth.onAuthStateChanged(async user => {
@@ -937,7 +966,7 @@
           }
 
           AppState.isTeacherUnlocked = true;
-          updateTeacherNavVisibility();
+          updateRoleBasedUI();
           if (DOM.headerUserName) DOM.headerUserName.textContent = displayName;
           if (DOM.dropdownUserName) DOM.dropdownUserName.textContent = displayName;
           if (DOM.headerUserRole) DOM.headerUserRole.textContent = userRole;
@@ -956,7 +985,7 @@
             await renderSetupClassView();
           }
         } else {
-          updateTeacherNavVisibility();
+          updateRoleBasedUI();
         }
       });
     }
@@ -1048,14 +1077,10 @@
 
   function updateLiveMatchBanner(data) {
     const session = data || AppState.sessionData;
-    if (!session) {
-      if (DOM.welcomeLiveMatchBanner) DOM.welcomeLiveMatchBanner.classList.add('hidden');
-      return;
-    }
-
-    const hasTeams = session.teamAssignments && Object.values(session.teamAssignments).some(arr => Array.isArray(arr) && arr.length > 0);
-    const hasPosts = (session.approvedPosts && session.approvedPosts.length > 0) || (session.pendingPosts && session.pendingPosts.length > 0);
-    const isLive = session.isMatchActive || hasTeams || hasPosts;
+    const isTeacher = isTeacherUser();
+    const hasTeams = session && session.teamAssignments && Object.values(session.teamAssignments).some(arr => Array.isArray(arr) && arr.length > 0);
+    const hasPosts = session && ((session.approvedPosts && session.approvedPosts.length > 0) || (session.pendingPosts && session.pendingPosts.length > 0));
+    const isLive = session && (session.isMatchActive || hasTeams || hasPosts);
 
     if (DOM.welcomeLiveMatchBanner) {
       if (isLive) {
@@ -1064,7 +1089,9 @@
           DOM.liveBannerTitle.textContent = `Sfida attiva: ${mode.title}`;
         }
         if (DOM.liveBannerSubtitle) {
-          DOM.liveBannerSubtitle.textContent = `La Piazza Storica è aperta per la tua classe. Entra per visualizzare il Muro, consultare le fonti e pubblicare il tuo post!`;
+          DOM.liveBannerSubtitle.textContent = isTeacher
+            ? `La sessione per la tua classe è in corso sulla LIM. Puoi rientrare al Muro per visionare i post o concedere l'Imprimatur.`
+            : `Il docente ha aperto la Piazza Storica per la tua classe. Entra per visualizzare il Muro, consultare le fonti e pubblicare il tuo post!`;
         }
         DOM.welcomeLiveMatchBanner.classList.remove('hidden');
       } else {
@@ -1072,8 +1099,16 @@
       }
     }
 
+    if (DOM.studentWaitingCard) {
+      if (!isTeacher && !isLive) {
+        DOM.studentWaitingCard.classList.remove('hidden');
+      } else {
+        DOM.studentWaitingCard.classList.add('hidden');
+      }
+    }
+
     if (DOM.navItemMuro) {
-      if (isLive) {
+      if (isLive || !isTeacher) {
         DOM.navItemMuro.classList.remove('hidden');
       }
     }
@@ -1986,6 +2021,10 @@
 
   /* ================= GESTIONE MODALE RIPRENDI PARTITA (Stile L'Oratore) ================= */
   async function openSavedGamesModal() {
+    if (!isTeacherUser()) {
+      showToast("⛔ La gestione delle partite salvate è riservata esclusivamente al docente.", "toast-danger");
+      return;
+    }
     const isAllowed = await verifyEcosystemAccess(false);
     if (!isAllowed) return;
     renderSavedGamesList();
@@ -2121,6 +2160,7 @@
     isSuperAdminUser,
     switchAdminTab,
     updateTeacherNavVisibility,
+    updateRoleBasedUI,
     updateLiveMatchBanner
   };
 
