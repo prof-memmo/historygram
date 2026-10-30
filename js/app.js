@@ -48,8 +48,19 @@
     views: document.querySelectorAll('.view'),
     bottomNav: document.querySelector('.bottom-bar'),
     tabItems: document.querySelectorAll('.bottom-bar .tab-item'),
+    navItemMuro: document.getElementById('nav-item-muro'),
     navItemApprovazione: document.getElementById('nav-item-approvazione'),
     navItemAdmin: document.getElementById('nav-item-admin'),
+    welcomeLiveMatchBanner: document.getElementById('welcomeLiveMatchBanner'),
+    liveBannerTitle: document.getElementById('liveBannerTitle'),
+    liveBannerSubtitle: document.getElementById('liveBannerSubtitle'),
+    studentWaitingCard: document.getElementById('studentWaitingCard'),
+    studentWaitingBadge: document.getElementById('studentWaitingBadge'),
+    studentWaitingEpochTitle: document.getElementById('studentWaitingEpochTitle'),
+    studentWaitingDesc: document.getElementById('studentWaitingDesc'),
+    studentMyTeamBanner: document.getElementById('studentMyTeamBanner'),
+    studentLiveTeamsGrid: document.getElementById('studentLiveTeamsGrid'),
+    welcomeTeacherActionsWrap: document.getElementById('welcomeTeacherActionsWrap'),
 
     // Setup Flow
     setupSelectClass: document.getElementById('setupSelectClass'),
@@ -170,12 +181,17 @@
     // 4. Setup Eventi & Interfaccia
     bindEvents();
     renderModeUI();
+    updateRoleBasedUI();
     connectSession();
 
     // 5. Imposta Vista Iniziale
     const initHash = window.location.hash ? window.location.hash.replace(/^#/, '') : '';
     if (initHash && document.getElementById('view-' + initHash)) {
-      AppState.currentView = 'view-' + initHash;
+      const targetV = 'view-' + initHash;
+      const teacherOnlyViews = ['view-setup-mode', 'view-setup-class', 'view-docente'];
+      if (!teacherOnlyViews.includes(targetV) || isTeacherUser()) {
+        AppState.currentView = targetV;
+      }
     }
     showView(AppState.currentView, false);
 
@@ -256,6 +272,23 @@
     }
   }
 
+  function updateRoleBasedUI() {
+    const isTeacher = isTeacherUser();
+
+    updateTeacherNavVisibility();
+
+    // Gestione azioni Cattedra Docente vs Attesa Studente sulla Home
+    if (DOM.welcomeTeacherActionsWrap) {
+      if (isTeacher) {
+        DOM.welcomeTeacherActionsWrap.classList.remove('hidden');
+      } else {
+        DOM.welcomeTeacherActionsWrap.classList.add('hidden');
+      }
+    }
+
+    updateLiveMatchBanner();
+  }
+
   /* ================= VERIFICA ACCESSO ECOSYSTEM GUARD ================= */
   async function verifyEcosystemAccess(isPublicView = false) {
     if (!window.HubSubscriptionGuard || typeof window.HubSubscriptionGuard.verifyAccess !== 'function') {
@@ -271,9 +304,16 @@
       else if (ssoRole === 'studente') currentRole = 'studente';
       else currentRole = 'guest';
     }
+
+    const effectiveCode = (AppState && AppState.currentClassCode) || 
+                          (new URLSearchParams(window.location.search).get('class') || '').toUpperCase() || 
+                          (typeof localStorage !== 'undefined' ? (localStorage.getItem('hub_user_class') || localStorage.getItem('pm_student_class')) : '') || 
+                          '3B';
+
     return await window.HubSubscriptionGuard.verifyAccess({
       user: currentUser,
       role: currentRole,
+      teamCode: effectiveCode,
       isPublicView: isPublicView
     });
   }
@@ -294,9 +334,10 @@
       return;
     }
 
-    // Guardia di accesso: il pannello Approvazione/Docente è riservato esclusivamente al docente
-    if (viewId === 'view-docente' && !isTeacherUser()) {
-      showToast("⛔ Accesso riservato esclusivamente al docente.", "toast-danger");
+    // Guardia di accesso: le viste di setup e la cattedra sono riservate esclusivamente al docente
+    const teacherOnlyViews = ['view-setup-mode', 'view-setup-class', 'view-docente'];
+    if (teacherOnlyViews.includes(viewId) && !isTeacherUser()) {
+      showToast("⛔ Questa sezione è riservata esclusivamente al docente.", "toast-danger");
       return;
     }
 
@@ -357,6 +398,10 @@
 
   /* ================= FLUSSO DI SETUP (STILE L'ORATORE & OPS! STORIA) ================= */
   async function startSetupFlow() {
+    if (!isTeacherUser()) {
+      showToast("⛔ La configurazione della partita è riservata esclusivamente al docente.", "toast-danger");
+      return;
+    }
     const isAllowed = await verifyEcosystemAccess(false);
     if (!isAllowed) return;
     showView('view-setup-mode');
@@ -834,6 +879,10 @@
         return;
       }
 
+      if (!AppState.sessionData) AppState.sessionData = {};
+      AppState.sessionData.isMatchActive = true;
+      AppState.sessionData.matchStartedAt = new Date().toISOString();
+
       await persistSessionAsync();
 
       connectSession();
@@ -899,7 +948,7 @@
       }
     } catch (e) {}
 
-    updateTeacherNavVisibility();
+    updateRoleBasedUI();
 
     if (window.fbAuth) {
       window.fbAuth.onAuthStateChanged(async user => {
@@ -928,7 +977,7 @@
           }
 
           AppState.isTeacherUnlocked = true;
-          updateTeacherNavVisibility();
+          updateRoleBasedUI();
           if (DOM.headerUserName) DOM.headerUserName.textContent = displayName;
           if (DOM.dropdownUserName) DOM.dropdownUserName.textContent = displayName;
           if (DOM.headerUserRole) DOM.headerUserRole.textContent = userRole;
@@ -947,7 +996,7 @@
             await renderSetupClassView();
           }
         } else {
-          updateTeacherNavVisibility();
+          updateRoleBasedUI();
         }
       });
     }
@@ -972,6 +1021,12 @@
         AppState.currentMode,
         (data) => {
           if (data) {
+            // Stato di attività precedente per rilevare passaggio ad attiva
+            const wasLive = AppState.sessionData && (
+              AppState.sessionData.isMatchActive ||
+              (AppState.sessionData.teamAssignments && Object.values(AppState.sessionData.teamAssignments).some(arr => Array.isArray(arr) && arr.length > 0))
+            );
+
             // Se abbiamo già assegnazioni attive in locale, non sovrascriverle con un payload vuoto
             const localHasAssignments = AppState.sessionData && 
               AppState.sessionData.teamAssignments && 
@@ -991,6 +1046,44 @@
             }
             AppState.sessionData = data;
             renderAll();
+            updateLiveMatchBanner(data);
+
+            const isNowLive = data && (
+              data.isMatchActive ||
+              (data.teamAssignments && Object.values(data.teamAssignments).some(arr => Array.isArray(arr) && arr.length > 0))
+            );
+
+            // Se la partita e appena passata ad attiva e l'utente non si trova ancora sul Muro, notifica toast amichevole
+            if (!wasLive && isNowLive && AppState.currentView !== 'view-game') {
+              showToast(
+                "🚀 <strong>Partita avviata dal docente!</strong> <a href='javascript:void(0)' onclick='HistoryGramApp.showView(\"view-game\")' style='color:#fff;text-decoration:underline;margin-left:8px;font-weight:700;'>Entra nel Muro &rarr;</a>",
+                "toast-success"
+              );
+            }
+
+            // Se l'utente e uno studente e la partita non e ancora avviata, aggiorna in tempo reale le squadre
+            if (!isTeacherUser() && !isNowLive) {
+              const rawMyName = (localStorage.getItem('hub_user_name') || '').trim().toLowerCase();
+              if (rawMyName) {
+                const prevAssignments = (AppState.sessionData && AppState.sessionData.teamAssignments) || {};
+                const newAssignments = (data && data.teamAssignments) || {};
+                const wasAssigned = Object.values(prevAssignments).some(arr => Array.isArray(arr) && arr.some(n => String(n).trim().toLowerCase() === rawMyName));
+                let newlyAssignedChar = null;
+                const activeModeKey = data.modeId || AppState.currentMode || 'revolution_1800';
+                const chars = (HISTORY_MODES[activeModeKey] || HISTORY_MODES['revolution_1800']).characters;
+                chars.forEach(c => {
+                  const arr = newAssignments[c.id] || [];
+                  if (arr.some(n => String(n).trim().toLowerCase() === rawMyName)) {
+                    newlyAssignedChar = c;
+                  }
+                });
+                if (!wasAssigned && newlyAssignedChar) {
+                  showToast(`🎖️ Sei stato assegnato alla fazione: <strong>${newlyAssignedChar.avatar} ${newlyAssignedChar.name}</strong>!`, "toast-gold");
+                }
+              }
+              renderStudentLiveTeams(data);
+            }
+
             if (AppState.currentView === 'view-setup-class') {
               renderPawnsGrid();
               if (AppState.selectedSetupFactionId) {
@@ -1010,9 +1103,151 @@
     renderStoriesBar();
     renderFeed();
     renderLeaderboard();
+    updateLiveMatchBanner();
     if (AppState.currentView === 'view-docente') {
       renderTeacherView();
     }
+  }
+
+  function updateLiveMatchBanner(data) {
+    const session = data || AppState.sessionData;
+    const isTeacher = isTeacherUser();
+    const hasTeams = session && session.teamAssignments && Object.values(session.teamAssignments).some(arr => Array.isArray(arr) && arr.length > 0);
+    const hasPosts = session && ((session.approvedPosts && session.approvedPosts.length > 0) || (session.pendingPosts && session.pendingPosts.length > 0));
+    const isLive = session && (session.isMatchActive || hasTeams || hasPosts);
+
+    if (DOM.welcomeLiveMatchBanner) {
+      if (isLive) {
+        const mode = HISTORY_MODES[AppState.currentMode] || HISTORY_MODES['revolution_1800'];
+        if (DOM.liveBannerTitle) {
+          DOM.liveBannerTitle.textContent = `Sfida attiva: ${mode.title}`;
+        }
+        if (DOM.liveBannerSubtitle) {
+          DOM.liveBannerSubtitle.textContent = isTeacher
+            ? `La sessione per la tua classe è in corso sulla LIM. Puoi rientrare al Muro per visionare i post o concedere l'Imprimatur.`
+            : `Il docente ha aperto la Piazza Storica per la tua classe. Entra per visualizzare il Muro, consultare le fonti e pubblicare il tuo post!`;
+        }
+        DOM.welcomeLiveMatchBanner.classList.remove('hidden');
+      } else {
+        DOM.welcomeLiveMatchBanner.classList.add('hidden');
+      }
+    }
+
+    if (DOM.studentWaitingCard) {
+      if (!isTeacher && !isLive) {
+        DOM.studentWaitingCard.classList.remove('hidden');
+        renderStudentLiveTeams(session);
+      } else {
+        DOM.studentWaitingCard.classList.add('hidden');
+      }
+    }
+
+    if (DOM.navItemMuro) {
+      if (isLive || !isTeacher) {
+        DOM.navItemMuro.classList.remove('hidden');
+      }
+    }
+  }
+
+  /* ================= VISUALIZZATORE SQUADRE LIVE PER LO STUDENTE (READ-ONLY) ================= */
+  function renderStudentLiveTeams(session) {
+    if (!DOM.studentLiveTeamsGrid || !DOM.studentWaitingCard) return;
+
+    const currentSession = session || AppState.sessionData || {};
+    const modeKey = currentSession.modeId || AppState.currentMode || 'revolution_1800';
+    const mode = HISTORY_MODES[modeKey] || HISTORY_MODES['revolution_1800'];
+    const characters = mode.characters || [];
+    const assignments = currentSession.teamAssignments || {};
+
+    // 1. Aggiorna titoli didattici
+    if (DOM.studentWaitingEpochTitle) {
+      DOM.studentWaitingEpochTitle.textContent = `${mode.title} – ${mode.badge}`;
+    }
+
+    // 2. Identifica il nome dello studente autenticato
+    const rawMyName = (localStorage.getItem('hub_user_name') || '').trim();
+    const cleanMyName = rawMyName.toLowerCase();
+
+    let myAssignedChar = null;
+    let myTeammates = [];
+    let totalAssignedStudents = 0;
+
+    characters.forEach(c => {
+      const roster = assignments[c.id] || [];
+      totalAssignedStudents += roster.length;
+      if (cleanMyName) {
+        const found = roster.some(name => {
+          const n = String(name || '').trim().toLowerCase();
+          return n === cleanMyName || cleanMyName.includes(n) || n.includes(cleanMyName);
+        });
+        if (found) {
+          myAssignedChar = c;
+          myTeammates = roster.filter(name => {
+            const n = String(name || '').trim().toLowerCase();
+            return !(n === cleanMyName || cleanMyName.includes(n) || n.includes(cleanMyName));
+          });
+        }
+      }
+    });
+
+    // 3. Renderizza Banner Personale
+    if (DOM.studentMyTeamBanner) {
+      if (myAssignedChar) {
+        DOM.studentMyTeamBanner.innerHTML = `
+          <span style="font-size: 1.35rem; line-height: 1;">🎖️</span>
+          <div>
+            <div>Sei nella fazione <strong>${myAssignedChar.avatar} ${escapeHtml(myAssignedChar.name)}</strong> (${escapeHtml(myAssignedChar.faction)})</div>
+            <small style="color: var(--text-muted); font-size: 0.8rem; font-weight: normal; display: block; margin-top: 2px;">
+              ${myTeammates.length > 0 ? 'Con: <strong>' + escapeHtml(myTeammates.join(', ')) + '</strong>' : 'In attesa di altri compagni di squadra...'}
+            </small>
+          </div>
+        `;
+        DOM.studentMyTeamBanner.classList.remove('hidden');
+      } else if (totalAssignedStudents > 0) {
+        DOM.studentMyTeamBanner.innerHTML = `
+          <span style="font-size: 1.15rem; line-height: 1;">⏳</span>
+          <span>Il docente sta componendo le squadre... In attesa della tua attribuzione!</span>
+        `;
+        DOM.studentMyTeamBanner.classList.remove('hidden');
+      } else {
+        DOM.studentMyTeamBanner.classList.add('hidden');
+      }
+    }
+
+    // 4. Renderizza Griglia Fazioni Read-Only
+    let gridHtml = '';
+    characters.forEach(c => {
+      const roster = assignments[c.id] || [];
+      const isMyTeam = myAssignedChar && myAssignedChar.id === c.id;
+
+      let membersHtml = '';
+      if (roster.length > 0) {
+        membersHtml = roster.map(st => {
+          const isMe = cleanMyName && (String(st).trim().toLowerCase() === cleanMyName || cleanMyName.includes(String(st).trim().toLowerCase()));
+          return `<span class="student-live-chip ${isMe ? 'is-me' : ''}"><i class="fa-solid fa-user"></i> ${escapeHtml(st)}</span>`;
+        }).join('');
+      } else {
+        membersHtml = `<span class="team-empty-state-text">In attesa di componenti...</span>`;
+      }
+
+      gridHtml += `
+        <div class="student-live-team-card ${isMyTeam ? 'my-team-active' : ''}">
+          ${isMyTeam ? '<span class="my-team-badge-tag">⭐ La tua squadra</span>' : ''}
+          <div class="team-card-top-info">
+            <span class="team-card-avatar">${c.avatar}</span>
+            <div class="team-card-titles">
+              <h4>${escapeHtml(c.name)}</h4>
+              <small>${escapeHtml(c.faction)} &bull; ${roster.length} ${roster.length === 1 ? 'componente' : 'componenti'}</small>
+            </div>
+          </div>
+          <div class="team-members-pills-wrap">
+            ${membersHtml}
+          </div>
+        </div>
+      `;
+    });
+
+    DOM.studentLiveTeamsGrid.innerHTML = gridHtml;
   }
 
   function renderModeUI() {
@@ -1434,6 +1669,14 @@
     if (window.HistoryGramService) {
       await window.HistoryGramService.resetSession(AppState.currentClassId, AppState.currentMode);
     }
+    if (AppState.sessionData) {
+      AppState.sessionData.isMatchActive = false;
+      AppState.sessionData.teamAssignments = {};
+      AppState.sessionData.approvedPosts = [];
+      AppState.sessionData.pendingPosts = [];
+    }
+    updateLiveMatchBanner(AppState.sessionData);
+    renderAll();
     showToast("🧹 Sessione azzerata con successo!", "toast-gold");
   }
 
@@ -1699,6 +1942,20 @@
     // Form Crea Post
     if (DOM.btnOpenCreatePost) {
       DOM.btnOpenCreatePost.onclick = () => {
+        // Se lo studente e assegnato a un personaggio, preselezionalo automaticamente nel form
+        const rawMyName = (localStorage.getItem('hub_user_name') || '').trim().toLowerCase();
+        if (rawMyName && AppState.sessionData && AppState.sessionData.teamAssignments) {
+          const chars = (HISTORY_MODES[AppState.currentMode] || HISTORY_MODES['revolution_1800']).characters;
+          chars.forEach(c => {
+            const arr = AppState.sessionData.teamAssignments[c.id] || [];
+            if (arr.some(n => String(n).trim().toLowerCase() === rawMyName)) {
+              if (DOM.selectCharacter) {
+                DOM.selectCharacter.value = c.id;
+                updateCharacterPreview();
+              }
+            }
+          });
+        }
         if (DOM.modalCreatePost) DOM.modalCreatePost.classList.remove('hidden');
       };
     }
@@ -1914,6 +2171,10 @@
 
   /* ================= GESTIONE MODALE RIPRENDI PARTITA (Stile L'Oratore) ================= */
   async function openSavedGamesModal() {
+    if (!isTeacherUser()) {
+      showToast("⛔ La gestione delle partite salvate è riservata esclusivamente al docente.", "toast-danger");
+      return;
+    }
     const isAllowed = await verifyEcosystemAccess(false);
     if (!isAllowed) return;
     renderSavedGamesList();
@@ -2048,7 +2309,10 @@
     isTeacherUser,
     isSuperAdminUser,
     switchAdminTab,
-    updateTeacherNavVisibility
+    updateTeacherNavVisibility,
+    updateRoleBasedUI,
+    updateLiveMatchBanner,
+    renderStudentLiveTeams
   };
 
   window.addEventListener('DOMContentLoaded', init);

@@ -2267,6 +2267,283 @@ h1, h2, h3, h4, h5, h6 {
   transform: translateY(-2px);
 }
 
+/* ================= BANNER PARTITA IN CORSO (STUDENTE & LIM) ================= */
+.welcome-live-banner {
+  background: linear-gradient(135deg, rgba(5, 150, 105, 0.08) 0%, rgba(13, 148, 136, 0.12) 100%);
+  border: 2px solid var(--accent-green);
+  border-radius: var(--radius-lg);
+  padding: 20px 24px;
+  max-width: 680px;
+  margin: 18px auto 22px auto;
+  text-align: center;
+  box-shadow: 0 10px 25px rgba(5, 150, 105, 0.15);
+  animation: pulseLiveBorder 3s infinite ease-in-out;
+}
+
+@keyframes pulseLiveBorder {
+  0%, 100% {
+    border-color: var(--accent-green);
+    box-shadow: 0 10px 25px rgba(5, 150, 105, 0.15);
+  }
+  50% {
+    border-color: #10b981;
+    box-shadow: 0 10px 30px rgba(16, 185, 129, 0.28);
+  }
+}
+
+.live-banner-pulse-row {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(5, 150, 105, 0.12);
+  border: 1px solid rgba(5, 150, 105, 0.3);
+  padding: 4px 14px;
+  border-radius: 999px;
+  margin-bottom: 10px;
+}
+
+.live-dot-pulse {
+  width: 10px;
+  height: 10px;
+  background: #10b981;
+  border-radius: 50%;
+  display: inline-block;
+  box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+  animation: liveDotAnimation 1.6s infinite;
+}
+
+@keyframes liveDotAnimation {
+  0% {
+    transform: scale(0.95);
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+  }
+  70% {
+    transform: scale(1);
+    box-shadow: 0 0 0 8px rgba(16, 185, 129, 0);
+  }
+  100% {
+    transform: scale(0.95);
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0);
+  }
+}
+
+.live-badge-text {
+  font-family: var(--font-heading);
+  font-size: 0.78rem;
+  font-weight: 800;
+  color: #047857;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+
+.welcome-live-banner h3 {
+  font-family: var(--font-heading);
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: var(--text-main);
+  margin: 4px 0 6px 0;
+}
+
+.welcome-live-banner p {
+  font-size: 0.92rem;
+  color: var(--text-muted);
+  margin: 0 0 16px 0;
+  line-height: 1.45;
+}
+
+.live-banner-btn {
+  margin: 0 auto;
+}
+
+/* ================= CARD ATTESA DOCENTE PER LO STUDENTE ================= */
+.student-waiting-card {
+  background: var(--bg-card);
+  border: 1.5px dashed var(--border-color);
+  border-radius: var(--radius-lg);
+  padding: 24px 26px;
+  max-width: 660px;
+  margin: 18px auto 20px auto;
+  text-align: center;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
+}
+
+.waiting-icon-badge {
+  font-size: 2.2rem;
+  margin-bottom: 8px;
+  display: inline-block;
+  animation: waitingPulse 2.5s infinite ease-in-out;
+}
+
+@keyframes waitingPulse {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 0.85;
+  }
+  50% {
+    transform: scale(1.1);
+    opacity: 1;
+  }
+}
+
+.waiting-title {
+  font-family: var(--font-heading);
+  font-size: 1.2rem;
+  font-weight: 800;
+  color: var(--text-main);
+  margin: 0 0 8px 0;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.waiting-desc {
+  font-size: 0.92rem;
+  color: var(--text-muted);
+  line-height: 1.5;
+  margin: 0 0 16px 0;
+}
+
+.waiting-actions-row {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+/* ================= GRIGLIA SQUADRE LIVE PER LO STUDENTE ================= */
+.waiting-header-row {
+  margin-bottom: 14px;
+}
+
+.student-my-team-banner {
+  background: linear-gradient(135deg, rgba(212, 175, 55, 0.12) 0%, rgba(5, 150, 105, 0.1) 100%);
+  border: 1.5px solid var(--accent-gold);
+  border-radius: 14px;
+  padding: 12px 18px;
+  margin: 12px auto 16px auto;
+  font-family: var(--font-heading);
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--text-main);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  box-shadow: 0 4px 14px rgba(212, 175, 55, 0.15);
+  animation: myTeamGlow 3s infinite ease-in-out;
+}
+
+@keyframes myTeamGlow {
+  0%, 100% {
+    box-shadow: 0 4px 14px rgba(212, 175, 55, 0.15);
+  }
+  50% {
+    box-shadow: 0 6px 22px rgba(212, 175, 55, 0.35);
+  }
+}
+
+.student-live-teams-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 12px;
+  margin: 16px 0;
+  text-align: left;
+}
+
+.student-live-team-card {
+  background: #ffffff;
+  border: 1.5px solid var(--border-color);
+  border-radius: 14px;
+  padding: 14px;
+  transition: all 0.25s ease;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.student-live-team-card.my-team-active {
+  border: 2px solid #059669;
+  background: linear-gradient(180deg, rgba(5, 150, 105, 0.04) 0%, #ffffff 100%);
+  box-shadow: 0 8px 24px rgba(5, 150, 105, 0.18);
+  transform: translateY(-2px);
+}
+
+.my-team-badge-tag {
+  position: absolute;
+  top: -10px;
+  right: 12px;
+  background: #059669;
+  color: #ffffff;
+  font-family: var(--font-heading);
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  padding: 3px 10px;
+  border-radius: 999px;
+  box-shadow: 0 2px 6px rgba(5, 150, 105, 0.3);
+}
+
+.team-card-top-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
+.team-card-avatar {
+  font-size: 1.8rem;
+  line-height: 1;
+}
+
+.team-card-titles h4 {
+  font-family: var(--font-heading);
+  font-size: 0.95rem;
+  font-weight: 800;
+  color: var(--text-main);
+  margin: 0;
+}
+
+.team-card-titles small {
+  color: var(--text-muted);
+  font-size: 0.75rem;
+  display: block;
+}
+
+.team-members-pills-wrap {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin-top: 6px;
+  min-height: 28px;
+}
+
+.student-live-chip {
+  background: rgba(0, 0, 0, 0.05);
+  border: 1px solid var(--border-color);
+  color: var(--text-main);
+  font-size: 0.78rem;
+  font-weight: 600;
+  padding: 3px 9px;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.student-live-chip.is-me {
+  background: rgba(5, 150, 105, 0.15);
+  border-color: #059669;
+  color: #047857;
+  font-weight: 800;
+}
+
+.team-empty-state-text {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  font-style: italic;
+}
+
 /* ================= SETUP FLOW ================= */
 .setup-header-box {
   text-align: center;
