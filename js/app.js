@@ -322,7 +322,7 @@
   async function showView(viewId, pushHistory = true) {
     if (!document.getElementById(viewId)) return;
 
-    const isPublic = ['view-welcome', 'view-regolamento'].includes(viewId);
+    const isPublic = ['view-welcome', 'view-regolamento', 'view-leaderboard'].includes(viewId);
     if (!isPublic) {
       const isAllowed = await verifyEcosystemAccess(false);
       if (!isAllowed) return;
