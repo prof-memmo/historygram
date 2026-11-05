@@ -160,6 +160,9 @@ class HistoryGramService {
           }
         }, err => {
           console.warn("⚠️ Listener Firestore (passaggio a LocalStorage):", err && err.message);
+          if (typeof window.showToast === 'function' && err && err.code === 'permission-denied') {
+            window.showToast("⛔ Errore permessi cloud: sessione non sincronizzata.", "toast-danger");
+          }
           if (!isCleanedUp) {
             activeCleanup = this.listenLocalStorage(sessionId, callback);
           }
@@ -218,6 +221,7 @@ class HistoryGramService {
         return;
       } catch (e) {
         console.warn("⚠️ Salvataggio Firestore non riuscito, preservato in locale:", e);
+        throw e;
       }
     }
   }
