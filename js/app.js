@@ -961,6 +961,15 @@
           AppState.isTeacherUnlocked = false;
         }
       }
+      const rawUser = localStorage.getItem('hub_user') || localStorage.getItem('user');
+      if (rawUser) {
+        try {
+          const parsed = JSON.parse(rawUser);
+          if (parsed && parsed.email) {
+            AppState.teacherUser = parsed;
+          }
+        } catch(e) {}
+      }
       var resolvedSsoAvatar = window.resolveEcosystemAvatar ? window.resolveEcosystemAvatar(ssoAvatar) : ssoAvatar;
       if (resolvedSsoAvatar && DOM.headerUserAvatar) {
         DOM.headerUserAvatar.src = resolvedSsoAvatar;
