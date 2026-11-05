@@ -154,11 +154,14 @@
 
   /* ================= INIZIALIZZAZIONE ================= */
   function init() {
-    // 1. Parametri URL (es. ?class=3B&mode=revolution_1800&view=game)
+    // 1. Parametri URL (es. ?class=3B&mode=revolution_1800&view=game) o SSO
     const urlParams = new URLSearchParams(window.location.search);
-    if (urlParams.get('class')) {
-      AppState.currentClassCode = urlParams.get('class').toUpperCase().replace(/[^A-Z0-9_-]/g, '');
-      AppState.currentClassId = 'classe_' + AppState.currentClassCode.toLowerCase();
+    const urlClass = urlParams.get('class');
+    const ssoClass = (typeof localStorage !== 'undefined' ? (localStorage.getItem('hub_user_class') || localStorage.getItem('pm_student_class')) : '');
+    const activeClass = (urlClass || ssoClass || AppState.currentClassCode || '3B').toUpperCase().replace(/[^A-Z0-9_-]/g, '');
+    if (activeClass) {
+      AppState.currentClassCode = activeClass;
+      AppState.currentClassId = 'classe_' + activeClass.toLowerCase();
     }
     if (urlParams.get('mode') && HISTORY_MODES[urlParams.get('mode')]) {
       AppState.currentMode = urlParams.get('mode');
@@ -322,7 +325,7 @@
   async function showView(viewId, pushHistory = true) {
     if (!document.getElementById(viewId)) return;
 
-    const isPublic = ['view-welcome', 'view-regolamento', 'view-leaderboard'].includes(viewId);
+    const isPublic = ['view-welcome', 'view-regolamento', 'view-leaderboard', 'view-game'].includes(viewId);
     if (!isPublic) {
       const isAllowed = await verifyEcosystemAccess(false);
       if (!isAllowed) return;
@@ -360,9 +363,12 @@
       }
     });
 
-    // Se entriamo nella Cattedra Docente / Approvazione, aggiorna i dati
+    // Se entriamo nella Cattedra Docente / Approvazione o Classifica, aggiorna i dati
     if (viewId === 'view-docente') {
       renderTeacherView();
+    }
+    if (viewId === 'view-leaderboard') {
+      renderLeaderboard();
     }
     if (viewId === 'view-setup-class') {
       document.body.classList.add('view-no-scroll');
@@ -424,6 +430,10 @@
         );
       } catch (err) {
         console.warn("⚠️ Salvataggio persistente non riuscito:", err);
+        if (err && err.code === 'permission-denied') {
+          showToast("⛔ Errore permessi cloud: la partita non può essere sincronizzata con la classe.", "toast-danger");
+        }
+        throw err;
       }
     }
   }
@@ -470,21 +480,28 @@
     if (window.HistoryGramService) {
       classes = await window.HistoryGramService.getTeacherClasses(AppState.teacherUser || (window.fbAuth && window.fbAuth.currentUser));
     }
+    AppState.cachedTeacherClasses = classes;
 
     if (classes && classes.length > 0) {
-      const hasCurrent = classes.some(c => c.id === AppState.currentClassId || (c.code && c.code === AppState.currentClassCode));
+      const hasCurrent = classes.some(c => {
+        const cCode = (c.code || c.classCode || '').toUpperCase();
+        return c.id === AppState.currentClassId || cCode === AppState.currentClassCode || ('classe_' + cCode.toLowerCase()) === AppState.currentClassId;
+      });
       if (!hasCurrent && classes[0]) {
-        AppState.currentClassId = classes[0].id;
-        AppState.currentClassCode = (classes[0].code || classes[0].classCode || classes[0].id).toUpperCase();
+        const cCode = (classes[0].code || classes[0].classCode || classes[0].id || '3B').toUpperCase().replace(/[^A-Z0-9_-]/g, '');
+        AppState.currentClassCode = cCode;
+        AppState.currentClassId = 'classe_' + cCode.toLowerCase();
       }
     }
 
     DOM.setupSelectClass.innerHTML = '';
     classes.forEach(c => {
+      const cCode = (c.code || c.classCode || c.id || '3B').toUpperCase().replace(/[^A-Z0-9_-]/g, '');
+      const classKey = 'classe_' + cCode.toLowerCase();
       const opt = document.createElement('option');
-      opt.value = c.id;
-      opt.textContent = `${c.name || c.id} (Codice: ${c.code || c.id})`;
-      if (c.code === AppState.currentClassCode || c.id === AppState.currentClassId) {
+      opt.value = classKey;
+      opt.textContent = `${c.name || c.id} (Codice: ${cCode})`;
+      if (cCode === AppState.currentClassCode || classKey === AppState.currentClassId || c.id === AppState.currentClassId) {
         opt.selected = true;
       }
       DOM.setupSelectClass.appendChild(opt);
@@ -518,7 +535,10 @@
 
   function loadStudentsForCurrentClass(classes) {
     if (!Array.isArray(classes)) return;
-    const currentCls = classes.find(c => c.id === AppState.currentClassId || c.code === AppState.currentClassCode);
+    const currentCls = classes.find(c => {
+      const cCode = (c.code || c.classCode || '').toUpperCase();
+      return c.id === AppState.currentClassId || cCode === AppState.currentClassCode || ('classe_' + cCode.toLowerCase()) === AppState.currentClassId;
+    });
     if (currentCls) {
       const extractName = s => {
         if (typeof s === 'string') return s;
@@ -861,9 +881,11 @@
 
   function onSetupClassChange(val) {
     if (!val) return;
-    AppState.currentClassId = val;
-    const parts = val.replace('classe_', '').toUpperCase();
-    AppState.currentClassCode = parts || '3B';
+    const classes = AppState.cachedTeacherClasses || [];
+    const found = classes.find(c => c.id === val || ('classe_' + (c.code || c.classCode || '').toLowerCase()) === val);
+    const code = (found ? (found.code || found.classCode || found.id) : val.replace('classe_', '')).toUpperCase().replace(/[^A-Z0-9_-]/g, '') || '3B';
+    AppState.currentClassCode = code;
+    AppState.currentClassId = 'classe_' + code.toLowerCase();
     connectSession();
     renderSetupClassView();
   }
@@ -941,6 +963,15 @@
         } else {
           AppState.isTeacherUnlocked = false;
         }
+      }
+      const rawUser = localStorage.getItem('hub_user') || localStorage.getItem('user');
+      if (rawUser) {
+        try {
+          const parsed = JSON.parse(rawUser);
+          if (parsed && parsed.email) {
+            AppState.teacherUser = parsed;
+          }
+        } catch(e) {}
       }
       var resolvedSsoAvatar = window.resolveEcosystemAvatar ? window.resolveEcosystemAvatar(ssoAvatar) : ssoAvatar;
       if (resolvedSsoAvatar && DOM.headerUserAvatar) {
@@ -1420,9 +1451,14 @@
       const scoreObj = scores[c.id] || { likes: 0, teacherBonus: 0, postsCount: 0 };
       const teamPosts = posts.filter(p => p.characterId === c.id);
       let calculatedLikes = 0;
-      teamPosts.forEach(p => { calculatedLikes += (p.likes || []).length; });
+      teamPosts.forEach(p => {
+        if (Array.isArray(p.likes)) calculatedLikes += p.likes.length;
+        else if (Array.isArray(p.likedBy)) calculatedLikes += p.likedBy.length;
+        else if (typeof p.likes === 'number') calculatedLikes += p.likes;
+      });
 
-      const finalFollowers = calculatedLikes + (scoreObj.teacherBonus || 0);
+      const teacherBonus = (scoreObj.teacherBonus || scoreObj.followers || 0);
+      const finalFollowers = calculatedLikes + teacherBonus;
       totalFollowers += finalFollowers;
 
       return {

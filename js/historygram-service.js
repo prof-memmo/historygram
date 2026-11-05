@@ -160,6 +160,9 @@ class HistoryGramService {
           }
         }, err => {
           console.warn("⚠️ Listener Firestore (passaggio a LocalStorage):", err && err.message);
+          if (typeof window.showToast === 'function' && err && err.code === 'permission-denied') {
+            window.showToast("⛔ Errore permessi cloud: sessione non sincronizzata.", "toast-danger");
+          }
           if (!isCleanedUp) {
             activeCleanup = this.listenLocalStorage(sessionId, callback);
           }
@@ -218,6 +221,7 @@ class HistoryGramService {
         return;
       } catch (e) {
         console.warn("⚠️ Salvataggio Firestore non riuscito, preservato in locale:", e);
+        throw e;
       }
     }
   }
@@ -256,8 +260,15 @@ class HistoryGramService {
   async submitPost(classId, modeId, post) {
     const state = await this.getSession(classId, modeId);
     state.pendingPosts = state.pendingPosts || [];
+    if (!post.id) post.id = 'post_' + Date.now() + '_' + Math.random().toString(36).substr(2, 6);
+    if (!post.createdAt) post.createdAt = new Date().toISOString();
     state.pendingPosts.push(post);
     await this.saveSession(classId, modeId, state);
+  }
+
+  // Alias compatibile per invio post alla cattedra
+  async submitPostForApproval(classId, modeId, post) {
+    return this.submitPost(classId, modeId, post);
   }
 
   // Approvazione Docente (Imprimatur sulla LIM + Bonus)
@@ -285,6 +296,7 @@ class HistoryGramService {
       state.scores[cId] = { followers: 0, likes: 0, postsCount: 0, stars: 0 };
     }
     state.scores[cId].postsCount = (state.scores[cId].postsCount || 0) + 1;
+    state.scores[cId].teacherBonus = (state.scores[cId].teacherBonus || 0) + bonusFollowers;
     state.scores[cId].followers = (state.scores[cId].followers || 0) + bonusFollowers;
 
     await this.saveSession(classId, modeId, state);
