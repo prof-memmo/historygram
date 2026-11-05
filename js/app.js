@@ -363,9 +363,12 @@
       }
     });
 
-    // Se entriamo nella Cattedra Docente / Approvazione, aggiorna i dati
+    // Se entriamo nella Cattedra Docente / Approvazione o Classifica, aggiorna i dati
     if (viewId === 'view-docente') {
       renderTeacherView();
+    }
+    if (viewId === 'view-leaderboard') {
+      renderLeaderboard();
     }
     if (viewId === 'view-setup-class') {
       document.body.classList.add('view-no-scroll');
@@ -1448,9 +1451,14 @@
       const scoreObj = scores[c.id] || { likes: 0, teacherBonus: 0, postsCount: 0 };
       const teamPosts = posts.filter(p => p.characterId === c.id);
       let calculatedLikes = 0;
-      teamPosts.forEach(p => { calculatedLikes += (p.likes || []).length; });
+      teamPosts.forEach(p => {
+        if (Array.isArray(p.likes)) calculatedLikes += p.likes.length;
+        else if (Array.isArray(p.likedBy)) calculatedLikes += p.likedBy.length;
+        else if (typeof p.likes === 'number') calculatedLikes += p.likes;
+      });
 
-      const finalFollowers = calculatedLikes + (scoreObj.teacherBonus || 0);
+      const teacherBonus = (scoreObj.teacherBonus || scoreObj.followers || 0);
+      const finalFollowers = calculatedLikes + teacherBonus;
       totalFollowers += finalFollowers;
 
       return {
