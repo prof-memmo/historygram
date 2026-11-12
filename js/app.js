@@ -86,8 +86,8 @@
     btnOpenCreatePost: document.getElementById('btnOpenCreatePost'),
 
     // Sidebar Leaderboard
-    podiumWrap: document.getElementById('podiumWrap'),
-    leaderboardTableBody: document.getElementById('leaderboardTableBody'),
+    podiumWrap: document.getElementById('leaderboardFullPodiumWrap') || document.getElementById('podiumWrap'),
+    leaderboardTableBody: document.getElementById('leaderboardFullTableBody') || document.getElementById('leaderboardTableBody'),
     leaderboardMetricInfo: document.getElementById('leaderboardMetricInfo'),
     lbMetricColumnTitle: document.getElementById('lbMetricColumnTitle'),
     evaluationRulesList: document.getElementById('evaluationRulesList'),
@@ -1441,7 +1441,8 @@
   }
 
   function renderLeaderboard() {
-    if (!DOM.leaderboardTableBody) return;
+    const tableBody = DOM.leaderboardTableBody || document.getElementById('leaderboardFullTableBody') || document.getElementById('leaderboardTableBody');
+    if (!tableBody) return;
     const characters = HISTORY_MODES[AppState.currentMode].characters;
     const scores = AppState.sessionData.scores || {};
     const posts = AppState.sessionData.approvedPosts || [];
