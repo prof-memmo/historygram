@@ -90,6 +90,21 @@ h1, h2, h3, h4, h5, h6 {
   text-transform: uppercase;
 }
 
+h1 {
+  font-size: clamp(1.35rem, 4.2vw, 2.2rem);
+  line-height: 1.25;
+}
+
+h2 {
+  font-size: clamp(1.15rem, 3.6vw, 1.65rem);
+  line-height: 1.3;
+}
+
+h3 {
+  font-size: clamp(0.95rem, 2.8vw, 1.25rem);
+  line-height: 1.35;
+}
+
 #app-root {
   display: flex;
   flex-direction: column;
@@ -675,7 +690,7 @@ h1, h2, h3, h4, h5, h6 {
 
 .banner-heading {
   font-family: var(--font-heading);
-  font-size: 1.85rem;
+  font-size: clamp(1.15rem, 4vw, 1.85rem);
   font-weight: 900;
   color: var(--text-main);
   line-height: 1.25;
@@ -1303,6 +1318,9 @@ h1, h2, h3, h4, h5, h6 {
 
 /* Tabella */
 .table-responsive {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
   margin-bottom: 20px;
 }
 
@@ -2123,6 +2141,13 @@ h1, h2, h3, h4, h5, h6 {
     flex-direction: column;
     align-items: flex-start;
   }
+  .feed-controls-bar {
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  .leaderboard-card-container {
+    padding: 20px 14px !important;
+  }
 }
 
 /* ================= MULTI-VIEW SPA SYSTEM ================= */
@@ -2567,7 +2592,7 @@ h1, h2, h3, h4, h5, h6 {
 
 .setup-title {
   font-family: var(--font-heading);
-  font-size: 1.8rem;
+  font-size: clamp(1.2rem, 3.8vw, 1.8rem);
   font-weight: 800;
   letter-spacing: 1px;
   text-transform: uppercase;
