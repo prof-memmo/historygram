@@ -2101,15 +2101,39 @@ h3 {
 
 @media (max-width: 768px) {
   .app-header {
-    padding: 8px 12px;
+    height: 60px;
+    padding: 0 10px;
   }
   .header-game-logo {
-    height: 36px;
-    max-width: 150px;
+    height: 32px;
+    max-width: 110px;
+    object-fit: contain;
   }
   .header-prof-logo-wrapper {
-    width: 36px;
-    height: 36px;
+    width: 32px;
+    height: 32px;
+  }
+  .header-prof-logo {
+    height: 32px;
+    width: auto;
+  }
+  .user-menu-trigger {
+    padding: 3px 8px 3px 4px;
+    gap: 6px;
+  }
+  .user-avatar-circle {
+    width: 28px;
+    height: 28px;
+  }
+  .user-trigger-name {
+    font-size: 0.72rem;
+    max-width: 80px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .user-trigger-role {
+    font-size: 0.55rem;
   }
   .sub-nav-bar {
     padding: 8px 12px;
