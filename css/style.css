@@ -90,6 +90,21 @@ h1, h2, h3, h4, h5, h6 {
   text-transform: uppercase;
 }
 
+h1 {
+  font-size: clamp(1.35rem, 4.2vw, 2.2rem);
+  line-height: 1.25;
+}
+
+h2 {
+  font-size: clamp(1.15rem, 3.6vw, 1.65rem);
+  line-height: 1.3;
+}
+
+h3 {
+  font-size: clamp(0.95rem, 2.8vw, 1.25rem);
+  line-height: 1.35;
+}
+
 #app-root {
   display: flex;
   flex-direction: column;
@@ -675,7 +690,7 @@ h1, h2, h3, h4, h5, h6 {
 
 .banner-heading {
   font-family: var(--font-heading);
-  font-size: 1.85rem;
+  font-size: clamp(1.15rem, 4vw, 1.85rem);
   font-weight: 900;
   color: var(--text-main);
   line-height: 1.25;
@@ -1303,6 +1318,9 @@ h1, h2, h3, h4, h5, h6 {
 
 /* Tabella */
 .table-responsive {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
   margin-bottom: 20px;
 }
 
@@ -2083,15 +2101,38 @@ h1, h2, h3, h4, h5, h6 {
 
 @media (max-width: 768px) {
   .app-header {
-    padding: 8px 12px;
+    height: 60px;
+    padding: 0 10px;
   }
   .header-game-logo {
-    height: 36px;
-    max-width: 150px;
+    height: 32px;
+    max-width: 110px;
+    object-fit: contain;
   }
   .header-prof-logo-wrapper {
-    width: 36px;
-    height: 36px;
+    width: 32px;
+    height: 32px;
+  }
+  .header-prof-logo {
+    height: 32px;
+    width: auto;
+  }
+  .user-trigger-text,
+  .user-trigger-chevron {
+    display: none !important;
+  }
+  .user-menu-trigger {
+    padding: 3px !important;
+    border-radius: 50% !important;
+    gap: 0 !important;
+  }
+  .user-avatar-circle {
+    width: 32px !important;
+    height: 32px !important;
+  }
+  .setup-subtitle {
+    font-size: 0.78rem !important;
+    line-height: 1.4 !important;
   }
   .sub-nav-bar {
     padding: 8px 12px;
@@ -2122,6 +2163,13 @@ h1, h2, h3, h4, h5, h6 {
   .patamu-block {
     flex-direction: column;
     align-items: flex-start;
+  }
+  .feed-controls-bar {
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  .leaderboard-card-container {
+    padding: 20px 14px !important;
   }
 }
 
@@ -2567,7 +2615,7 @@ h1, h2, h3, h4, h5, h6 {
 
 .setup-title {
   font-family: var(--font-heading);
-  font-size: 1.8rem;
+  font-size: clamp(1.2rem, 3.8vw, 1.8rem);
   font-weight: 800;
   letter-spacing: 1px;
   text-transform: uppercase;
